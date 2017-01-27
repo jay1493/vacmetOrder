@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_main"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rootContainer"
+        android:padding="@dimen/d10">
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/collapsed_view"
+        android:visibility="visible">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vacmet_collapsed"
+            android:src="@drawable/vac_small"
+            android:scaleType="center" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/close"
+            android:id="@+id/close_expanded_card"/>
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/expanded_view"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cardHover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:elevation="@dimen/activity_horizontal_margin"
+            android:fadingEdge="horizontal">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/expanded_user_card_layout">
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/logo"
+                        android:src="@drawable/male_user"
+                        android:padding="5dp"
+                        android:layout_gravity="start"
+                        android:scaleType="fitXY" />
+                    <ProgressBar
+                        android:id="@+id/progressBar_loadExpandedData"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/logo"
+                        android:layout_toEndOf="@id/logo"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="@dimen/d20"
+                        android:layout_marginStart="@dimen/d20"
+                        android:layout_centerHorizontal="true"
+                        android:visibility="gone"/>
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:id="@+id/rl_welcome"
+                        android:layout_alignParentTop="true"
+                        android:layout_centerHorizontal="true"
+                        android:visibility="visible">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="USER: vacmet"
+                            android:gravity="center|right"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            android:id="@+id/text_welcome" />
+                    </RelativeLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/ll_data_fields"
+                        android:orientation="vertical"
+                        android:layout_toRightOf="@id/logo"
+                        android:layout_toEndOf="@id/logo"
+                        android:layout_below="@id/rl_welcome"
+                        android:visibility="visible">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/ll_party_name"
+                            android:orientation="horizontal"
+                            android:layout_toRightOf="@id/logo"
+                            android:layout_below="@id/rl_welcome">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tv_party_name"
+                                android:text="@string/party_name"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/party_name"
+                                android:text="Test_Party"
+                                android:ellipsize="end"/>
+
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/ll_delivery_date"
+                            android:orientation="horizontal"
+                            android:layout_toRightOf="@id/logo"
+                            android:layout_below="@id/ll_party_name">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tv_delivery_date"
+                                android:text="@string/Delivery_Date"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/delivery_date"
+                                android:text="Test_Delivery"
+                                android:ellipsize="end"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/expand_class"
+                        android:layout_toRightOf="@id/rl_welcome"
+                        android:layout_toEndOf="@id/rl_welcome"
+                        android:src="@drawable/aspect_ratio"
+                        android:layout_above="@id/ll_data_fields"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:scaleType="centerInside"/>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|bottom"
+                    android:layout_below="@id/expanded_user_card_layout"
+                    android:visibility="visible">
+                    <TextView
+                        android:id="@+id/marquee_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:ellipsize="marquee"
+                        android:fadingEdge="horizontal"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:scrollHorizontally="true"
+                        android:textColor="#ff4500"
+                        android:text="Simple application that shows how to use marquee, with a long text" />
+                </RelativeLayout>
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+    </RelativeLayout>
+
+    </RelativeLayout>
+</RelativeLayout>

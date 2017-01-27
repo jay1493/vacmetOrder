@@ -1,0 +1,592 @@
+package com.example.anubhav.trial3;
+
+import android.*;
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.telephony.SmsManager;
+import android.telephony.TelephonyManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.example.anubhav.trial3.emailSending.GmailSender;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+
+import java.util.Random;
+
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
+    private static final int GOOGLE_SIGN_IN = 9090;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE = 9099;
+    private ImageView gifImageView,googleSignIn;
+    private FrameLayout frameLayout;
+    private LayoutInflater inflater;
+    private Button btnSignIn,btnSignUp,btnLogin;
+    private BottomSheetBehavior bottomSheetBehavior;
+    private RelativeLayout mainLayout;
+    private Activity activity;
+    private LinearLayout login_btns;
+    private GoogleApiClient googleApiClient;
+    private EditText etUserName_signIn,etPassword_signIn,etFirstName_signUp,
+    etLastName_signUp,etEmail_signUp,etPassword_signUp,etReEnterPass_signUp,etContact_signUp;
+    private Dialog dialog;
+    private AnimationDrawable gmailAnimationDrawable;
+    private Button btn_signUser;
+    private Animation animation;
+    private SmsBroadcast smsDeliverBroadcast;
+    private String RECEIVE_ACTION = "RECEIVE";
+    private IntentFilter intentFilter;
+    private Random random;
+    private String otpGeneratedValue;
+    private EditText sendOtp;
+    private Button btnOtpApprove;
+    private AnimationDrawable otpReceiveAnimationDrawable;
+    private LinearLayout llOtpLayout;
+    private RelativeLayout rlLoaderLayout;
+    private LinearLayout orRegisterVia;
+    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =0 ;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+        activity = this;
+        init();
+        /**
+         * As raw folder resides inside res folder, hence the id's will be automatically generated in the R.java
+         * File, but this not happens in assets folder.
+         * Below two lines helped in playing Gif's.
+         */
+        GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
+        Glide.with(this).load(R.raw.vacmet1).into(imageViewTarget);
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(RECEIVE_ACTION);
+        smsDeliverBroadcast = new SmsBroadcast();
+        btnSignIn.setOnClickListener(this);
+        btnSignUp.setOnClickListener(this);
+        mainLayout.setOnClickListener(this);
+        gifImageView.setOnClickListener(this);
+        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail().build();
+
+        googleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this,this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API,googleSignInOptions).build();
+
+
+
+    }
+
+    private void init() {
+        inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        gifImageView = (ImageView) findViewById(R.id.gifLogin);
+        frameLayout = (FrameLayout) findViewById(R.id.bottomSheet);
+        btnSignIn = (Button) findViewById(R.id.btn_signIn);
+        btnSignUp = (Button) findViewById(R.id.btn_signUp);
+        mainLayout = (RelativeLayout) findViewById(R.id.activity_login);
+        login_btns = (LinearLayout) findViewById(R.id.login_btn_layout);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(smsDeliverBroadcast,intentFilter);
+        random = new Random();
+        random.setSeed(1000);
+        otpGeneratedValue = String.valueOf(random.nextInt(1000));
+    }
+
+    @Override
+    public void onClick(View view) {
+      switch(view.getId()){
+          case R.id.btn_signIn:
+              frameLayout.removeAllViewsInLayout();
+              View signIn_View = inflater.inflate(R.layout.activity_sign_in,null,false);
+              etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
+              etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
+              btnLogin = (Button) signIn_View.findViewById(R.id.btn_login);
+              btnLogin.setOnClickListener(this);
+              frameLayout.addView(signIn_View);
+              bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
+              addBottomSheetCallbacks(bottomSheetBehavior,"Login");
+              bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+              break;
+          case R.id.btn_signUp:
+              frameLayout.removeAllViewsInLayout();
+              View signUp_View = inflater.inflate(R.layout.activity_sign_up,null,false);
+              orRegisterVia = (LinearLayout) signUp_View.findViewById(R.id.ll_orRegisterVia);
+              googleSignIn = (ImageView) signUp_View.findViewById(R.id.google_signIn);
+              googleSignIn.setOnClickListener(this);
+              frameLayout.addView(signUp_View);
+              etFirstName_signUp = (EditText) findViewById(R.id.et_firstName);
+              animation = AnimationUtils.loadAnimation(LoginActivity.this,R.anim.blink);
+              btn_signUser = (Button) findViewById(R.id.btn_signUser);
+              ((Button) findViewById(R.id.btn_signUser)).setAnimation(animation);
+              ((Button) findViewById(R.id.btn_signUser)).setOnClickListener(this);
+              animation.start();
+              etLastName_signUp = (EditText) findViewById(R.id.et_lastName);
+              etEmail_signUp = (EditText) findViewById(R.id.et_Email);
+              etPassword_signUp = (EditText) findViewById(R.id.et_password);
+              etReEnterPass_signUp = (EditText) findViewById(R.id.et_rePassword);
+              etContact_signUp = (EditText) findViewById(R.id.et_Contact);
+              bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
+              addBottomSheetCallbacks(bottomSheetBehavior,"Login");
+              bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+              break;
+          case R.id.btn_signUser:
+              if(!etFirstName_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                      !etLastName_signUp.getText().toString().trim().equalsIgnoreCase("") &&
+                      !etEmail_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                      !etPassword_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                      !etReEnterPass_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                      !etContact_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                      etPassword_signUp.getText().toString().trim().equals(etReEnterPass_signUp.getText().toString().trim())){
+                  animation.cancel();
+                  frameLayout.removeAllViewsInLayout();
+                  View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
+                  view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
+                  frameLayout.addView(view_otp);
+                  llOtpLayout = (LinearLayout) findViewById(R.id.otp_layout);
+                  rlLoaderLayout = (RelativeLayout) findViewById(R.id.loader_layout);
+                  llOtpLayout.setVisibility(View.GONE);
+                  rlLoaderLayout.setVisibility(View.VISIBLE);
+                  sendOtp = (EditText) findViewById(R.id.et_otp);
+                  btnOtpApprove = (Button) findViewById(R.id.btn_otp);
+                  btnOtpApprove.setOnClickListener(this);
+                  bottomSheetBehavior.setHideable(false);
+                  bottomSheetBehavior.setBottomSheetCallback(null);
+                  bottomSheetBehavior.setSkipCollapsed(false);
+                  bottomSheetBehavior.setPeekHeight(500);
+                  ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
+                  otpReceiveAnimationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
+                  otpReceiveAnimationDrawable.start();
+                  TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+                  if(telephonyManager!=null && !telephonyManager.getNetworkOperatorName().equalsIgnoreCase("") && !telephonyManager.getNetworkOperator().equalsIgnoreCase("")){
+                      //Has a network...
+                      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                          sendSms();
+                      }else{
+                          SmsManager smsManager = SmsManager.getDefault();
+                          PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
+                          smsManager.sendTextMessage(etContact_signUp.getText().toString().trim(), null , otpGeneratedValue, null, pendingIntent);
+
+                      }
+
+                  }else{
+                      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                          sendEmail();
+                      }else {
+                          ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+                          NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                          NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+                          if(wifi.isConnected() || mobileNet.isConnected()) {
+                              GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE));
+                              try {
+                                  gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
+                                  /**
+                                   * HANDLE FROM HERE NOW>>>>>>>>>>>>>>>>>Getting Exception
+                                   */
+                                  otpReceiveAnimationDrawable.stop();
+                                  rlLoaderLayout.setVisibility(View.GONE);
+                                  llOtpLayout.setVisibility(View.VISIBLE);
+                              } catch (Exception e) {
+                                  e.printStackTrace();
+                                  rlLoaderLayout.setVisibility(View.GONE);
+                                  Toast.makeText(activity, "Error Sending Mail,try again...", Toast.LENGTH_SHORT).show();
+
+                              }
+                          }else{
+                              Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+
+                          }
+                      }
+                  }
+              }if(etFirstName_signUp.getText().toString().trim().equalsIgnoreCase("")){
+                  etFirstName_signUp.setHintTextColor(Color.RED);
+              }if(etLastName_signUp.getText().toString().trim().equalsIgnoreCase("")){
+                  etLastName_signUp.setHintTextColor(Color.RED);
+              }if(etEmail_signUp.getText().toString().trim().equalsIgnoreCase("")){
+                  etEmail_signUp.setHintTextColor(Color.RED);
+              }if(etPassword_signUp.getText().toString().trim().equalsIgnoreCase("")){
+                  etPassword_signUp.setHintTextColor(Color.RED);
+              }if(etReEnterPass_signUp.getText().toString().trim().equalsIgnoreCase("")){
+                  etReEnterPass_signUp.setHintTextColor(Color.RED);
+              }if(etContact_signUp.getText().toString().trim().equalsIgnoreCase("")){
+                  etContact_signUp.setHintTextColor(Color.RED);
+              } if(!etFirstName_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                  !etLastName_signUp.getText().toString().trim().equalsIgnoreCase("") &&
+                  !etEmail_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                  !etPassword_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                  !etReEnterPass_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                  !etContact_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                  !etPassword_signUp.getText().toString().trim().equals(etReEnterPass_signUp.getText().toString().trim())){
+                    etReEnterPass_signUp.setError(getResources().getString(R.string.password_not_match),getResources().getDrawable(R.drawable.error_24dp));
+                    etReEnterPass_signUp.requestFocus();
+              }
+
+
+              break;
+          case R.id.btn_otp:
+              if(sendOtp.getText().toString().trim().equalsIgnoreCase(otpGeneratedValue)){
+                  frameLayout.removeAllViewsInLayout();
+                  View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
+                  view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
+                  view_otp.findViewById(R.id.otp_layout).setVisibility(View.GONE);
+                  view_otp.findViewById(R.id.loader_layout).setVisibility(View.VISIBLE);
+                  frameLayout.addView(view_otp);
+                  bottomSheetBehavior.setHideable(false);
+                  bottomSheetBehavior.setBottomSheetCallback(null);
+                  bottomSheetBehavior.setSkipCollapsed(false);
+                  bottomSheetBehavior.setPeekHeight(500);
+                  ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
+                  final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
+                  animationDrawable.start();
+                  Handler handler = new Handler();
+                  handler.postDelayed(new Runnable() {
+                      @Override
+                      public void run() {
+                          animationDrawable.stop();
+                          findViewById(R.id.loader_layout).setVisibility(View.GONE);
+                          findViewById(R.id.approved_user_layout).setVisibility(View.VISIBLE);
+                      }
+                  },2000);
+                  handler.postDelayed(new Runnable() {
+                      @Override
+                      public void run() {
+                          Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
+                          startActivity(intent);
+                          finish();
+                      }
+                  },5000);
+              }else{
+                  sendOtp.setError(getResources().getString(R.string.otp_not_matched),getResources().getDrawable(R.drawable.error_24dp));
+                  sendOtp.requestFocus();
+              }
+              break;
+          case R.id.btn_login:
+              /**
+               * Using Dummy Data for Login Here..could be from service later on...
+               */
+              if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet") &&
+                      etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
+                  frameLayout.removeAllViewsInLayout();
+                  View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
+                  view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
+                  view_otp.findViewById(R.id.otp_layout).setVisibility(View.GONE);
+                  view_otp.findViewById(R.id.loader_layout).setVisibility(View.VISIBLE);
+                  frameLayout.addView(view_otp);
+                  bottomSheetBehavior.setHideable(false);
+                  bottomSheetBehavior.setBottomSheetCallback(null);
+                  bottomSheetBehavior.setSkipCollapsed(false);
+                  bottomSheetBehavior.setPeekHeight(500);
+                  ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
+                  final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
+                  animationDrawable.start();
+                  Handler handler = new Handler();
+                  handler.postDelayed(new Runnable() {
+                      @Override
+                      public void run() {
+                          animationDrawable.stop();
+                          findViewById(R.id.loader_layout).setVisibility(View.GONE);
+                          findViewById(R.id.approved_user_layout).setVisibility(View.VISIBLE);
+                      }
+                  },2000);
+                  handler.postDelayed(new Runnable() {
+                      @Override
+                      public void run() {
+                          Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
+                          startActivity(intent);
+                          finish();
+                      }
+                  },5000);
+              }else{
+                  if(!etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet")){
+                      etUserName_signIn.requestFocus();
+                      etUserName_signIn.setError(getResources().getString(R.string.username_not_correct),getResources().getDrawable(R.drawable.error_24dp));
+                      return;
+                  }else if(!etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
+                      etPassword_signIn.requestFocus();
+                      etPassword_signIn.setError(getResources().getString(R.string.password_not_correct),getResources().getDrawable(R.drawable.error_24dp));
+                      return;
+                  }
+
+              }
+
+              break;
+          case R.id.activity_login:
+              onKeyboardDown(mainLayout);
+              break;
+          case R.id.google_signIn:
+              dialog = new Dialog(LoginActivity.this);
+              dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+              dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+              dialog.setContentView(R.layout.loader);
+              dialog.setCancelable(false);
+              dialog.findViewById(R.id.iv_loader).setBackgroundResource(R.drawable.frames_1);
+              gmailAnimationDrawable = (AnimationDrawable) dialog.findViewById(R.id.iv_loader).getBackground();
+              gmailAnimationDrawable.start();
+              dialog.show();
+              Intent intent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+              startActivityForResult(intent,GOOGLE_SIGN_IN);
+
+              break;
+          case R.id.gifLogin:
+              onKeyboardDown(gifImageView);
+              break;
+      }
+    }
+    @TargetApi(23)
+    private void sendEmail() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_NETWORK_STATE)) {
+            } else {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE},
+                        MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE);
+            }
+        }else{
+            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            if(wifi.isConnected() || mobileNet.isConnected()) {
+                GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE));
+                try {
+                    gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
+                    /**
+                     * HANDLE FROM HERE NOW>>>>>>>>>>>>>>>>>Getting Exception
+                     */
+                    otpReceiveAnimationDrawable.stop();
+                    rlLoaderLayout.setVisibility(View.GONE);
+                    llOtpLayout.setVisibility(View.VISIBLE);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    rlLoaderLayout.setVisibility(View.GONE);
+                    Toast.makeText(activity, "Error Sending Mail,try again...", Toast.LENGTH_SHORT).show();
+
+                }
+            }else{
+                Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+
+            }
+
+        }
+
+    }
+
+    @TargetApi(23)
+    private void sendSms() {
+        if (checkSelfPermission(android.Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(android.Manifest.permission.SEND_SMS)) {
+            } else {
+                requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
+                        MY_PERMISSIONS_REQUEST_SEND_SMS);
+            }
+        }else{
+            SmsManager smsManager = SmsManager.getDefault();
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
+            smsManager.sendTextMessage(etContact_signUp.getText().toString().trim(), null , otpGeneratedValue, null, pendingIntent);
+
+        }
+    }
+    @TargetApi(23)
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    SmsManager smsManager = SmsManager.getDefault();
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
+                    smsManager.sendTextMessage(etContact_signUp.getText().toString().trim(), null , otpGeneratedValue, null, pendingIntent);
+                } else {
+                    requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
+                            MY_PERMISSIONS_REQUEST_SEND_SMS);
+                }
+            }
+            break;
+            case MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+                    NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+                    if(wifi.isConnected() || mobileNet.isConnected()) {
+                        GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE));
+                        try {
+                            gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
+                            /**
+                             * HANDLE FROM HERE NOW>>>>>>>>>>>>>>>>>Getting Exception
+                             */
+                            otpReceiveAnimationDrawable.stop();
+                            rlLoaderLayout.setVisibility(View.GONE);
+                            llOtpLayout.setVisibility(View.VISIBLE);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            rlLoaderLayout.setVisibility(View.GONE);
+                            Toast.makeText(activity, "Error Sending Mail,try again...", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }else{
+                        Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+
+                    }
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE},
+                            MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE);
+                }
+            }
+            break;
+        }
+    }
+
+    private void addBottomSheetCallbacks(final BottomSheetBehavior bottomSheetBehavior, final String state) {
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if(!state.equalsIgnoreCase("Approved")) {
+                    if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                        btnSignIn.setVisibility(View.INVISIBLE);
+                        btnSignUp.setVisibility(View.INVISIBLE);
+                    } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        btnSignIn.setVisibility(View.VISIBLE);
+                        btnSignUp.setVisibility(View.VISIBLE);
+                    }
+                    bottomSheetBehavior.setSkipCollapsed(true);
+                }else{
+                    bottomSheetBehavior.setSkipCollapsed(false);
+                    bottomSheetBehavior.setPeekHeight(150);
+                    login_btns.setVisibility(View.GONE);
+                    if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+
+                    }
+                }
+
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(smsDeliverBroadcast);
+
+    }
+    public void onKeyboardDown(View v){
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if(inputMethodManager.isAcceptingText()){
+            //Keyboard is There. Hence Hide.
+          /*  getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            inputMethodManager.hideSoftInputFromInputMethod(v.getWindowToken(),0);*/
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+
+//to hide it, call the method again
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+//            inputMethodManager.hideSoftInputFromInputMethod(activity.getCurrentFocus().getWindowToken(),0);
+        }
+        else if(bottomSheetBehavior!=null &&(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)){
+            if(frameLayout!=null && frameLayout.findViewById(R.id.ll_root_otp_layout) == null) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            }
+        }
+    }
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(activity, "The Connection could not be established! Please Try Again...", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case GOOGLE_SIGN_IN:
+                GoogleSignInResult googleSignInResult =  Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                if(googleSignInResult.isSuccess()){
+                    if(googleSignInResult.getSignInAccount().getDisplayName()!= null) {
+                        String name = googleSignInResult.getSignInAccount().getDisplayName();
+                        String[] nameparts = name.split(" ");
+                        etFirstName_signUp.setText(nameparts[0]);
+                        etLastName_signUp.setText(nameparts[nameparts.length-1]);
+                    }
+                    if(googleSignInResult.getSignInAccount().getEmail()!=null){
+                        etEmail_signUp.setText(googleSignInResult.getSignInAccount().getEmail());
+                    }
+                     googleSignIn.setVisibility(View.GONE);
+                     orRegisterVia.setVisibility(View.GONE);
+                     gmailAnimationDrawable.stop();
+                     dialog.dismiss();
+                }else{
+                    Toast.makeText(activity, "There seems a problem connecting with your Google Account...", Toast.LENGTH_SHORT).show();
+                    gmailAnimationDrawable.stop();
+                    dialog.dismiss();
+                }
+                break;
+        }
+    }
+
+    private class SmsBroadcast extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            /**
+             * you could check request codes via getRequestCode(), but we are using for Deliver Intent- in this case
+             * we do not have much request codes...could be used for Send Intents...
+             */
+            otpReceiveAnimationDrawable.stop();
+            rlLoaderLayout.setVisibility(View.GONE);
+            llOtpLayout.setVisibility(View.VISIBLE);
+
+        }
+    }
+}

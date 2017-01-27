@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#000000"
+    android:padding="25dp"
+    android:alpha="1">
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/et_username"
+        android:background="@drawable/et_sign_in"
+        android:hint="@string/UserName"
+        android:textColor="@color/black"
+        android:singleLine="true"
+        android:gravity="center"
+        />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/et_password"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/et_sign_in"
+        android:hint="@string/Password"
+        android:textColor="@color/black"
+        android:inputType="textPassword"
+        android:singleLine="true"
+        android:gravity="center"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_login"
+        android:text="@string/Login"
+        android:textColor="@color/black"
+        android:textAllCaps="false"
+        android:textSize="18sp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/btn_sign_in"/>
+
+
+</LinearLayout>

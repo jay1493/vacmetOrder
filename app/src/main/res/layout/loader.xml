@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/loader_background">
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:id="@+id/loader_rl"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+        <ImageView
+            android:id="@+id/iv_loader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_centerHorizontal="true"/>
+        <TextView
+            android:id="@+id/tv_loader_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Please_Wait"
+            android:ellipsize="none"
+            android:scrollHorizontally="false"
+            android:singleLine="false"
+            android:textColor="#FFFFFF"
+            android:layout_below="@id/iv_loader"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="17dp" />
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>
