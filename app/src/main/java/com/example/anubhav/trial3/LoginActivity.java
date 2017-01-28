@@ -49,6 +49,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.apache.harmony.misc.SystemUtils;
+
 import java.util.Random;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
@@ -81,6 +83,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private RelativeLayout rlLoaderLayout;
     private LinearLayout orRegisterVia;
     private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =0 ;
+    public static String url;
+    private String strUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,18 +131,44 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onResume();
         registerReceiver(smsDeliverBroadcast,intentFilter);
         random = new Random();
-        random.setSeed(1000);
-        otpGeneratedValue = String.valueOf(random.nextInt(1000));
+        random.setSeed(System.currentTimeMillis());
+        otpGeneratedValue = String.valueOf(random.nextInt(5000));
     }
 
     @Override
     public void onClick(View view) {
       switch(view.getId()){
+          case R.id.et_username:
+              etUserName_signIn.requestFocus();
+              break;
+          case R.id.et_password:
+              etPassword_signIn.requestFocus();
+              break;
+          case R.id.et_firstName:
+              etFirstName_signUp.requestFocus();
+              break;
+          case R.id.et_lastName:
+              etLastName_signUp.requestFocus();
+              break;
+          case R.id.et_Email:
+              etEmail_signUp.requestFocus();
+              break;
+          case R.id.et_password_signUp:
+              etPassword_signUp.requestFocus();
+              break;
+          case R.id.et_rePassword:
+              etReEnterPass_signUp.requestFocus();
+              break;
+          case R.id.et_Contact:
+              etContact_signUp.requestFocus();
+              break;
           case R.id.btn_signIn:
               frameLayout.removeAllViewsInLayout();
               View signIn_View = inflater.inflate(R.layout.activity_sign_in,null,false);
               etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
+              etUserName_signIn.setOnClickListener(this);
               etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
+              etPassword_signIn.setOnClickListener(this);
               btnLogin = (Button) signIn_View.findViewById(R.id.btn_login);
               btnLogin.setOnClickListener(this);
               frameLayout.addView(signIn_View);
@@ -154,16 +184,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               googleSignIn.setOnClickListener(this);
               frameLayout.addView(signUp_View);
               etFirstName_signUp = (EditText) findViewById(R.id.et_firstName);
+              etFirstName_signUp.setOnClickListener(this);
               animation = AnimationUtils.loadAnimation(LoginActivity.this,R.anim.blink);
               btn_signUser = (Button) findViewById(R.id.btn_signUser);
               ((Button) findViewById(R.id.btn_signUser)).setAnimation(animation);
               ((Button) findViewById(R.id.btn_signUser)).setOnClickListener(this);
               animation.start();
               etLastName_signUp = (EditText) findViewById(R.id.et_lastName);
+              etLastName_signUp.setOnClickListener(this);
               etEmail_signUp = (EditText) findViewById(R.id.et_Email);
-              etPassword_signUp = (EditText) findViewById(R.id.et_password);
+              etEmail_signUp.setOnClickListener(this);
+              etPassword_signUp = (EditText) findViewById(R.id.et_password_signUp);
+              etPassword_signUp.setOnClickListener(this);
               etReEnterPass_signUp = (EditText) findViewById(R.id.et_rePassword);
+              etReEnterPass_signUp.setOnClickListener(this);
               etContact_signUp = (EditText) findViewById(R.id.et_Contact);
+              etContact_signUp.setOnClickListener(this);
               bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
               addBottomSheetCallbacks(bottomSheetBehavior,"Login");
               bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -263,6 +299,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               break;
           case R.id.btn_otp:
               if(sendOtp.getText().toString().trim().equalsIgnoreCase(otpGeneratedValue)){
+                  url = strUrl;
                   frameLayout.removeAllViewsInLayout();
                   View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
                   view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
@@ -558,6 +595,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         String[] nameparts = name.split(" ");
                         etFirstName_signUp.setText(nameparts[0]);
                         etLastName_signUp.setText(nameparts[nameparts.length-1]);
+                    }
+                    if(googleSignInResult.getSignInAccount().getPhotoUrl()!=null){
+                        strUrl = googleSignInResult.getSignInAccount().getPhotoUrl().toString();
+
                     }
                     if(googleSignInResult.getSignInAccount().getEmail()!=null){
                         etEmail_signUp.setText(googleSignInResult.getSignInAccount().getEmail());

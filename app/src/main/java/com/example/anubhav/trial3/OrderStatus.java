@@ -34,6 +34,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.anubhav.trial3.adapters.RecyclerviewAdapter;
+import com.example.anubhav.trial3.interfaces.ItemClickListener;
+import com.example.anubhav.trial3.model.ItemModel;
 import com.example.anubhav.trial3.model.OrderModel;
 import com.example.anubhav.trial3.services.VacmetOverlayService;
 
@@ -121,7 +123,6 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 recyclerViewAdapter.notifyItemRemoved(viewHolder.getAdapterPosition());
             }
         });
-
         recyclerView.setAdapter(recyclerViewAdapter);
     }
     private void init() {
@@ -136,19 +137,56 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         recyclerView = (RecyclerView) findViewById(R.id.orderStatusList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         orderModelList = new ArrayList<>();
-        recyclerViewAdapter = new RecyclerviewAdapter(this,orderModelList);
+        recyclerViewAdapter = new RecyclerviewAdapter(this,orderModelList,new ItemClickListener(){
+            @Override
+            public void onClick(View view, int position) {
+                Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                intent.putExtra("OrderInfo",orderModelList.get(position));
+                startActivity(intent);
+            }
+        });
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
     private void feedDummyData() {
         Date date = new Date();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        OrderModel o1 = new OrderModel("Party X","12111","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date));
-        OrderModel o2 = new OrderModel("Party A","12112","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date));
-        OrderModel o3 = new OrderModel("Party B","12113","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date));
-        OrderModel o4 = new OrderModel("Party C","12114","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date));
-        OrderModel o5 = new OrderModel("Party A","12115","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date));
-        OrderModel o6 = new OrderModel("Party X","12116","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date));
+        ArrayList<ItemModel> party1 = new ArrayList<>();
+        ItemModel itemModel1 = new ItemModel("Polyester Film(Grade Printing)","10","30");
+        ItemModel itemModel2 = new ItemModel("BOPP","20","50");
+        party1.add(itemModel1);
+        party1.add(itemModel2);
+        OrderModel o1 = new OrderModel("Party Varna Limited, Sri Lanka","0179","130 wt.","14/12/2016","35 wt.","28/01/2017","30 wt",party1);
+        ArrayList<ItemModel> party2 = new ArrayList<>();
+        ItemModel itemModel21 = new ItemModel("Polyester Film(Grade Printing)","10","10");
+        ItemModel itemModel22 = new ItemModel("BOPP","2","5");
+        party2.add(itemModel21);
+        party2.add(itemModel22);
+        OrderModel o2 = new OrderModel("Party Roto Packing Material Industries Co. UAE","0012","30 wt.","15/12/2016","10 wt.","25/12/2016","15 wt",party2);
+        ArrayList<ItemModel> party3 = new ArrayList<>();
+        ItemModel itemModel31 = new ItemModel("Polyester Film(Grade Printing)","25","25");
+        ItemModel itemModel32 = new ItemModel("BOPP","25","30");
+        party3.add(itemModel31);
+        party3.add(itemModel32);
+        OrderModel o3 = new OrderModel("Party Amcor Flexibiles Durban,South Africa","0157","50 wt.","19/12/2016","25 wt.","25/01/2017","25 wt",party3);
+        ArrayList<ItemModel> party4 = new ArrayList<>();
+        ItemModel itemModel41 = new ItemModel("Polyester Film(Grade Printing)","2","25");
+        ItemModel itemModel42 = new ItemModel("BOPP Film","25","50");
+        party4.add(itemModel41);
+        party4.add(itemModel42);
+        OrderModel o4 = new OrderModel("Party C","12114","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date),"105 wt",party4);
+        ArrayList<ItemModel> party5 = new ArrayList<>();
+        ItemModel itemModel51 = new ItemModel("Polyester Film(Grade Printing)","0","25");
+        ItemModel itemModel52 = new ItemModel("BOPP Film","125","250");
+        party5.add(itemModel51);
+        party5.add(itemModel52);
+        OrderModel o5 = new OrderModel("Party A","12115","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date),"500 wt",party5);
+        ArrayList<ItemModel> party6 = new ArrayList<>();
+        ItemModel itemModel61 = new ItemModel("Polyester Film(Grade Printing)","0","25");
+        ItemModel itemModel62 = new ItemModel("BOPP Film","12","25");
+        party6.add(itemModel61);
+        party6.add(itemModel62);
+        OrderModel o6 = new OrderModel("Party X","12116","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date),"70 wt",party6);
         orderModelList.add(o1);
         orderModelList.add(o2);
         orderModelList.add(o3);

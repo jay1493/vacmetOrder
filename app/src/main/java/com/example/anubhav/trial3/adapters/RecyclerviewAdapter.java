@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.anubhav.trial3.R;
+import com.example.anubhav.trial3.interfaces.ItemClickListener;
 import com.example.anubhav.trial3.model.OrderModel;
 
 import java.util.List;
@@ -20,10 +21,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private final LayoutInflater inflater;
     Context context;
     List<OrderModel> list;
-    public RecyclerviewAdapter(Context context, List<OrderModel> list) {
+    private ItemClickListener itemClickListener;
+    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
+        this.itemClickListener = itemClickListener;
     }
 
     @Override
@@ -49,7 +52,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         return (list!=null)?list.size():0;
     }
 
-    public class Viewholder extends RecyclerView.ViewHolder {
+
+    public class Viewholder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView partyName ;
         TextView orderNo;
         TextView orderDate;
@@ -64,7 +68,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
             orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
             despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
             deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);
+            itemView.setOnClickListener(this);
+         }
 
+        @Override
+        public void onClick(View view) {
+            itemClickListener.onClick(view,getAdapterPosition());
         }
     }
 }

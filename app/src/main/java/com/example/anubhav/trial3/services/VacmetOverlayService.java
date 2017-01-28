@@ -19,6 +19,9 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.example.anubhav.trial3.LoginActivity;
 import com.example.anubhav.trial3.OrderStatus;
 import com.example.anubhav.trial3.R;
 import com.example.anubhav.trial3.model.OrderModel;
@@ -52,6 +55,7 @@ public class VacmetOverlayService extends Service {
     private boolean showProgressBar;
     private ProgressBar progressBar;
     private Intent persisttedIntent;
+    private ImageView logo;
 
     public VacmetOverlayService() {
     }
@@ -96,6 +100,13 @@ public class VacmetOverlayService extends Service {
             progressBar.setVisibility(View.VISIBLE);
         }else{
             progressBar.setVisibility(View.GONE);
+        }
+        logo = (ImageView) floatingView.findViewById(R.id.logo);
+        if(LoginActivity.url != null){
+            Log.e("", "onCreate: url Found" );
+            Glide.with(getApplicationContext()).load(LoginActivity.url).into(logo);
+        }else{
+            logo.setImageDrawable(getResources().getDrawable(R.drawable.male_user));
         }
         collapsedView = floatingView.findViewById(R.id.collapsed_view);
         expandedView = floatingView.findViewById(R.id.expanded_view);
@@ -197,7 +208,6 @@ public class VacmetOverlayService extends Service {
         super.onDestroy();
         if(floatingView!=null){
             windowManager.removeView(floatingView);
-            startService(persisttedIntent);
         }
         Log.e("", "onDestroy: " );
     }

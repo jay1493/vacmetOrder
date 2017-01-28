@@ -35,4 +35,9 @@
     <string name="party_name">"Party Name: "</string>
     <string name="Delivery_Date">"Delivery Date: "</string>
     <string name="otp_not_matched">Otp not matched.</string>
+    <string name="Request_dispatch_date">"Request Dispatch Date: "</string>
+    <string name="Quantity_Info">Quantity Info</string>
+    <string name="Order_Prod_Qty">"In Production: "</string>
+    <string name="Item_Name">Item Name</string>
+    <string name="despQty_OrderQty">Desp Qty/Order Qty</string>
 </resources>
