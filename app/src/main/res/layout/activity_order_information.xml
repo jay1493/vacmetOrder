@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/tv_color">
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,8 +19,9 @@
         android:id="@+id/card_party_orderInformation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:cardCornerRadius="@dimen/d20"
         android:padding="@dimen/d10"
-        android:elevation="@dimen/d20">
+        android:elevation="@dimen/d30">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -46,12 +48,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/Order_No"/>
+                    android:text="@string/Order_No"
+                    android:textStyle="bold"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/orderInfo_orderNo"
                     android:textColor="#003C71"
+                    android:textStyle="bold"
                     android:text=""/>
             </LinearLayout>
             <LinearLayout
@@ -65,12 +69,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textStyle="bold"
                     android:text="@string/Order_Date"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/orderInfo_orderDate"
                     android:textColor="#003C71"
+                    android:textStyle="bold"
                     android:text=""/>
             </LinearLayout>
             <LinearLayout
@@ -84,12 +90,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textStyle="bold"
                     android:text="@string/Request_dispatch_date"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/orderInfo_rdd"
                     android:textColor="#FF0000"
+                    android:textStyle="bold"
                     android:text=""/>
             </LinearLayout>
             <LinearLayout
@@ -110,7 +118,8 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
+                    android:layout_weight="3"
+                    android:gravity="center"
                     android:layout_gravity="center_vertical"
                     android:text="@string/Quantity_Info"
                     android:textStyle="bold"
@@ -118,7 +127,7 @@
                 <View
                     android:layout_width="0dp"
                     android:layout_height="2dp"
-                    android:layout_weight="4"
+                    android:layout_weight="3"
                     android:layout_gravity="center_vertical"
                     android:padding="@dimen/d10"
                     android:background="#003C71"/>
@@ -135,11 +144,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textStyle="bold"
                     android:text="@string/Order_Qty"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/orderInfo_orderQty"
+                    android:textStyle="bold"
                     android:textColor="#003C71"
                     android:text=""/>
             </LinearLayout>
@@ -154,11 +165,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textStyle="bold"
                     android:text="@string/Order_Desp_Qty"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/orderInfo_despQty"
+                    android:textStyle="bold"
                     android:textColor="#003C71"
                     android:text=""/>
             </LinearLayout>
@@ -173,11 +186,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textStyle="bold"
                     android:text="@string/Order_Prod_Qty"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/orderInfo_prodQty"
+                    android:textStyle="bold"
                     android:textColor="#003C71"
                     android:text=""/>
             </LinearLayout>
