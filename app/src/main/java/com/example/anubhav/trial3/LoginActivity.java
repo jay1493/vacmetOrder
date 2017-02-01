@@ -26,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -251,7 +252,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                           NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
                           if(wifi.isConnected() || mobileNet.isConnected()) {
-                              GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE));
+                              GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
                               try {
                                   gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
                                   /**
@@ -421,7 +422,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if(wifi.isConnected() || mobileNet.isConnected()) {
-                GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE));
+                GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
                 try {
                     gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
                     /**
@@ -484,7 +485,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                     NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
                     if(wifi.isConnected() || mobileNet.isConnected()) {
-                        GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE));
+                        GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE), LoginActivity.this);
                         try {
                             gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
                             /**
