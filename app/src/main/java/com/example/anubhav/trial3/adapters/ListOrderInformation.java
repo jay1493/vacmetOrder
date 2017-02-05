@@ -55,7 +55,7 @@ public class ListOrderInformation extends BaseAdapter {
             holder = (ListHolder) view.getTag();
         }
         holder.itemName.setText(((ItemModel)getItem(i)).getItemName());
-        holder.despQty.setText(((ItemModel)getItem(i)).getDespQty()+" wt/"+((ItemModel)getItem(i)).getTotalQty()+" wt");
+        holder.despQty.setText(((ItemModel)getItem(i)).getDespQty()+"/"+((ItemModel)getItem(i)).getTotalQty());
         return view;
     }
 
