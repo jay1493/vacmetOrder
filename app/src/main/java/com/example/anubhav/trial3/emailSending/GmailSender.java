@@ -5,6 +5,8 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.anubhav.trial3.LoginActivity;
+
 import java.security.Security;
 import java.util.Properties;
 
@@ -102,8 +104,14 @@ public class GmailSender extends Authenticator {
                     message.saveChanges();
                     tr.sendMessage(message, message.getAllRecipients());
                     tr.close();
-                    Toast.makeText(context, "Mail Sent...", Toast.LENGTH_SHORT).show();
-                    progressDialog.dismiss();
+                    ((LoginActivity)context).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(context, "Mail Sent...", Toast.LENGTH_SHORT).show();
+                            progressDialog.dismiss();
+                        }
+                    });
+
                 }catch (Exception e){
                      e.printStackTrace();
                     Log.e("", "run: "+e.toString());

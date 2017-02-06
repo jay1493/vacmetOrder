@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -67,6 +68,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ArrayList<OrderModel> searchList;
     private FloatingActionButton floatingActionButton,floatingLogOut;
     private ItemTouchHelper itemTouchHelper;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onStart() {
@@ -131,6 +133,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
+        sharedPreferences = getSharedPreferences("GooglePic",MODE_WORLD_READABLE);
         collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         deletedOrders = new HashMap<>();
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
@@ -393,6 +396,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }else{
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
                 intent.putExtra("OrderList",orderModelList);
+                if(LoginActivity.url!=null){
+                    if(sharedPreferences.getString("PhotoUrl",null)==null) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("PhotoUrl", LoginActivity.url);
+                        editor.apply();
+                    }
+                    intent.putExtra("PhotoUrl",LoginActivity.url);
+                }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
+                    intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
+                }
                 startService(intent);
                 finish();
             }
@@ -440,6 +453,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(resultCode == RESULT_OK){
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
                 intent.putExtra("OrderList",orderModelList);
+                if(LoginActivity.url!=null){
+                    if(sharedPreferences.getString("PhotoUrl",null)==null) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("PhotoUrl", LoginActivity.url);
+                        editor.apply();
+                    }
+                    intent.putExtra("PhotoUrl",LoginActivity.url);
+                }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
+                    intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
+                }
                 startService(intent);
                 finish();
             }
@@ -461,6 +484,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }else{
             Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
             intent.putExtra("OrderList",orderModelList);
+            if(LoginActivity.url!=null){
+                if(sharedPreferences.getString("PhotoUrl",null)==null) {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("PhotoUrl", LoginActivity.url);
+                    editor.apply();
+                }
+                intent.putExtra("PhotoUrl",LoginActivity.url);
+            }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
+                intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
+            }
             startService(intent);
             finish();
         }

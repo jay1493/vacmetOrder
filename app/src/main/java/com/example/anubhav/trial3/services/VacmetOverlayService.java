@@ -26,6 +26,7 @@ import com.example.anubhav.trial3.OrderStatus;
 import com.example.anubhav.trial3.R;
 import com.example.anubhav.trial3.model.OrderModel;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,10 +53,10 @@ public class VacmetOverlayService extends Service {
 
     private ArrayList<OrderModel> orderModelList;
     private RelativeLayout relativeLayout;
-    private boolean showProgressBar;
-    private ProgressBar progressBar;
+    private boolean showProgressBar = false;
     private Intent persisttedIntent;
     private ImageView logo;
+    private String photoUrl = null;
 
     public VacmetOverlayService() {
     }
@@ -72,6 +73,16 @@ public class VacmetOverlayService extends Service {
 //        super.onStartCommand(intent, flags, startId);
         if(orderModelList == null) {
             if(intent!=null && intent.getSerializableExtra("OrderList") !=null) {
+                Log.e("", "onStartCommand: 1");
+                if(intent.getStringExtra("PhotoUrl")!=null){
+                    photoUrl = intent.getStringExtra("PhotoUrl");
+                    if(photoUrl != null){
+                        Log.e("", "onCreate: url Found:== "+photoUrl );
+                        Glide.with(getApplicationContext()).load(photoUrl).override(100,100).fitCenter().into(logo);
+                    }else{
+                        logo.setImageDrawable(getResources().getDrawable(R.drawable.male_user));
+                    }
+                }
                 persisttedIntent = intent;
                 orderModelList = (ArrayList<OrderModel>) intent.getSerializableExtra("OrderList");
                 feedData();
@@ -95,19 +106,7 @@ public class VacmetOverlayService extends Service {
         layoutParams.y = 100;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.addView(floatingView,layoutParams);
-        progressBar = (ProgressBar) floatingView.findViewById(R.id.progressBar_loadExpandedData);
-        if(showProgressBar){
-            progressBar.setVisibility(View.VISIBLE);
-        }else{
-            progressBar.setVisibility(View.GONE);
-        }
         logo = (ImageView) floatingView.findViewById(R.id.logo);
-        if(LoginActivity.url != null){
-            Log.e("", "onCreate: url Found" );
-            Glide.with(getApplicationContext()).load(LoginActivity.url).into(logo);
-        }else{
-            logo.setImageDrawable(getResources().getDrawable(R.drawable.male_user));
-        }
         collapsedView = floatingView.findViewById(R.id.collapsed_view);
         expandedView = floatingView.findViewById(R.id.expanded_view);
         closeExpandedView = (ImageView) floatingView.findViewById(R.id.close_expanded_card);
@@ -189,7 +188,12 @@ public class VacmetOverlayService extends Service {
         HashMap<Long,Integer> deliveryDiff = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();
         for(int i=0;i<orderModelList.size();i++){
-            Date d = new Date(orderModelList.get(i).getDeliveryDate());
+            Date d = null;
+            try {
+                d = simpleDateFormat.parse(orderModelList.get(i).getDeliveryDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             deliveryDiff.put(new Long(d1.getTime()-d.getTime()),new Integer(i));
             stringBuilder.append(orderModelList.get(i).getPartyName()+"  "+orderModelList.get(i).getDeliveryDate()+" :: ");
         }
@@ -198,7 +202,7 @@ public class VacmetOverlayService extends Service {
          */
         TreeMap<Long,Integer> treeMap = new TreeMap<>(deliveryDiff);
         partyName.setText(String.valueOf(orderModelList.get((int)treeMap.firstEntry().getValue()).getPartyName()));
-        deliveryDate.setText(String.valueOf(orderModelList.get(((Long)treeMap.firstEntry().getKey()).intValue()).getDeliveryDate()));
+        deliveryDate.setText(String.valueOf(orderModelList.get((int)treeMap.firstEntry().getValue()).getDeliveryDate()));
         marqueeInfo.setText(stringBuilder.toString());
         marqueeInfo.setSelected(true);
     }
