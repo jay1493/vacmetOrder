@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3.model;
+package com.example.anubhav.vacmet.model;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3;
+package com.example.anubhav.vacmet;
 
 import android.annotation.TargetApi;
 import android.app.SearchManager;
@@ -25,27 +25,24 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.anubhav.trial3.adapters.RecyclerviewAdapter;
-import com.example.anubhav.trial3.interfaces.ItemClickListener;
-import com.example.anubhav.trial3.model.ItemModel;
-import com.example.anubhav.trial3.model.OrderModel;
-import com.example.anubhav.trial3.services.VacmetOverlayService;
+import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
+import com.example.anubhav.vacmet.interfaces.ItemClickListener;
+import com.example.anubhav.vacmet.model.ItemModel;
+import com.example.anubhav.vacmet.model.OrderModel;
+import com.example.anubhav.vacmet.services.VacmetOverlayService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by anubhav on 23/1/17.

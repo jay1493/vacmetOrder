@@ -1,11 +1,11 @@
-package com.example.anubhav.trial3.emailSending;
+package com.example.anubhav.vacmet.emailSending;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.anubhav.trial3.LoginActivity;
+import com.example.anubhav.vacmet.LoginActivity;
 
 import java.security.Security;
 import java.util.Properties;

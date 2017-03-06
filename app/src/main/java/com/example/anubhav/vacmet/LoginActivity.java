@@ -1,6 +1,5 @@
-package com.example.anubhav.trial3;
+package com.example.anubhav.vacmet;
 
-import android.*;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -20,13 +19,10 @@ import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -43,14 +39,14 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
-import com.example.anubhav.trial3.emailSending.GmailSender;
+import com.example.anubhav.vacmet.emailSending.GmailSender;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-
-import org.apache.harmony.misc.SystemUtils;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Random;
 
@@ -86,6 +82,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =0 ;
     public static String url;
     private String strUrl;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +97,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
          */
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
         Glide.with(this).load(R.raw.vacmet1).into(imageViewTarget);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("users").setValue("User1");
         intentFilter = new IntentFilter();
         intentFilter.addAction(RECEIVE_ACTION);
         smsDeliverBroadcast = new SmsBroadcast();

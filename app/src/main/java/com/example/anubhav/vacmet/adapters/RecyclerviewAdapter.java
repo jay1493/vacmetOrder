@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3.adapters;
+package com.example.anubhav.vacmet.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -7,9 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.anubhav.trial3.R;
-import com.example.anubhav.trial3.interfaces.ItemClickListener;
-import com.example.anubhav.trial3.model.OrderModel;
+import com.example.anubhav.vacmet.R;
+import com.example.anubhav.vacmet.interfaces.ItemClickListener;
+import com.example.anubhav.vacmet.model.OrderModel;
 
 import java.util.List;
 

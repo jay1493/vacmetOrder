@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3;
+package com.example.anubhav.vacmet;
 
 import org.junit.Test;
 

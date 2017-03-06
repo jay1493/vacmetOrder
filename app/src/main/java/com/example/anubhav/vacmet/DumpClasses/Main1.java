@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3.DumpClasses;
+package com.example.anubhav.vacmet.DumpClasses;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,7 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.example.anubhav.trial3.LoginActivity;
+import com.example.anubhav.vacmet.LoginActivity;
 
 /**
  * Created by anubhav on 3/1/17.

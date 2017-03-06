@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3;
+package com.example.anubhav.vacmet;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.anubhav.trial3", appContext.getPackageName());
+        assertEquals("com.example.anubhav.vacmet", appContext.getPackageName());
     }
 }

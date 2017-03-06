@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3.adapters;
+package com.example.anubhav.vacmet.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.example.anubhav.trial3.R;
-import com.example.anubhav.trial3.model.ItemModel;
+import com.example.anubhav.vacmet.R;
+import com.example.anubhav.vacmet.model.ItemModel;
 
 import java.util.ArrayList;
 

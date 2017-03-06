@@ -19,7 +19,6 @@
         android:id="@+id/card_party_orderInformation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="@dimen/d20"
         android:padding="@dimen/d10"
         android:elevation="@dimen/d30">
         <RelativeLayout

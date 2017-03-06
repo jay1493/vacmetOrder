@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3.services;
+package com.example.anubhav.vacmet.services;
 
 import android.app.Service;
 import android.content.Context;
@@ -13,25 +13,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
-import com.example.anubhav.trial3.LoginActivity;
-import com.example.anubhav.trial3.OrderStatus;
-import com.example.anubhav.trial3.R;
-import com.example.anubhav.trial3.model.OrderModel;
+import com.example.anubhav.vacmet.OrderStatus;
+import com.example.anubhav.vacmet.R;
+import com.example.anubhav.vacmet.model.OrderModel;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TreeMap;
 
 /**

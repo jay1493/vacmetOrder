@@ -1,6 +1,5 @@
-package com.example.anubhav.trial3;
+package com.example.anubhav.vacmet;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -9,9 +8,9 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.anubhav.trial3.adapters.ListOrderInformation;
-import com.example.anubhav.trial3.model.ItemModel;
-import com.example.anubhav.trial3.model.OrderModel;
+import com.example.anubhav.vacmet.adapters.ListOrderInformation;
+import com.example.anubhav.vacmet.model.ItemModel;
+import com.example.anubhav.vacmet.model.OrderModel;
 
 import java.util.ArrayList;
 

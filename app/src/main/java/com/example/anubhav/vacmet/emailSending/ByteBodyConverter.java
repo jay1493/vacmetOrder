@@ -1,4 +1,4 @@
-package com.example.anubhav.trial3.emailSending;
+package com.example.anubhav.vacmet.emailSending;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
