@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -35,20 +37,32 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.example.anubhav.vacmet.emailSending.GmailSender;
+import com.example.anubhav.vacmet.model.UserModel;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
     private static final int GOOGLE_SIGN_IN = 9090;
@@ -56,7 +70,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private ImageView gifImageView,googleSignIn;
     private FrameLayout frameLayout;
     private LayoutInflater inflater;
-    private Button btnSignIn,btnSignUp,btnLogin;
+    private Button btnSignIn;
+    private Button btnSignUp;
+    private FrameLayout btnLogin;
     private BottomSheetBehavior bottomSheetBehavior;
     private RelativeLayout mainLayout;
     private Activity activity;
@@ -83,13 +99,32 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public static String url;
     private String strUrl;
     private DatabaseReference mDatabase;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth.AuthStateListener authStateListener;
+    private String userName;
+    private String userEmail;
+    private String userPassword;
+    private String userContact;
+    private String behaviour ="";
+    private String userSignIn;
+    private String passSignIn;
+    private ImageView loaderSignIn;
+    private TextView textSignIn;
+    private SharedPreferences sharedprefs;
+    private final String LoginPrefs = "LoginPrefs";
+    private final String LoggedInUser = "LoggedInUser";
+    private final String LoggedInUserPassword = "LoggedInUserPassword";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         activity = this;
+        initializeFirebaseAuth();
         init();
+        random = new Random();
+        random.setSeed(System.currentTimeMillis());
+        otpGeneratedValue = String.valueOf(random.nextInt(5000));
         /**
          * As raw folder resides inside res folder, hence the id's will be automatically generated in the R.java
          * File, but this not happens in assets folder.
@@ -97,8 +132,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
          */
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
         Glide.with(this).load(R.raw.vacmet1).into(imageViewTarget);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("users").setValue("User1");
+        sharedprefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
         intentFilter = new IntentFilter();
         intentFilter.addAction(RECEIVE_ACTION);
         smsDeliverBroadcast = new SmsBroadcast();
@@ -113,7 +147,132 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .addApi(Auth.GOOGLE_SIGN_IN_API,googleSignInOptions).build();
 
 
+    }
 
+    private void initializeFirebaseAuth() {
+        firebaseAuth =  FirebaseAuth.getInstance();
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if(user!=null){
+                    //SignedIn
+                }else{
+                    //SignedOut
+                }
+                updateUI(user);
+            }
+        };
+    }
+
+    private void updateUI(FirebaseUser user) {
+        boolean isAuthSuccess = (user!=null);
+        if(isAuthSuccess){
+            //Anonymous User SignedIn to Firebase., Now access Database...
+            mDatabase = FirebaseDatabase.getInstance().getReference("users");
+            if(behaviour.equalsIgnoreCase("SignUp")) {
+                String primaryKey = mDatabase.push().getKey();
+                UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact);
+                mDatabase.child(primaryKey).setValue(userModel);
+                mDatabase.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        passUser();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }else if(behaviour.equalsIgnoreCase("Login")){
+                //Search Database, to match with fields
+                mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        collectData((Map<String,Object>)dataSnapshot.getValue());
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+            }
+
+        }else{
+            //Not SignedIn
+            Toast.makeText(activity, "There seems a problem connecting you with our server...", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void passUser() {
+        SharedPreferences.Editor edit = sharedprefs.edit();
+        edit.putString(LoggedInUser,userEmail);
+        edit.putString(LoggedInUserPassword,userPassword);
+        edit.apply();
+        url = strUrl;
+        frameLayout.removeAllViewsInLayout();
+        View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
+        view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
+        view_otp.findViewById(R.id.otp_layout).setVisibility(View.GONE);
+        view_otp.findViewById(R.id.loader_layout).setVisibility(View.VISIBLE);
+        frameLayout.addView(view_otp);
+        bottomSheetBehavior.setHideable(false);
+        bottomSheetBehavior.setBottomSheetCallback(null);
+        bottomSheetBehavior.setSkipCollapsed(false);
+        bottomSheetBehavior.setPeekHeight(500);
+        ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
+        final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
+        animationDrawable.start();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                animationDrawable.stop();
+                findViewById(R.id.loader_layout).setVisibility(View.GONE);
+                findViewById(R.id.approved_user_layout).setVisibility(View.VISIBLE);
+            }
+        },2000);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
+                startActivity(intent);
+                finish();
+            }
+        },5000);
+    }
+
+    private void collectData(Map<String, Object> value) {
+        boolean foundUser  = false;
+        for(Map.Entry<String, Object> entrySet : value.entrySet()){
+              Map<String,Object> user = (Map<String, Object>) entrySet.getValue();
+              if(((String)user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String)user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
+                  //Successfully Matched Records....
+                  foundUser = true;
+              }
+        }
+        if(foundUser){
+            //User Found
+            SharedPreferences.Editor edit = sharedprefs.edit();
+            edit.putString(LoggedInUser,etUserName_signIn.getText().toString().trim());
+            edit.putString(LoggedInUserPassword,etPassword_signIn.getText().toString().trim());
+            edit.apply();
+            Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
+            startActivity(intent);
+            finish();
+        }else{
+            //User Not Found....
+            etUserName_signIn.requestFocus();
+            etUserName_signIn.setError(getResources().getString(R.string.username_not_correct),getResources().getDrawable(R.drawable.error_24dp));
+            loaderSignIn.setVisibility(View.GONE);
+            btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in));
+            textSignIn.setVisibility(View.VISIBLE);
+            Toast.makeText(activity, "Oops, we could'nt find you in our records...", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void init() {
@@ -129,10 +288,58 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
+        if(sharedprefs.getString(LoggedInUser,null)!=null && sharedprefs.getString(LoggedInUserPassword,null)!=null){
+            /**
+             * Some user is logged in...
+             */
+            frameLayout.removeAllViewsInLayout();
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            View signIn_View = inflater.inflate(R.layout.activity_sign_in,null,false);
+
+            etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
+            etUserName_signIn.setText(sharedprefs.getString(LoggedInUser,null));
+            etUserName_signIn.setEnabled(false);
+            etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
+            etPassword_signIn.setText(sharedprefs.getString(LoggedInUserPassword,null));
+            etPassword_signIn.setEnabled(false);
+            loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
+            textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
+            btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
+            behaviour = "Login";
+            userSignIn = etUserName_signIn.getText().toString().trim();
+            passSignIn = etPassword_signIn.getText().toString().trim();
+            if(userSignIn.equalsIgnoreCase("")){
+                etUserName_signIn.requestFocus();
+                etUserName_signIn.setError(getResources().getString(R.string.username_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
+                return;
+            }else if(passSignIn.equalsIgnoreCase("")){
+                etPassword_signIn.requestFocus();
+                etPassword_signIn.setError(getResources().getString(R.string.password_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
+                return;
+            }else{
+                btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                textSignIn.setVisibility(View.GONE);
+                loaderSignIn.setVisibility(View.VISIBLE);
+                GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                signAnonymousFirebaseUser();
+            }
+            /*btnLogin.performClick();*/
+            int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
+            signIn_View.measure(width,View.MeasureSpec.UNSPECIFIED);
+            int height = signIn_View.getMeasuredHeight();
+            btnLogin.setOnClickListener(this);
+            frameLayout.addView(signIn_View);
+            bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
+            bottomSheetBehavior.setPeekHeight(height);
+            bottomSheetBehavior.setHideable(false);
+            bottomSheetBehavior.setBottomSheetCallback(null);
+            bottomSheetBehavior.setSkipCollapsed(false);
+        }
         registerReceiver(smsDeliverBroadcast,intentFilter);
-        random = new Random();
-        random.setSeed(System.currentTimeMillis());
-        otpGeneratedValue = String.valueOf(random.nextInt(5000));
+
     }
 
     @Override
@@ -169,7 +376,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               etUserName_signIn.setOnClickListener(this);
               etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
               etPassword_signIn.setOnClickListener(this);
-              btnLogin = (Button) signIn_View.findViewById(R.id.btn_login);
+              loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
+              textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
+              btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
               btnLogin.setOnClickListener(this);
               frameLayout.addView(signIn_View);
               bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
@@ -214,6 +423,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       etPassword_signUp.getText().toString().trim().equals(etReEnterPass_signUp.getText().toString().trim())){
                   animation.cancel();
                   frameLayout.removeAllViewsInLayout();
+                  userName = etFirstName_signUp.getText().toString().trim()+" "+etLastName_signUp.getText().toString().trim();
+                  userEmail = etEmail_signUp.getText().toString().trim();
+                  userPassword = etPassword_signUp.getText().toString().trim();
+                  userContact = etContact_signUp.getText().toString().trim();
                   View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
                   view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
                   frameLayout.addView(view_otp);
@@ -299,7 +512,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               break;
           case R.id.btn_otp:
               if(sendOtp.getText().toString().trim().equalsIgnoreCase(otpGeneratedValue)){
-                  url = strUrl;
+                  behaviour = "SignUp";
+                  signAnonymousFirebaseUser();
+                 /* url = strUrl;
                   frameLayout.removeAllViewsInLayout();
                   View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
                   view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
@@ -329,17 +544,36 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           startActivity(intent);
                           finish();
                       }
-                  },5000);
+                  },5000);*/
               }else{
                   sendOtp.setError(getResources().getString(R.string.otp_not_matched),getResources().getDrawable(R.drawable.error_24dp));
                   sendOtp.requestFocus();
               }
               break;
-          case R.id.btn_login:
+          case R.id.frameSignIn:
               /**
                * Using Dummy Data for Login Here..could be from service later on...
                */
-              if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet") &&
+              behaviour = "Login";
+              userSignIn = etUserName_signIn.getText().toString().trim();
+              passSignIn = etPassword_signIn.getText().toString().trim();
+              if(userSignIn.equalsIgnoreCase("")){
+                  etUserName_signIn.requestFocus();
+                  etUserName_signIn.setError(getResources().getString(R.string.username_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
+                  return;
+              }else if(passSignIn.equalsIgnoreCase("")){
+                  etPassword_signIn.requestFocus();
+                  etPassword_signIn.setError(getResources().getString(R.string.password_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
+                  return;
+              }else{
+                  btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                  textSignIn.setVisibility(View.GONE);
+                  loaderSignIn.setVisibility(View.VISIBLE);
+                  GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                  Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                  signAnonymousFirebaseUser();
+              }
+      /*        if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet") &&
                       etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
                   frameLayout.removeAllViewsInLayout();
                   View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
@@ -382,7 +616,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       return;
                   }
 
-              }
+              }*/
 
               break;
           case R.id.activity_login:
@@ -407,6 +641,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               break;
       }
     }
+
+    private void signAnonymousFirebaseUser() {
+        firebaseAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+
+                if (!task.isSuccessful()) {
+                    Log.e("LoginActivity", "signInAnonymously", task.getException());
+                    Toast.makeText(LoginActivity.this, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show();
+                }else if(task.isSuccessful()){
+                    updateUI(task.getResult().getUser());
+                }
+            }
+        });
+    }
+
     @TargetApi(23)
     private void sendEmail() {
         if (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE)
@@ -549,6 +800,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onStart() {
         super.onStart();
+        firebaseAuth.addAuthStateListener(authStateListener);
 
     }
 
@@ -556,6 +808,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStop() {
         super.onStop();
         unregisterReceiver(smsDeliverBroadcast);
+        firebaseAuth.removeAuthStateListener(authStateListener);
 
     }
     public void onKeyboardDown(View v){

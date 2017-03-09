@@ -29,16 +29,32 @@
         android:inputType="textPassword"
         android:singleLine="true"
         android:gravity="center"/>
-    <Button
+    <FrameLayout
+        android:id="@+id/frameSignIn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/btn_login"
-        android:text="@string/Login"
-        android:textColor="@color/black"
-        android:textAllCaps="false"
-        android:textSize="18sp"
         android:layout_marginTop="30dp"
-        android:background="@drawable/btn_sign_in"/>
+        android:background="@drawable/btn_sign_in">
+        <ImageView
+            android:id="@+id/loaderSignIn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            android:src="@drawable/rolling"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/tvSignIn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/Login"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:visibility="visible"/>
+
+
+    </FrameLayout>
 
 
 </LinearLayout>

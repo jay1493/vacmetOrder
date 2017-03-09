@@ -65,7 +65,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ArrayList<OrderModel> searchList;
     private FloatingActionButton floatingActionButton,floatingLogOut;
     private ItemTouchHelper itemTouchHelper;
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences,logingSharePrefs;
+    private final String LoginPrefs = "LoginPrefs";
+    private final String LoggedInUser = "LoggedInUser";
+    private final String LoggedInUserPassword = "LoggedInUserPassword";
 
     @Override
     protected void onStart() {
@@ -87,6 +90,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status);
         init();
+        logingSharePrefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
         feedDummyData();
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
@@ -130,7 +134,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
-        sharedPreferences = getSharedPreferences("GooglePic",MODE_WORLD_READABLE);
+        /**Todo : Problem for MODE_WORLD_READABLE LOOK==============================================**/
+        sharedPreferences = getSharedPreferences("GooglePic",MODE_APPEND);
         collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         deletedOrders = new HashMap<>();
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
@@ -435,6 +440,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
                     intent.putExtra("OrderList",orderModelList);
                     startService(intent);
+                    finish();
                 }else{
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                             Uri.parse("package:" + getPackageName()));
@@ -461,7 +467,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
                 }
                 startService(intent);
-                finish();
+                this.finish();
             }
         }else{
             super.onActivityResult(requestCode, resultCode, data);
@@ -511,6 +517,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
                 break;
             case R.id.floatingLogout:
+                SharedPreferences.Editor editor = logingSharePrefs.edit();
+                editor.putString(LoggedInUser,null);
+                editor.putString(LoggedInUserPassword,null);
+                editor.apply();
                 Intent intent = new Intent(OrderStatus.this,LoginActivity.class);
                 startActivity(intent);
                 finish();

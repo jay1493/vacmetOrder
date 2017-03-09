@@ -40,4 +40,6 @@
     <string name="Order_Prod_Qty">"In Production: "</string>
     <string name="Item_Name">Item Name</string>
     <string name="despQty_OrderQty">Desp Qty/Order Qty</string>
+    <string name="username_cannot_be_left_blank">Username cannot be left blank</string>
+    <string name="password_cannot_be_left_blank">Password cannot be left blank</string>
 </resources>
