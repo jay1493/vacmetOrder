@@ -398,6 +398,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
             }else{
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("OrderList",orderModelList);
                 intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
                 if(LoginActivity.url!=null){
@@ -410,8 +411,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
                     intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
                 }
+                (OrderStatus.this).finish();
                 startService(intent);
-                finish();
             }
             return true;
         }
@@ -428,9 +429,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
       }else{
           Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
           intent.putExtra("OrderList",orderModelList);
+//          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
           intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
+          this.finish();
           startService(intent);
-          finish();
       }
     }
 
@@ -441,10 +443,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             case MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW:
                 if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("OrderList",orderModelList);
                     intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
+                    this.finish();
                     startService(intent);
-                    finish();
                 }else{
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                             Uri.parse("package:" + getPackageName()));
@@ -459,6 +462,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if(requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION){
             if(resultCode == RESULT_OK){
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("OrderList",orderModelList);
                 intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
                 if(LoginActivity.url!=null){
@@ -471,8 +475,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
                     intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
                 }
-                startService(intent);
                 this.finish();
+                startService(intent);
             }
         }else{
             super.onActivityResult(requestCode, resultCode, data);
@@ -491,6 +495,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
         }else{
             Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("OrderList",orderModelList);
             intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
             if(LoginActivity.url!=null){
@@ -503,8 +508,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
                 intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
             }
+            this.finish();
             startService(intent);
-            finish();
         }
     }
 
@@ -529,7 +534,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 editor.apply();
                 Intent intent = new Intent(OrderStatus.this,LoginActivity.class);
                 startActivity(intent);
-                finish();
+                this.finish();
                 break;
         }
     }
