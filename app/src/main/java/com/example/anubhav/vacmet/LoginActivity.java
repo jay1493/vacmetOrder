@@ -298,17 +298,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
              * Some user is logged in...
              */
             frameLayout.removeAllViewsInLayout();
-            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
             View signIn_View = inflater.inflate(R.layout.activity_sign_in,null,false);
 
             etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
             etUserName_signIn.setText(sharedprefs.getString(LoggedInUser,null));
             etUserName_signIn.setEnabled(false);
+            etUserName_signIn.setFocusable(false);
             etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
             etPassword_signIn.setText(sharedprefs.getString(LoggedInUserPassword,null));
             etPassword_signIn.setEnabled(false);
+            etPassword_signIn.setFocusable(false);
             loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
             textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
             btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
