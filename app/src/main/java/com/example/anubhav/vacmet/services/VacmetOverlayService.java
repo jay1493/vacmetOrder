@@ -3,6 +3,7 @@ package com.example.anubhav.vacmet.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -52,6 +53,10 @@ public class VacmetOverlayService extends Service {
     private Intent persisttedIntent;
     private ImageView logo;
     private String photoUrl = null;
+    private final String LoginPrefs = "LoginPrefs";
+    private String userName ="";
+    private TextView user;
+
 
     public VacmetOverlayService() {
     }
@@ -66,8 +71,12 @@ public class VacmetOverlayService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 //        super.onStartCommand(intent, flags, startId);
+
         if(orderModelList == null) {
             if(intent!=null && intent.getSerializableExtra("OrderList") !=null) {
+                if(intent.getStringExtra("User")!=null){
+                    userName = intent.getStringExtra("User");
+                }
                 Log.e("", "onStartCommand: 1");
                 if(intent.getStringExtra("PhotoUrl")!=null){
                     photoUrl = intent.getStringExtra("PhotoUrl");
@@ -105,6 +114,7 @@ public class VacmetOverlayService extends Service {
         collapsedView = floatingView.findViewById(R.id.collapsed_view);
         expandedView = floatingView.findViewById(R.id.expanded_view);
         closeExpandedView = (ImageView) floatingView.findViewById(R.id.close_expanded_card);
+        user = (TextView) floatingView.findViewById(R.id.text_welcome);
         partyName = (TextView) floatingView.findViewById(R.id.party_name);
         deliveryDate = (TextView) floatingView.findViewById(R.id.delivery_date);
         marqueeInfo = (TextView) floatingView.findViewById(R.id.marquee_info);
@@ -178,6 +188,7 @@ public class VacmetOverlayService extends Service {
     }
 
     private void feedData() {
+        user.setText("Welcome: "+userName);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
         Date d1 = new Date(simpleDateFormat.format(new Date()));
         HashMap<Long,Integer> deliveryDiff = new HashMap<>();

@@ -68,6 +68,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private SharedPreferences sharedPreferences,logingSharePrefs;
     private final String LoginPrefs = "LoginPrefs";
     private final String LoggedInUser = "LoggedInUser";
+    private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
 
     @Override
@@ -398,6 +399,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }else{
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
                 intent.putExtra("OrderList",orderModelList);
+                intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
                 if(LoginActivity.url!=null){
                     if(sharedPreferences.getString("PhotoUrl",null)==null) {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -426,6 +428,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
       }else{
           Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
           intent.putExtra("OrderList",orderModelList);
+          intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
           startService(intent);
           finish();
       }
@@ -439,6 +442,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
                     intent.putExtra("OrderList",orderModelList);
+                    intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
                     startService(intent);
                     finish();
                 }else{
@@ -456,6 +460,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(resultCode == RESULT_OK){
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
                 intent.putExtra("OrderList",orderModelList);
+                intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
                 if(LoginActivity.url!=null){
                     if(sharedPreferences.getString("PhotoUrl",null)==null) {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -487,6 +492,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }else{
             Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
             intent.putExtra("OrderList",orderModelList);
+            intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
             if(LoginActivity.url!=null){
                 if(sharedPreferences.getString("PhotoUrl",null)==null) {
                     SharedPreferences.Editor editor = sharedPreferences.edit();

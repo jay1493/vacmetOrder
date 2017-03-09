@@ -113,6 +113,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private SharedPreferences sharedprefs;
     private final String LoginPrefs = "LoginPrefs";
     private final String LoggedInUser = "LoggedInUser";
+    private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
 
     @Override
@@ -210,6 +211,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void passUser() {
         SharedPreferences.Editor edit = sharedprefs.edit();
         edit.putString(LoggedInUser,userEmail);
+        edit.putString(LoggedInUserName,userName);
         edit.putString(LoggedInUserPassword,userPassword);
         edit.apply();
         url = strUrl;
@@ -247,17 +249,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private void collectData(Map<String, Object> value) {
         boolean foundUser  = false;
+        String name ="";
         for(Map.Entry<String, Object> entrySet : value.entrySet()){
               Map<String,Object> user = (Map<String, Object>) entrySet.getValue();
               if(((String)user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String)user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
                   //Successfully Matched Records....
                   foundUser = true;
+                  name = ((String)user.get("userName"));
               }
         }
         if(foundUser){
             //User Found
             SharedPreferences.Editor edit = sharedprefs.edit();
             edit.putString(LoggedInUser,etUserName_signIn.getText().toString().trim());
+            edit.putString(LoggedInUserName,name);
             edit.putString(LoggedInUserPassword,etPassword_signIn.getText().toString().trim());
             edit.apply();
             Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();

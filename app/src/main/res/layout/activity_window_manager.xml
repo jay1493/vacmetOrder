@@ -82,7 +82,6 @@
                             android:text="USER: vacmet"
                             android:gravity="center|right"
                             android:textStyle="bold"
-                            android:textColor="#FFFFFF"
                             android:id="@+id/text_welcome" />
                     </RelativeLayout>
                     <LinearLayout
