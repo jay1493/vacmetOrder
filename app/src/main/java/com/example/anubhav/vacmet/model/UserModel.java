@@ -1,5 +1,7 @@
 package com.example.anubhav.vacmet.model;
 
+import java.util.List;
+
 /**
  * Created by anubhav on 7/3/17.
  */
@@ -9,12 +11,16 @@ public class UserModel {
     private String userEmail;
     private String userPass;
     private String userContact;
-
-    public UserModel(String userName, String userEmail, String userPass, String userContact) {
+    private boolean isApproved;
+    private List<String> approvedPartyNames;
+    public UserModel(String userName, String userEmail, String userPass, String userContact , boolean approved,
+                     List<String> partyNames) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPass = userPass;
         this.userContact = userContact;
+        this.isApproved = approved;
+        this.approvedPartyNames = partyNames;
     }
 
     public String getUserName() {
@@ -47,5 +53,23 @@ public class UserModel {
 
     public void setUserContact(String userContact) {
         this.userContact = userContact;
+    }
+
+    public boolean isApproved() {
+        return isApproved;
+    }
+
+    public UserModel setApproved(boolean approved) {
+        isApproved = approved;
+        return this;
+    }
+
+    public List<String> getApprovedPartyNames() {
+        return approvedPartyNames;
+    }
+
+    public UserModel setApprovedPartyNames(List<String> approvedPartyNames) {
+        this.approvedPartyNames = approvedPartyNames;
+        return this;
     }
 }

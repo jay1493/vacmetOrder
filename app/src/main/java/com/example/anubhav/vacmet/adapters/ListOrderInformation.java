@@ -11,6 +11,7 @@ import com.example.anubhav.vacmet.R;
 import com.example.anubhav.vacmet.model.ItemModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by anubhav on 27/1/17.
@@ -19,10 +20,10 @@ import java.util.ArrayList;
 public class ListOrderInformation extends BaseAdapter {
 
     private Context context;
-    private ArrayList<ItemModel> itemModelArrayList;
+    private List<ItemModel> itemModelArrayList;
     private ListHolder holder;
 
-    public ListOrderInformation(Context context, ArrayList<ItemModel> itemModelArrayList) {
+    public ListOrderInformation(Context context, List<ItemModel> itemModelArrayList) {
         this.context = context;
         this.itemModelArrayList = itemModelArrayList;
     }

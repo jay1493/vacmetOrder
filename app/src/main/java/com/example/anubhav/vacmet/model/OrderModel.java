@@ -1,7 +1,11 @@
 package com.example.anubhav.vacmet.model;
 
+import android.os.Build;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Created by anubhav on 23/1/17.
@@ -16,8 +20,11 @@ public class OrderModel implements Serializable {
     private String despQty;
     private String deliveryDate;
     private String inProdQty;
+    private String status;
     private ArrayList<ItemModel> itemModelArrayList;
 
+    public OrderModel() {
+    }
 
     public OrderModel(String partyName, String orderNo, String orderQty, String orderDate, String despQty, String deliveryDate, String inProdQty, ArrayList<ItemModel> itemModelArrayList) {
         this.partyName = partyName;
@@ -92,5 +99,35 @@ public class OrderModel implements Serializable {
 
     public void setItemModelArrayList(ArrayList<ItemModel> itemModelArrayList) {
         this.itemModelArrayList = itemModelArrayList;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public OrderModel setStatus(String status) {
+        this.status = status;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OrderModel that = (OrderModel) o;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return Objects.equals(orderNo, that.orderNo);
+        }else{
+            return (orderNo != null && orderNo.equals(that.orderNo));
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            return Objects.hash(orderNo);
+        }else{
+            return Arrays.hashCode(new Object[]{orderNo});
+        }
     }
 }

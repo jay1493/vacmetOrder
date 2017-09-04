@@ -60,6 +60,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -172,9 +173,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             //Anonymous User SignedIn to Firebase., Now access Database...
             mDatabase = FirebaseDatabase.getInstance().getReference("users");
             if(behaviour.equalsIgnoreCase("SignUp")) {
-                String primaryKey = mDatabase.push().getKey();
-                UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact);
-                mDatabase.child(primaryKey).setValue(userModel);
+//                String primaryKey = mDatabase.push().getKey();
+                final UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact,false,new ArrayList<String>());
+                mDatabase.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.exists()){
+                            Toast.makeText(activity, "User already exists! Please try a different user or SignIn", Toast.LENGTH_SHORT).show();
+                        }else{
+                            mDatabase.child(userEmail).setValue(userModel);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+//                mDatabase.child(userEmail).setValue(userModel);
                 mDatabase.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {

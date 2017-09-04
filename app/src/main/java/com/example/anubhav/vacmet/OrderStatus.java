@@ -1,6 +1,7 @@
 package com.example.anubhav.vacmet;
 
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -25,12 +27,14 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Xml;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
 import com.example.anubhav.vacmet.interfaces.ItemClickListener;
@@ -38,11 +42,28 @@ import com.example.anubhav.vacmet.model.ItemModel;
 import com.example.anubhav.vacmet.model.OrderModel;
 import com.example.anubhav.vacmet.services.VacmetOverlayService;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by anubhav on 23/1/17.
@@ -53,6 +74,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 9092;
+    public static final String VBELN = "VBELN";
+    public static final String STATUS = "STATUS";
+    public static final String OPEN_QTY = "OPEN_QTY";
+    public static final String DESP_QTY = "DESP_QTY";
+    public static final String STOCK_QTY = "STOCK_QTY";
+    public static final String DOC_DATE = "DOC_DATE";
+    public static final String DEL_DATE = "DEL_DATE";
+    public static final String CUST_NM = "CUST_NM";
     private RecyclerView recyclerView;
     private ArrayList<OrderModel> orderModelList;
     private RecyclerviewAdapter recyclerViewAdapter;
@@ -70,6 +99,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String LoggedInUser = "LoggedInUser";
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
+    private String urlForOrders = "http://122.160.221.107:8020/sap/bc/get_pending?sap-client=500&";
+    private ProgressDialog progressDialog;
+    private final String Main_Xml_Tag = "ZBAPI_SOSTATUS";
 
     @Override
     protected void onStart() {
@@ -92,7 +124,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.activity_order_status);
         init();
         logingSharePrefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
-        feedDummyData();
+//        feedDummyData();
+        hitOrdersService();
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.back_24dp);
@@ -129,9 +162,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 recyclerViewAdapter.notifyItemRemoved(viewHolder.getAdapterPosition());
             }
         });
-        recyclerView.setAdapter(recyclerViewAdapter);
+
     }
+
+    private void hitOrdersService() {
+        //Todo: Pass SAP No., here to fetch total orders for corresponding SAP id.
+        new CustomAsyncTaskForRestOrderService().execute("c","1400056");
+    }
+
     private void init() {
+        progressDialog = new ProgressDialog(this);
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
@@ -536,6 +576,177 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 startActivity(intent);
                 this.finish();
                 break;
+        }
+    }
+
+    private class CustomAsyncTaskForRestOrderService extends AsyncTask<String,Void,List<OrderModel>>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if(progressDialog!=null && progressDialog.isShowing()){
+              progressDialog.dismiss();
+            }
+            progressDialog.setMessage(getResources().getString(R.string.fetching_orders));
+            progressDialog.show();
+        }
+
+        @Override
+        protected List<OrderModel> doInBackground(String... params) {
+            String appendedParamInUrl = "";
+            String id = params[1];
+            if(params[0].equalsIgnoreCase("c")) {
+                appendedParamInUrl = "C="+id;
+            }else if(params[0].equalsIgnoreCase("s")){
+                appendedParamInUrl = "S="+id;
+            }
+            try {
+                InputStream inputStream = new URL(urlForOrders+appendedParamInUrl).openConnection().getInputStream();
+                XmlPullParser xmlPullParser = Xml.newPullParser();
+                xmlPullParser.setInput(inputStream,null);
+                int eventType = xmlPullParser.getEventType();
+                OrderModel orderModel = null;
+                orderModelList = new ArrayList<>();
+                while(eventType != XmlPullParser.END_DOCUMENT){
+                    switch (eventType){
+                        case XmlPullParser.START_DOCUMENT:
+                            break;
+                        case XmlPullParser.START_TAG:
+                            switch (xmlPullParser.getName()){
+                                case Main_Xml_Tag:
+                                    //Main Tag
+                                    orderModel = new OrderModel();
+
+                                    break;
+                                case VBELN:
+                                    if(orderModel!=null){
+                                        orderModel.setOrderNo(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case STATUS:
+                                    if(orderModel!=null){
+                                        orderModel.setStatus(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case OPEN_QTY:
+                                    if(orderModel!=null){
+                                        orderModel.setInProdQty(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case DESP_QTY:
+                                    if(orderModel!=null){
+                                        orderModel.setDespQty(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case STOCK_QTY:
+                                    //Todo
+                                    break;
+                                case DOC_DATE:
+                                    if(orderModel!=null){
+                                        orderModel.setDeliveryDate(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case DEL_DATE:
+                                    if(orderModel!=null){
+                                        orderModel.setOrderDate(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case CUST_NM:
+                                    if(orderModel!=null){
+                                        orderModel.setPartyName(xmlPullParser.nextText());
+                                    }
+                                    break;
+                            }
+                            break;
+                        case XmlPullParser.END_TAG:
+                            switch (xmlPullParser.getName()){
+                                case Main_Xml_Tag:
+                                    //Main Tag
+                                    if(orderModel!=null){
+                                        if(!orderModelList.contains(orderModel)) {
+                                            orderModelList.add(orderModel);
+                                        }
+                                    }
+
+                                    break;
+
+                            }
+                            break;
+
+                    }
+                    eventType = xmlPullParser.next();
+                }
+
+
+
+
+
+               /* URL url = new URL(urlForOrders+appendedParamInUrl);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                urlConnection.setDoInput(true);
+                urlConnection.setDoOutput(true);
+                if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    String line = "";
+                    while(reader.readLine()!=null){
+                        line += reader.readLine();
+                    }
+                    XmlPullParserFactory xmlPullParserFactory = XmlPullParserFactory.newInstance();
+                    xmlPullParserFactory.setNamespaceAware(true);
+                    XmlPullParser pullParser = xmlPullParserFactory.newPullParser();
+                    pullParser.setInput(new StringReader(line));
+                    int event = pullParser.getEventType();
+                    while(event != XmlPullParser.END_DOCUMENT){
+                        switch (pullParser.getEventType()){
+                            case XmlPullParser.START_DOCUMENT:
+                                break;
+                            case XmlPullParser.START_TAG:
+                                switch (pullParser.getName()){
+                                    case Main_Xml_Tag:
+
+                                        break;
+                                }
+                                break;
+                            case XmlPullParser.END_TAG:
+                                break;
+                            case XmlPullParser.TEXT:
+                                break;
+                        }
+                        event = pullParser.next();
+                    }
+
+
+                }*/
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong, Check Your Connection!!", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+                Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong...", Toast.LENGTH_SHORT).show();
+            }
+            return orderModelList;
+        }
+
+        @Override
+        protected void onPostExecute(List<OrderModel> s) {
+            super.onPostExecute(s);
+            for(OrderModel o: orderModelList){
+                searchList.add(o);
+            }
+            progressDialog.dismiss();
+            recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
+                @Override
+                public void onClick(View view, int position) {
+                    Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                    intent.putExtra("OrderInfo",orderModelList.get(position));
+                    startActivity(intent);
+                }
+            });
+            recyclerView.setAdapter(recyclerViewAdapter);
         }
     }
 }

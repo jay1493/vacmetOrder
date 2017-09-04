@@ -95,7 +95,7 @@ public class VacmetOverlayService extends Service {
                 showProgressBar = true;
             }
         }
-        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
     @Override
