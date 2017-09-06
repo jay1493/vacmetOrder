@@ -197,43 +197,57 @@
             </LinearLayout>
         </RelativeLayout>
     </android.support.v7.widget.CardView>
-    <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/d10">
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/cc_itemNameView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="left"
-                android:padding="@dimen/d5"
-                android:text="@string/Item_Name"
-                android:textStyle="italic|bold"
-                android:textColor="#000000"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/cc_itemNameView"
-                android:gravity="right"
-                android:layout_marginRight="@dimen/d5"
-                android:layout_marginEnd="@dimen/d5"
-                android:padding="@dimen/d5"
-                android:text="@string/despQty_OrderQty"
-                android:textStyle="italic|bold"
-                android:textColor="#000000"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"/>
-        </RelativeLayout>
-    </android.support.v7.widget.CardView>
-    <ListView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/list_orderInformation"
-        android:divider="@color/black"
-        android:dividerHeight="2dp">
+        android:background="@drawable/order_info_background"
+        android:orientation="vertical"
+        android:padding="@dimen/d5">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/d5"
+            android:src="@drawable/logo"/>
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/d10"
+            android:padding="@dimen/d10">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/cc_itemNameView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:padding="@dimen/d5"
+                    android:text="@string/Item_Name"
+                    android:textStyle="italic|bold"
+                    android:textColor="#000000"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/cc_itemNameView"
+                    android:gravity="right"
+                    android:layout_marginRight="@dimen/d5"
+                    android:layout_marginEnd="@dimen/d5"
+                    android:padding="@dimen/d5"
+                    android:text="@string/despQty_OrderQty"
+                    android:textStyle="italic|bold"
+                    android:textColor="#000000"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/list_orderInformation"
+            android:divider="@color/black"
+            android:dividerHeight="2dp">
 
-    </ListView>
+        </ListView>
+    </LinearLayout>
+
 </LinearLayout>

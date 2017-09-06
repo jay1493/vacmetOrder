@@ -182,6 +182,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if(dataSnapshot.exists()){
                             Toast.makeText(activity, "User already exists! Please try a different user or SignIn", Toast.LENGTH_SHORT).show();
+                            bottomSheetBehavior.setHideable(true);
+                            //Setting state to hideable without setting the above property could result in crash
+                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+//                            frameLayout.removeAllViews();
+                            login_btns.setVisibility(View.VISIBLE);
+                            btnSignIn.setVisibility(View.VISIBLE);
+                            btnSignUp.setVisibility(View.VISIBLE);
                         }else{
                             mDatabase.child(userEmail.replace(".",getString(R.string.replacing_dot_in_firebase_db))).setValue(userModel);
                         }
@@ -198,14 +205,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if(!dataSnapshot.exists()) {
                             passUser();
-                        }else{
-                            bottomSheetBehavior.setHideable(true);
-                            //Setting state to hideable without setting the above property could result in crash
-                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                            frameLayout.removeAllViews();
-                            login_btns.setVisibility(View.VISIBLE);
-                            btnSignIn.setVisibility(View.VISIBLE);
-                            btnSignUp.setVisibility(View.VISIBLE);
                         }
                     }
 

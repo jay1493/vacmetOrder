@@ -4,6 +4,7 @@
     android:padding="@dimen/d10"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:id="@+id/main_layout_order_info"
     android:weightSum="9">
     <TextView
         android:id="@+id/orderInfo_itemName"
@@ -24,6 +25,7 @@
         android:textStyle="bold"
         android:textColor="#003C71"
         android:singleLine="false"
+        android:gravity="right"
         android:layout_gravity="right"
         android:maxLines="2"
         android:text="30/30"/>

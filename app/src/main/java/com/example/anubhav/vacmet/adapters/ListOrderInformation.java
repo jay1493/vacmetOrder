@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.anubhav.vacmet.R;
@@ -51,9 +52,15 @@ public class ListOrderInformation extends BaseAdapter {
             view = LayoutInflater.from(context).inflate(R.layout.order_information_row,null);
             holder.itemName = (TextView) view.findViewById(R.id.orderInfo_itemName);
             holder.despQty = (TextView) view.findViewById(R.id.orderInfo_itemQtyStatus);
+            holder.mainLayout = (LinearLayout) view.findViewById(R.id.main_layout_order_info);
             view.setTag(holder);
         }else{
             holder = (ListHolder) view.getTag();
+        }
+        if(((ItemModel)getItem(i)).getStatus().equalsIgnoreCase(context.getString(R.string.closed))){
+            holder.mainLayout.setBackgroundColor(context.getResources().getColor(R.color.red_transperant));
+        }else{
+            holder.mainLayout.setBackgroundColor(context.getResources().getColor(R.color.white));
         }
         holder.itemName.setText(((ItemModel)getItem(i)).getItemName());
         holder.despQty.setText(((ItemModel)getItem(i)).getDespQty()+"/"+((ItemModel)getItem(i)).getTotalQty());
@@ -61,6 +68,7 @@ public class ListOrderInformation extends BaseAdapter {
     }
 
    private class ListHolder{
+       LinearLayout mainLayout;
        TextView itemName;
        TextView despQty;
     }
