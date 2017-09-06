@@ -199,7 +199,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         if(!dataSnapshot.exists()) {
                             passUser();
                         }else{
-                            bottomSheetBehavior = null;
+                            bottomSheetBehavior.setHideable(true);
+                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                             frameLayout.removeAllViews();
                             login_btns.setVisibility(View.VISIBLE);
                             btnSignIn.setVisibility(View.VISIBLE);
@@ -859,6 +860,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 frameLayout.post(new Runnable() {
                     @Override
                     public void run() {
+                        //Todo: Crashing here
+                        bottomSheetBehavior.setSkipCollapsed(true);
                         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                     }
                 });
