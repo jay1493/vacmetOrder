@@ -25,7 +25,7 @@
     <string name="PASS_SECURE">anujuit1268</string>
     <string name="password_not_match">Passwords do not match. Please Try Again..!</string>
     <string name="Search_order">Search</string>
-    <string name="search_hint">Search via Party Name.</string>
+    <string name="search_hint">Search via Party Name/Order No.</string>
     <string name="Order_No">"Order No: "</string>
     <string name="Order_Date">"Order Date: "</string>
     <string name="Order_Qty">Order Qty:</string>

@@ -314,7 +314,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(!query.equalsIgnoreCase("")){
                 orderModelList.clear();
                 for(int i=0;i<searchList.size();i++){
-                    if(searchList.get(i).getPartyName().equalsIgnoreCase(query)){
+                    if(searchList.get(i).getPartyName().equalsIgnoreCase(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)){
                         orderModelList.add(searchList.get(i));
                         foundResult = true;
                     }
