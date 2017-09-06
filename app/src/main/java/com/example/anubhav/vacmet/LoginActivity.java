@@ -200,6 +200,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             passUser();
                         }else{
                             bottomSheetBehavior.setHideable(true);
+                            //Setting state to hideable without setting the above property could result in crash
                             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                             frameLayout.removeAllViews();
                             login_btns.setVisibility(View.VISIBLE);
