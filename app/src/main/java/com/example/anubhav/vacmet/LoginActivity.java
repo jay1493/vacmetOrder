@@ -173,15 +173,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             //Anonymous User SignedIn to Firebase., Now access Database...
             mDatabase = FirebaseDatabase.getInstance().getReference("users");
             if(behaviour.equalsIgnoreCase("SignUp")) {
+
 //                String primaryKey = mDatabase.push().getKey();
                 final UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact,false,new ArrayList<String>());
-                mDatabase.child(userEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+
+                mDatabase.child(userEmail.replace(".",getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if(dataSnapshot.exists()){
                             Toast.makeText(activity, "User already exists! Please try a different user or SignIn", Toast.LENGTH_SHORT).show();
                         }else{
-                            mDatabase.child(userEmail).setValue(userModel);
+                            mDatabase.child(userEmail.replace(".",getString(R.string.replacing_dot_in_firebase_db))).setValue(userModel);
                         }
                     }
 
@@ -194,11 +196,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 mDatabase.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        passUser();
+                        if(!dataSnapshot.exists()) {
+                            passUser();
+                        }else{
+                            bottomSheetBehavior = null;
+                            frameLayout.removeAllViews();
+                            login_btns.setVisibility(View.VISIBLE);
+                            btnSignIn.setVisibility(View.VISIBLE);
+                            btnSignUp.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(activity, "There seems a problem in connecting...Try again!!", Toast.LENGTH_SHORT).show();
 
                     }
                 });
@@ -845,7 +856,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
         else if(bottomSheetBehavior!=null &&(bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED)){
             if(frameLayout!=null && frameLayout.findViewById(R.id.ll_root_otp_layout) == null) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                frameLayout.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    }
+                });
             }
         }
     }

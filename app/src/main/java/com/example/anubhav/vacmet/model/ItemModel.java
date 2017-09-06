@@ -1,6 +1,8 @@
 package com.example.anubhav.vacmet.model;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  * Created by anubhav on 27/1/17.
@@ -35,15 +37,20 @@ public class ItemModel implements Serializable {
     }
 
     public void setDespQty(String despQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        despQty = decimalFormat.format(Double.parseDouble(despQty));
         this.despQty = despQty;
     }
 
     public String getTotalQty() {
-        totalQty = String.valueOf(Double.parseDouble(getDespQty())+Double.parseDouble(getInProdQty()));
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        totalQty = String.valueOf(decimalFormat.format(Double.parseDouble(getDespQty())+Double.parseDouble(getInProdQty())));
         return totalQty;
     }
 
     public void setTotalQty(String totalQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        totalQty = decimalFormat.format(Double.parseDouble(totalQty));
         this.totalQty = totalQty;
     }
 
@@ -70,6 +77,8 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setInProdQty(String inProdQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
         this.inProdQty = inProdQty;
         return this;
     }

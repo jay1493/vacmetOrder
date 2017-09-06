@@ -11,6 +11,7 @@ import com.example.anubhav.vacmet.R;
 import com.example.anubhav.vacmet.interfaces.ItemClickListener;
 import com.example.anubhav.vacmet.model.OrderModel;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -22,11 +23,13 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     Context context;
     List<OrderModel> list;
     private ItemClickListener itemClickListener;
+    private DecimalFormat decimalFormat;
     public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
         this.itemClickListener = itemClickListener;
+        decimalFormat = new DecimalFormat("#.##");
     }
 
     @Override
@@ -42,7 +45,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         holder.partyName.setText(list.get(position).getPartyName());
         holder.orderNo.setText(list.get(position).getOrderNo());
         holder.orderDate.setText(list.get(position).getOrderDate());
-        holder.orderQty.setText(String.valueOf(Double.parseDouble(list.get(position).getDespQty())+Double.parseDouble(list.get(position).getInProdQty())));
+        holder.orderQty.setText(String.valueOf(decimalFormat.format(Double.parseDouble(list.get(position).getDespQty())+Double.parseDouble(list.get(position).getInProdQty()))));
         holder.despQty.setText(list.get(position).getDespQty());
         holder.deliveryDate.setText(list.get(position).getDeliveryDate());
     }

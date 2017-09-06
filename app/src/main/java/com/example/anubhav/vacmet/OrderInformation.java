@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Xml;
 import android.view.MenuItem;
@@ -173,7 +174,9 @@ public class OrderInformation extends AppCompatActivity {
                     XmlPullParser xmlPullParser = Xml.newPullParser();
                     xmlPullParser.setInput(inputStream,null);
                     int eventType = xmlPullParser.getEventType();
+                    boolean isItemHasName = false;
                     while(eventType != XmlPullParser.END_DOCUMENT){
+
                         switch (eventType){
                             case XmlPullParser.START_DOCUMENT:
                                 break;
@@ -207,7 +210,11 @@ public class OrderInformation extends AppCompatActivity {
                                         break;
                                     case MATERIAL_NM:
                                         if(itemModel!=null){
-                                            itemModel.setItemName(xmlPullParser.nextText());
+                                            String nextItem = xmlPullParser.nextText();
+                                            if(!TextUtils.isEmpty(nextItem)) {
+                                                itemModel.setItemName(nextItem);
+                                                isItemHasName = true;
+                                            }
                                         }
                                         break;
 
@@ -216,8 +223,9 @@ public class OrderInformation extends AppCompatActivity {
                             case XmlPullParser.END_TAG:
                                 switch (xmlPullParser.getName()){
                                     case ITEM:
-                                        if(itemModel!=null){
+                                        if(itemModel!=null && isItemHasName){
                                             itemList.add(itemModel);
+                                            isItemHasName = false;
                                         }
                                         break;
                                 }

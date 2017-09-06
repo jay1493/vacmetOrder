@@ -3,6 +3,7 @@ package com.example.anubhav.vacmet.model;
 import android.os.Build;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -58,6 +59,8 @@ public class OrderModel implements Serializable {
     }
 
     public void setOrderQty(String orderQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        orderQty = decimalFormat.format(Double.parseDouble(orderQty));
         this.orderQty = orderQty;
     }
 
@@ -74,6 +77,8 @@ public class OrderModel implements Serializable {
     }
 
     public void setDespQty(String despQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        despQty = decimalFormat.format(Double.parseDouble(despQty));
         this.despQty = despQty;
     }
 
@@ -90,6 +95,8 @@ public class OrderModel implements Serializable {
     }
 
     public void setInProdQty(String inProdQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
         this.inProdQty = inProdQty;
     }
 
