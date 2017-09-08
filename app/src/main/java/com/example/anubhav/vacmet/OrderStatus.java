@@ -39,6 +39,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -107,6 +109,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String LoginPrefs = "LoginPrefs";
     private final String SapId = "SapId";
     private final String OrderIdPrefs = "OrderIdPrefs";
+    private final String ClientorServer = "ClientorServer";
     private final String LoggedInUser = "LoggedInUser";
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
@@ -123,6 +126,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private SharedPreferences orderIdPrefs;
     private final String DefaultSapId = "1400056";
     private Button btnUpdateService;
+    private RadioGroup radioGroup;
+    private RadioButton radioClient,radioServer;
 
     @Override
     protected void onStart() {
@@ -156,7 +161,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             employeeName.setText(logingSharePrefs.getString(LoggedInUserName,null));
         }
 //        feedDummyData();
-        hitOrdersService("c",DefaultSapId);
+        if(orderIdPrefs.getString(ClientorServer,null)==null){
+            SharedPreferences.Editor editor = orderIdPrefs.edit();
+            editor.putString(SapId,"c");
+            editor.apply();
+        }
+        hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId);
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
         //Todo: Back functionality only via hardware button
@@ -231,6 +241,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private void init() {
         progressDialog = new ProgressDialog(this);
+        radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
+        radioClient = (RadioButton) findViewById(R.id.radioYes);
+        radioServer = (RadioButton) findViewById(R.id.radioNo);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_order_status);
         mainDrawerView = (LinearLayout) findViewById(R.id.mainDrawerView);
         etSapId = (EditText) findViewById(R.id.et_sap_id);
@@ -239,6 +252,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             @Override
             public void onClick(View v) {
                 etSapId.setEnabled(true);
+                radioGroup.setClickable(true);
             }
         });
         btnUpdateService = (Button) findViewById(R.id.btn_hitService);
@@ -246,10 +260,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             @Override
             public void onClick(View v) {
                 etSapId.setEnabled(false);
+                String isClientorServer = null;
+                if(radioClient.isChecked()){
+                    isClientorServer = "c";
+                }else if(radioServer.isChecked()){
+                    isClientorServer = "s";
+                }
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
                 editor.putString(SapId,etSapId.getText().toString().trim());
+                editor.putString(ClientorServer,isClientorServer);
                 editor.apply();
-                hitOrdersService("c",etSapId.getText().toString().trim());
+                hitOrdersService(orderIdPrefs.getString(ClientorServer,null),etSapId.getText().toString().trim());
             }
         });
         employeeName = (TextView) findViewById(R.id.name);

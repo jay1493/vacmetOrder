@@ -47,9 +47,23 @@
                 android:src="@drawable/ic_edit_black_24dp"/>
         </LinearLayout>
         <RadioGroup
+            android:id="@+id/radioGroup"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
+            android:layout_height="wrap_content"
+            android:padding="@dimen/d10"
+            android:orientation="vertical"
+            android:clickable="false"
+            android:checkedButton="@+id/radioYes">
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/radioYes"
+                android:text="@string/client"/>
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/radioNo"
+                android:text="@string/Server"/>
         </RadioGroup>
         <View
             android:layout_width="match_parent"

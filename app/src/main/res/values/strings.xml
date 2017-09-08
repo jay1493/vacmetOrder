@@ -48,4 +48,6 @@
     <string name="closed">closed</string>
     <string name="open_drawer">Open Menu</string>
     <string name="close_drawer">Menu Closed</string>
+    <string name="client">Client</string>
+    <string name="Server">Server</string>
 </resources>
