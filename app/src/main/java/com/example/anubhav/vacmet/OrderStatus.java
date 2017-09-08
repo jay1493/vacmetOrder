@@ -259,6 +259,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             public void onClick(View v) {
                 etSapId.setEnabled(true);
                 radioGroup.setClickable(true);
+                radioClient.setEnabled(true);
+                radioServer.setEnabled(true);
             }
         });
         btnUpdateService = (Button) findViewById(R.id.btn_hitService);
@@ -266,6 +268,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             @Override
             public void onClick(View v) {
                 etSapId.setEnabled(false);
+                radioServer.setEnabled(false);
+                radioClient.setEnabled(false);
                 String isClientorServer = null;
                 if(radioClient.isChecked()){
                     isClientorServer = "c";

@@ -58,11 +58,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/radioYes"
+                android:enabled="false"
                 android:text="@string/client"/>
             <RadioButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/radioNo"
+                android:enabled="false"
                 android:text="@string/Server"/>
         </RadioGroup>
         <View
