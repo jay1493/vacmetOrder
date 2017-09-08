@@ -166,6 +166,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             editor.putString(SapId,"c");
             editor.apply();
         }
+        switch (orderIdPrefs.getString(ClientorServer,null)){
+            case "c":
+                employeeDesig.setText(getResources().getString(R.string.client));
+                break;
+            case "s":
+                employeeDesig.setText(getResources().getString(R.string.party));
+                break;
+        }
         hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId);
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
@@ -263,8 +271,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 String isClientorServer = null;
                 if(radioClient.isChecked()){
                     isClientorServer = "c";
+                    employeeDesig.setText(getResources().getString(R.string.client));
                 }else if(radioServer.isChecked()){
                     isClientorServer = "s";
+                    employeeDesig.setText(getResources().getString(R.string.party));
                 }
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
                 editor.putString(SapId,etSapId.getText().toString().trim());
@@ -276,7 +286,6 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         employeeName = (TextView) findViewById(R.id.name);
         employeePic = (ImageView) findViewById(R.id.img_profile);
         employeeDesig = (TextView) findViewById(R.id.designation);
-        //Todo: employee designation to arrive from login screen
 
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);

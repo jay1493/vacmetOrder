@@ -50,4 +50,5 @@
     <string name="close_drawer">Menu Closed</string>
     <string name="client">Client</string>
     <string name="Server">Server</string>
+    <string name="party">Party</string>
 </resources>
