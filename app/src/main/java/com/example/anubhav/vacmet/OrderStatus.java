@@ -163,17 +163,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 //        feedDummyData();
         if(orderIdPrefs.getString(ClientorServer,null)==null){
             SharedPreferences.Editor editor = orderIdPrefs.edit();
-            editor.putString(SapId,"c");
+            editor.putString(ClientorServer,"c");
             editor.apply();
         }
-        switch (orderIdPrefs.getString(ClientorServer,null)){
-            case "c":
-                employeeDesig.setText(getResources().getString(R.string.client));
-                break;
-            case "s":
-                employeeDesig.setText(getResources().getString(R.string.party));
-                break;
-        }
+
         hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId);
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
@@ -234,6 +227,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
+        if(orderIdPrefs.getString(ClientorServer,null).equalsIgnoreCase("c")){
+            employeeDesig.setText(getResources().getString(R.string.client));
+        }else if(orderIdPrefs.getString(ClientorServer,null).equalsIgnoreCase("s")){
+            employeeDesig.setText(getResources().getString(R.string.party));
+        }
     }
 
     @Override
