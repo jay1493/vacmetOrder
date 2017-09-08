@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:id="@+id/drawer_order_status"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
+    <include layout="@layout/activity_order_status"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"/>
+    <!-- Content for navigation goes here, It could be a simple
+        list/layout
+         A fragment,or a NavigationView-->
+    <LinearLayout
+        android:id="@+id/mainDrawerView"
+        android:layout_width="@dimen/d250"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:layout_gravity="start"
+        android:background="@color/white_alpha"
+        android:orientation="vertical">
+        <include layout="@layout/drawer_header_layout"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="start"
+            android:weightSum="10"
+            android:layout_marginTop="@dimen/d10">
+            <EditText
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="9"
+                android:background="@drawable/et_sign_in"
+                android:id="@+id/et_sap_id"
+                android:enabled="false"
+                android:inputType="number"
+                android:focusable="false"/>
+            <ImageView
+                android:id="@+id/edit_sap_id"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:layout_weight="1"
+                android:src="@drawable/ic_edit_black_24dp"/>
+        </LinearLayout>
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        </RadioGroup>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/d10"
+            android:background="@color/black"/>
+        <Button
+            android:id="@+id/btn_hitService"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:padding="@dimen/d10"
+            android:textColor="@color/black"
+            android:text="Update Records"/>
+    </LinearLayout>
+
+
+</android.support.v4.widget.DrawerLayout>

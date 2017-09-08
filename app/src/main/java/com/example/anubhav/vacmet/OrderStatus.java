@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,8 +20,10 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,15 +35,21 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
 import com.example.anubhav.vacmet.interfaces.ItemClickListener;
 import com.example.anubhav.vacmet.model.ItemModel;
 import com.example.anubhav.vacmet.model.OrderModel;
 import com.example.anubhav.vacmet.services.VacmetOverlayService;
+import com.example.anubhav.vacmet.utils.CircleTransform;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -96,12 +105,24 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ItemTouchHelper itemTouchHelper;
     private SharedPreferences sharedPreferences,logingSharePrefs;
     private final String LoginPrefs = "LoginPrefs";
+    private final String SapId = "SapId";
+    private final String OrderIdPrefs = "OrderIdPrefs";
     private final String LoggedInUser = "LoggedInUser";
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
     private String urlForOrders = "http://122.160.221.107:8020/sap/bc/get_pending?sap-client=500&";
     private ProgressDialog progressDialog;
     private final String Main_Xml_Tag = "ZBAPI_SOSTATUS";
+    private DrawerLayout drawerLayout;
+    private LinearLayout mainDrawerView;
+    private EditText etSapId;
+    private ImageView imgEditSapId;
+    private TextView employeeName,employeeDesig;
+    private ImageView employeePic;
+    private ActionBarDrawerToggle drawerToggle;
+    private SharedPreferences orderIdPrefs;
+    private final String DefaultSapId = "1400056";
+    private Button btnUpdateService;
 
     @Override
     protected void onStart() {
@@ -121,17 +142,41 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_order_status);
+        setContentView(R.layout.activity_order_status_nav_drawer);
         init();
         logingSharePrefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
+        orderIdPrefs = getSharedPreferences(OrderIdPrefs,MODE_PRIVATE);
+        if(orderIdPrefs.getString(SapId,null)==null){
+            SharedPreferences.Editor editor = orderIdPrefs.edit();
+            editor.putString(SapId,DefaultSapId);
+            editor.apply();
+        }
+        etSapId.setText(orderIdPrefs.getString(SapId,null));
+        if(logingSharePrefs.getString(LoggedInUserName,null)!=null){
+            employeeName.setText(logingSharePrefs.getString(LoggedInUserName,null));
+        }
 //        feedDummyData();
-        hitOrdersService();
+        hitOrdersService("c",DefaultSapId);
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.back_24dp);
+        //Todo: Back functionality only via hardware button
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
         if(getSupportActionBar()!=null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        drawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.open_drawer,R.string.close_drawer){
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+        };
+        drawerLayout.setDrawerListener(drawerToggle);
    /*     toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,6 +190,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingActionButton.setBackgroundColor(getResources().getColor(R.color.white));
         floatingLogOut.setBackgroundColor(getResources().getColor(R.color.white));
         floatingLogOut.setOnClickListener(this);
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerLayout.closeDrawers();
          itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP|ItemTouchHelper.DOWN
                 ,ItemTouchHelper.START | ItemTouchHelper.END) {
             @Override
@@ -165,18 +212,71 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     }
 
-    private void hitOrdersService() {
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    private void hitOrdersService(String client , String id) {
         //Todo: Pass SAP No., here to fetch total orders for corresponding SAP id.
-        new CustomAsyncTaskForRestOrderService().execute("c","1400056");
+        new CustomAsyncTaskForRestOrderService().execute(client,id);
     }
 
     private void init() {
         progressDialog = new ProgressDialog(this);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_order_status);
+        mainDrawerView = (LinearLayout) findViewById(R.id.mainDrawerView);
+        etSapId = (EditText) findViewById(R.id.et_sap_id);
+        imgEditSapId = (ImageView) findViewById(R.id.edit_sap_id);
+        imgEditSapId.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etSapId.setEnabled(true);
+            }
+        });
+        btnUpdateService = (Button) findViewById(R.id.btn_hitService);
+        btnUpdateService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etSapId.setEnabled(false);
+                SharedPreferences.Editor editor = orderIdPrefs.edit();
+                editor.putString(SapId,etSapId.getText().toString().trim());
+                editor.apply();
+                hitOrdersService("c",etSapId.getText().toString().trim());
+            }
+        });
+        employeeName = (TextView) findViewById(R.id.name);
+        employeePic = (ImageView) findViewById(R.id.img_profile);
+        employeeDesig = (TextView) findViewById(R.id.designation);
+        //Todo: employee designation to arrive from login screen
+
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
         /**Todo : Problem for MODE_WORLD_READABLE LOOK==============================================**/
         sharedPreferences = getSharedPreferences("GooglePic",MODE_APPEND);
+        if(sharedPreferences.getString("PhotoUrl",null)!=null) {
+            Glide.with(this).load(sharedPreferences.getString("PhotoUrl",null))
+                    .crossFade()
+                    .thumbnail(0.5f)
+                    .bitmapTransform(new CircleTransform(this))
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(employeePic);
+        }else{
+            Glide.with(this).load(LoginActivity.url)
+                    .crossFade()
+                    .thumbnail(0.5f)
+                    .bitmapTransform(new CircleTransform(this))
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(employeePic);
+        }
         collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         deletedOrders = new HashMap<>();
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
@@ -428,10 +528,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        /*if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }*/
+
         if(item.getItemId() == android.R.id.home){
-            /**
+
+
+
+
+           /* *//**
              * Call on back click,start service here.
-             */
+             *//*
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)){
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
@@ -454,7 +562,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 (OrderStatus.this).finish();
                 startService(intent);
             }
-            return true;
+            return true;*/
         }
         return super.onOptionsItemSelected(item);
     }

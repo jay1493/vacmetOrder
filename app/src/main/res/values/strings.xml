@@ -46,4 +46,6 @@
     <string name="fetching_items_in_order">Fetching Items in Order...Please Wait!!!</string>
     <string name="replacing_dot_in_firebase_db">(dot)</string>
     <string name="closed">closed</string>
+    <string name="open_drawer">Open Menu</string>
+    <string name="close_drawer">Menu Closed</string>
 </resources>
