@@ -31,6 +31,7 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Xml;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -253,14 +254,27 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_order_status);
         mainDrawerView = (LinearLayout) findViewById(R.id.mainDrawerView);
         etSapId = (EditText) findViewById(R.id.et_sap_id);
+        etSapId.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(etSapId.isEnabled()){
+                    etSapId.requestFocus();
+
+                }
+            }
+        });
         imgEditSapId = (ImageView) findViewById(R.id.edit_sap_id);
         imgEditSapId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 etSapId.setEnabled(true);
+                etSapId.setFocusable(true);
+                etSapId.setFocusableInTouchMode(true);
                 radioGroup.setClickable(true);
                 radioClient.setEnabled(true);
+                radioClient.setClickable(true);
                 radioServer.setEnabled(true);
+                radioServer.setClickable(true);
             }
         });
         btnUpdateService = (Button) findViewById(R.id.btn_hitService);
@@ -268,8 +282,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             @Override
             public void onClick(View v) {
                 etSapId.setEnabled(false);
+                etSapId.setFocusable(false);
+                etSapId.setFocusableInTouchMode(true);
+                radioGroup.setClickable(false);
                 radioServer.setEnabled(false);
+                radioServer.setClickable(false);
                 radioClient.setEnabled(false);
+                radioClient.setClickable(false);
                 String isClientorServer = null;
                 if(radioClient.isChecked()){
                     isClientorServer = "c";
@@ -878,6 +897,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 searchList.add(o);
             }
             progressDialog.dismiss();
+            if(drawerLayout.isDrawerOpen(Gravity.START)){
+                drawerLayout.closeDrawers();
+            }
             recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
                 @Override
                 public void onClick(View view, int position) {
