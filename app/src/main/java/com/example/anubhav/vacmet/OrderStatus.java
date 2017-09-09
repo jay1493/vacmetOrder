@@ -582,7 +582,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         /*if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }*/
-
+        if(drawerToggle.onOptionsItemSelected(item)){
+            return true;
+        }
         if(item.getItemId() == android.R.id.home){
 
 
