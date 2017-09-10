@@ -82,8 +82,11 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_gravity="center_horizontal"
+            android:textColor="@color/dark_grey"
+            android:textSize="@dimen/d20"
+            android:textStyle="bold"
+            android:layout_gravity="center|center_vertical|center_horizontal"
+            android:gravity="center|center_vertical|center_horizontal"
             android:text="@string/No_result_found"/>
 
     </android.support.v4.widget.NestedScrollView>

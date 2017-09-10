@@ -37,6 +37,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -126,7 +127,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ImageView employeePic;
     private ActionBarDrawerToggle drawerToggle;
     private SharedPreferences orderIdPrefs;
-    private final String DefaultSapId = "1400056";
+    private String DefaultSapId = "1400056";
     private Button btnUpdateService;
     private RadioGroup radioGroup;
     private RadioButton radioClient,radioServer;
@@ -160,6 +161,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             SharedPreferences.Editor editor = orderIdPrefs.edit();
             editor.putString(SapId,DefaultSapId);
             editor.apply();
+        }else{
+            DefaultSapId = orderIdPrefs.getString(SapId,null);
         }
         etSapId.setText(orderIdPrefs.getString(SapId,null));
         if(logingSharePrefs.getString(LoggedInUserName,null)!=null){
@@ -234,8 +237,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         drawerToggle.syncState();
         if(orderIdPrefs.getString(ClientorServer,null).equalsIgnoreCase("c")){
             employeeDesig.setText(getResources().getString(R.string.client));
+            radioClient.setChecked(true);
         }else if(orderIdPrefs.getString(ClientorServer,null).equalsIgnoreCase("s")){
-            employeeDesig.setText(getResources().getString(R.string.party));
+            employeeDesig.setText(getResources().getString(R.string.Sales_executive));
+            radioServer.setChecked(true);
         }
     }
 
@@ -260,27 +265,32 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if(!BuildConfig.DEBUG){
             adminConsole.setVisibility(View.GONE);
         }
-        allOrdersRadio.setOnClickListener(new View.OnClickListener() {
+        allOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(progressDialog.isShowing()){
                     progressDialog.dismiss();
                 }
-                if(!allOrdersRadio.isChecked()){
+                if(isChecked){
                     progressDialog.setMessage("Fetching all orders...");
+                    progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
-                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
-                        @Override
-                        public void onClick(View view, int position) {
-                            Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
-                            intent.putExtra("OrderInfo",orderModelList.get(position));
-                            startActivity(intent);
-                        }
-                    });
-                    recyclerView.setAdapter(recyclerViewAdapter);
-                }else{
+                    if(orderModelList.size()>0){
+                        recyclerView.setVisibility(View.VISIBLE);
+                        recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
+                            @Override
+                            public void onClick(View view, int position) {
+                                Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                                intent.putExtra("OrderInfo",orderModelList.get(position));
+                                startActivity(intent);
+                            }
+                        });
+                        recyclerView.setAdapter(recyclerViewAdapter);
+                    }else{
+                        noSearchResultFound.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.GONE);
+                    }
 
-                    Toast.makeText(OrderStatus.this, "All orders are visible", Toast.LENGTH_SHORT).show();
                 }
                 if(drawerLayout.isDrawerOpen(Gravity.START)){
                     drawerLayout.closeDrawers();
@@ -288,14 +298,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 progressDialog.dismiss();
             }
         });
-        openOrdersRadio.setOnClickListener(new View.OnClickListener() {
+        openOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(progressDialog.isShowing()){
                     progressDialog.dismiss();
                 }
-                if(!openOrdersRadio.isChecked()){
+                if(isChecked){
                     progressDialog.setMessage("Fetching open orders...");
+                    progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
                     final ArrayList<OrderModel> openOrders = new ArrayList<OrderModel>();
                     for(OrderModel o: orderModelList){
@@ -303,18 +314,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             openOrders.add(o);
                         }
                     }
-                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,openOrders,new ItemClickListener(){
-                        @Override
-                        public void onClick(View view, int position) {
-                            Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
-                            intent.putExtra("OrderInfo",openOrders.get(position));
-                            startActivity(intent);
-                        }
-                    });
-                    recyclerView.setAdapter(recyclerViewAdapter);
-                }else{
 
-                    Toast.makeText(OrderStatus.this, "All open orders are visible", Toast.LENGTH_SHORT).show();
+                    if(openOrders.size()>0){
+                        recyclerView.setVisibility(View.VISIBLE);
+                        recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,openOrders,new ItemClickListener(){
+                            @Override
+                            public void onClick(View view, int position) {
+                                Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                                intent.putExtra("OrderInfo",openOrders.get(position));
+                                startActivity(intent);
+                            }
+                        });
+                        recyclerView.setAdapter(recyclerViewAdapter);
+                    }else{
+                        noSearchResultFound.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.GONE);
+                    }
                 }
                 if(drawerLayout.isDrawerOpen(Gravity.START)){
                     drawerLayout.closeDrawers();
@@ -322,14 +337,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 progressDialog.dismiss();
             }
         });
-        closedOrdersRadio.setOnClickListener(new View.OnClickListener() {
+        closedOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(progressDialog.isShowing()){
                     progressDialog.dismiss();
                 }
-                if(!closedOrdersRadio.isChecked()){
+                if(isChecked){
                     progressDialog.setMessage("Fetching closed orders...");
+                    progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
                     final ArrayList<OrderModel> closedOrders = new ArrayList<OrderModel>();
                     for(OrderModel o: orderModelList){
@@ -337,18 +353,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             closedOrders.add(o);
                         }
                     }
-                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,closedOrders,new ItemClickListener(){
-                        @Override
-                        public void onClick(View view, int position) {
-                            Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
-                            intent.putExtra("OrderInfo",closedOrders.get(position));
-                            startActivity(intent);
-                        }
-                    });
-                    recyclerView.setAdapter(recyclerViewAdapter);
-                }else{
 
-                    Toast.makeText(OrderStatus.this, "All closed orders are visible", Toast.LENGTH_SHORT).show();
+                    if(closedOrders.size()>0){
+                        recyclerView.setVisibility(View.VISIBLE);
+                        recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,closedOrders,new ItemClickListener(){
+                            @Override
+                            public void onClick(View view, int position) {
+                                Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                                intent.putExtra("OrderInfo",closedOrders.get(position));
+                                startActivity(intent);
+                            }
+                        });
+                        recyclerView.setAdapter(recyclerViewAdapter);
+                    }else{
+                        noSearchResultFound.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.GONE);
+                    }
                 }
                 if(drawerLayout.isDrawerOpen(Gravity.START)){
                     drawerLayout.closeDrawers();
@@ -356,6 +376,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 progressDialog.dismiss();
             }
         });
+
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioClient = (RadioButton) findViewById(R.id.radioYes);
         radioServer = (RadioButton) findViewById(R.id.radioNo);
@@ -403,7 +424,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     employeeDesig.setText(getResources().getString(R.string.client));
                 }else if(radioServer.isChecked()){
                     isClientorServer = "s";
-                    employeeDesig.setText(getResources().getString(R.string.party));
+                    employeeDesig.setText(getResources().getString(R.string.Sales_executive));
                 }
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
                 editor.putString(SapId,etSapId.getText().toString().trim());
@@ -573,7 +594,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(!query.equalsIgnoreCase("")){
                 orderModelList.clear();
                 for(int i=0;i<searchList.size();i++){
-                    if(searchList.get(i).getPartyName().equalsIgnoreCase(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)){
+                    if(searchList.get(i).getPartyName().contains(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)){
                         orderModelList.add(searchList.get(i));
                         foundResult = true;
                     }
@@ -856,6 +877,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
               progressDialog.dismiss();
             }
             progressDialog.setMessage(getResources().getString(R.string.fetching_orders));
+            progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
         }
 

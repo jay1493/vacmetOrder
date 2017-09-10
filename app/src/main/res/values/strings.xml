@@ -60,4 +60,5 @@
     <string name="update_records">Update Records</string>
     <string name="open">open</string>
     <string name="enter_sap_id">Enter SAP ID</string>
+    <string name="No_records_found_for_this_query">No records found for this query.</string>
 </resources>

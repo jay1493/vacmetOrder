@@ -147,6 +147,7 @@ public class OrderInformation extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog.setMessage(getResources().getString(R.string.fetching_items_in_order));
+            progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
         }
 
