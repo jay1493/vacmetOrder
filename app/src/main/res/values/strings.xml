@@ -52,4 +52,12 @@
     <string name="Server">Server</string>
     <string name="party">Party</string>
     <string name="Sales_executive">Sales Executive</string>
+    <string name="sort_orders_by">Sort orders by:</string>
+    <string name="open_orders">Open Orders</string>
+    <string name="closed_orders">Closed Orders</string>
+    <string name="orders">Orders</string>
+    <string name="admin_console">Admin Console</string>
+    <string name="update_records">Update Records</string>
+    <string name="open">open</string>
+    <string name="enter_sap_id">Enter SAP ID</string>
 </resources>

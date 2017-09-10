@@ -102,6 +102,41 @@
             android:background="@drawable/et_sign_in"
             android:hint="@string/Contact_Number"
             android:gravity="center"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/et_SapID"
+            android:layout_marginTop="5dp"
+            android:inputType="number"
+            android:imeOptions="actionNext"
+            android:textColor="@color/black"
+            android:singleLine="true"
+            android:background="@drawable/et_sign_in"
+            android:hint="@string/enter_sap_id"
+            android:gravity="center"/>
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/et_sign_in"
+            android:layout_marginTop="5dp"
+            android:checkedButton="@+id/radio_signup_client">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_signup_client"
+                android:textColor="@color/black"
+                android:layout_gravity="left"
+                android:text="@string/client" />
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/radio_signup_sales_executive"
+                android:layout_marginLeft="@dimen/d20"
+                android:textColor="@color/black"
+                android:layout_gravity="end"
+                android:text="@string/Sales_executive"/>
+        </RadioGroup>
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

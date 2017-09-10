@@ -73,6 +73,7 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -129,6 +130,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private Button btnUpdateService;
     private RadioGroup radioGroup;
     private RadioButton radioClient,radioServer;
+    private LinearLayout adminConsole;
+    private RadioGroup sortOrdersGroup;
+    private RadioButton allOrdersRadio,openOrdersRadio,closedOrdersRadio;
 
     @Override
     protected void onStart() {
@@ -248,6 +252,110 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private void init() {
         progressDialog = new ProgressDialog(this);
+        adminConsole = (LinearLayout) findViewById(R.id.admin_drawer);
+        sortOrdersGroup = (RadioGroup) findViewById(R.id.sort_orders_by_group);
+        allOrdersRadio = (RadioButton) findViewById(R.id.radioAllOrders);
+        openOrdersRadio = (RadioButton) findViewById(R.id.radioOpenOrders);
+        closedOrdersRadio = (RadioButton) findViewById(R.id.radioClosedOrders);
+        if(!BuildConfig.DEBUG){
+            adminConsole.setVisibility(View.GONE);
+        }
+        allOrdersRadio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
+                if(!allOrdersRadio.isChecked()){
+                    progressDialog.setMessage("Fetching all orders...");
+                    progressDialog.show();
+                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
+                        @Override
+                        public void onClick(View view, int position) {
+                            Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                            intent.putExtra("OrderInfo",orderModelList.get(position));
+                            startActivity(intent);
+                        }
+                    });
+                    recyclerView.setAdapter(recyclerViewAdapter);
+                }else{
+
+                    Toast.makeText(OrderStatus.this, "All orders are visible", Toast.LENGTH_SHORT).show();
+                }
+                if(drawerLayout.isDrawerOpen(Gravity.START)){
+                    drawerLayout.closeDrawers();
+                }
+                progressDialog.dismiss();
+            }
+        });
+        openOrdersRadio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
+                if(!openOrdersRadio.isChecked()){
+                    progressDialog.setMessage("Fetching open orders...");
+                    progressDialog.show();
+                    final ArrayList<OrderModel> openOrders = new ArrayList<OrderModel>();
+                    for(OrderModel o: orderModelList){
+                        if(o.getStatus().equalsIgnoreCase(getString(R.string.open))){
+                            openOrders.add(o);
+                        }
+                    }
+                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,openOrders,new ItemClickListener(){
+                        @Override
+                        public void onClick(View view, int position) {
+                            Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                            intent.putExtra("OrderInfo",openOrders.get(position));
+                            startActivity(intent);
+                        }
+                    });
+                    recyclerView.setAdapter(recyclerViewAdapter);
+                }else{
+
+                    Toast.makeText(OrderStatus.this, "All open orders are visible", Toast.LENGTH_SHORT).show();
+                }
+                if(drawerLayout.isDrawerOpen(Gravity.START)){
+                    drawerLayout.closeDrawers();
+                }
+                progressDialog.dismiss();
+            }
+        });
+        closedOrdersRadio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
+                if(!closedOrdersRadio.isChecked()){
+                    progressDialog.setMessage("Fetching closed orders...");
+                    progressDialog.show();
+                    final ArrayList<OrderModel> closedOrders = new ArrayList<OrderModel>();
+                    for(OrderModel o: orderModelList){
+                        if(o.getStatus().equalsIgnoreCase(getString(R.string.closed))){
+                            closedOrders.add(o);
+                        }
+                    }
+                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,closedOrders,new ItemClickListener(){
+                        @Override
+                        public void onClick(View view, int position) {
+                            Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
+                            intent.putExtra("OrderInfo",closedOrders.get(position));
+                            startActivity(intent);
+                        }
+                    });
+                    recyclerView.setAdapter(recyclerViewAdapter);
+                }else{
+
+                    Toast.makeText(OrderStatus.this, "All closed orders are visible", Toast.LENGTH_SHORT).show();
+                }
+                if(drawerLayout.isDrawerOpen(Gravity.START)){
+                    drawerLayout.closeDrawers();
+                }
+                progressDialog.dismiss();
+            }
+        });
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioClient = (RadioButton) findViewById(R.id.radioYes);
         radioServer = (RadioButton) findViewById(R.id.radioNo);
@@ -895,6 +1003,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         @Override
         protected void onPostExecute(List<OrderModel> s) {
             super.onPostExecute(s);
+            sortList(orderModelList);
             for(OrderModel o: orderModelList){
                 searchList.add(o);
             }
@@ -912,5 +1021,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             });
             recyclerView.setAdapter(recyclerViewAdapter);
         }
+    }
+
+    private void sortList(ArrayList<OrderModel> orderModelList) {
+        Collections.sort(orderModelList, new Comparator<OrderModel>() {
+            @Override
+            public int compare(OrderModel o1, OrderModel o2) {
+                if(o1.getPartyName().compareTo(o2.getPartyName())==0){
+                 //Do Comparison on order no.
+                    Long order1 = Long.parseLong(o1.getOrderNo());
+                    Long order2 = Long.parseLong(o2.getOrderNo());
+                    return order2.compareTo(order1);
+                }else{
+                    //Do comparison on Party name
+                    return o1.getPartyName().compareTo(o2.getPartyName());
+                }
+            }
+        });
     }
 }

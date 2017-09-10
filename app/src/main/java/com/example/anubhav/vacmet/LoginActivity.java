@@ -36,6 +36,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,9 +114,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private TextView textSignIn;
     private SharedPreferences sharedprefs;
     private final String LoginPrefs = "LoginPrefs";
+    private final String SapId = "SapId";
+    private final String OrderIdPrefs = "OrderIdPrefs";
+    private final String ClientorServer = "ClientorServer";
     private final String LoggedInUser = "LoggedInUser";
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
+    private EditText etSapId;
+    private RadioButton radioClient,radioSales;
+    private SharedPreferences orderIdPrefs;
+    private String userSapId,userClientOrServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +143,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
         Glide.with(this).load(R.raw.vacmet1).into(imageViewTarget);
         sharedprefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
+        orderIdPrefs = getSharedPreferences(OrderIdPrefs,MODE_PRIVATE);
         intentFilter = new IntentFilter();
         intentFilter.addAction(RECEIVE_ACTION);
         smsDeliverBroadcast = new SmsBroadcast();
@@ -242,6 +251,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         edit.putString(LoggedInUserName,userName);
         edit.putString(LoggedInUserPassword,userPassword);
         edit.apply();
+        SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
+        orderIdPrefsEdit.putString(SapId,userSapId);
+        orderIdPrefsEdit.putString(ClientorServer,userClientOrServer);
+        orderIdPrefsEdit.apply();
         url = strUrl;
         frameLayout.removeAllViewsInLayout();
         View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
@@ -293,7 +306,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             edit.putString(LoggedInUserName,name);
             edit.putString(LoggedInUserPassword,etPassword_signIn.getText().toString().trim());
             edit.apply();
-            Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
             startActivity(intent);
             finish();
@@ -439,6 +452,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               etPassword_signUp.setOnClickListener(this);
               etReEnterPass_signUp = (EditText) findViewById(R.id.et_rePassword);
               etReEnterPass_signUp.setOnClickListener(this);
+              etSapId = (EditText) findViewById(R.id.et_SapID);
+              radioClient = (RadioButton) findViewById(R.id.radio_signup_client);
+              radioSales = (RadioButton) findViewById(R.id.radio_signup_sales_executive);
               etContact_signUp = (EditText) findViewById(R.id.et_Contact);
               etContact_signUp.setOnClickListener(this);
               bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
@@ -452,6 +468,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       !etPassword_signUp.getText().toString().trim().equalsIgnoreCase("")&&
                       !etReEnterPass_signUp.getText().toString().trim().equalsIgnoreCase("")&&
                       !etContact_signUp.getText().toString().trim().equalsIgnoreCase("")&&
+                      !etSapId.getText().toString().trim().equalsIgnoreCase("")&&
                       etPassword_signUp.getText().toString().trim().equals(etReEnterPass_signUp.getText().toString().trim())){
                   animation.cancel();
                   frameLayout.removeAllViewsInLayout();
@@ -459,6 +476,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                   userEmail = etEmail_signUp.getText().toString().trim();
                   userPassword = etPassword_signUp.getText().toString().trim();
                   userContact = etContact_signUp.getText().toString().trim();
+                  userSapId = etSapId.getText().toString().trim();
+                  if(radioClient.isChecked()){
+                      userClientOrServer = "c";
+                  }else if(radioSales.isChecked()){
+                      userClientOrServer = "s";
+                  }
                   View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
                   view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
                   frameLayout.addView(view_otp);
