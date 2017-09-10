@@ -11,16 +11,20 @@ public class UserModel {
     private String userEmail;
     private String userPass;
     private String userContact;
+    private String sapId;
+    private String clientOrServer;
     private boolean isApproved;
     private List<String> approvedPartyNames;
     public UserModel(String userName, String userEmail, String userPass, String userContact , boolean approved,
-                     List<String> partyNames) {
+                     List<String> partyNames, String id, String cOrS) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPass = userPass;
         this.userContact = userContact;
         this.isApproved = approved;
         this.approvedPartyNames = partyNames;
+        this.sapId = id;
+        this.clientOrServer = cOrS;
     }
 
     public String getUserName() {
@@ -70,6 +74,24 @@ public class UserModel {
 
     public UserModel setApprovedPartyNames(List<String> approvedPartyNames) {
         this.approvedPartyNames = approvedPartyNames;
+        return this;
+    }
+
+    public String getSapId() {
+        return sapId;
+    }
+
+    public UserModel setSapId(String sapId) {
+        this.sapId = sapId;
+        return this;
+    }
+
+    public String getClientOrServer() {
+        return clientOrServer;
+    }
+
+    public UserModel setClientOrServer(String clientOrServer) {
+        this.clientOrServer = clientOrServer;
         return this;
     }
 }

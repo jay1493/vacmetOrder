@@ -184,7 +184,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if(behaviour.equalsIgnoreCase("SignUp")) {
 
 //                String primaryKey = mDatabase.push().getKey();
-                final UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact,false,new ArrayList<String>());
+                final UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact,false,new ArrayList<String>(),userSapId,userClientOrServer);
 
                 mDatabase.child(userEmail.replace(".",getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
