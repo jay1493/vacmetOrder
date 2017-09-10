@@ -189,7 +189,8 @@ public class VacmetOverlayService extends Service {
 
     private void feedData() {
         user.setText("Welcome: "+userName);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        //Todo: Exception here java.lang.IllegalArgumentException
         Date d1 = new Date(simpleDateFormat.format(new Date()));
         HashMap<Long,Integer> deliveryDiff = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();

@@ -277,6 +277,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     progressDialog.show();
                     if(orderModelList.size()>0){
                         recyclerView.setVisibility(View.VISIBLE);
+                        noSearchResultFound.setVisibility(View.GONE);
                         recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
                             @Override
                             public void onClick(View view, int position) {
@@ -317,6 +318,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                     if(openOrders.size()>0){
                         recyclerView.setVisibility(View.VISIBLE);
+                        noSearchResultFound.setVisibility(View.GONE);
                         recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,openOrders,new ItemClickListener(){
                             @Override
                             public void onClick(View view, int position) {
@@ -356,6 +358,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                     if(closedOrders.size()>0){
                         recyclerView.setVisibility(View.VISIBLE);
+                        noSearchResultFound.setVisibility(View.GONE);
                         recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,closedOrders,new ItemClickListener(){
                             @Override
                             public void onClick(View view, int position) {
