@@ -26,6 +26,7 @@ import com.example.anubhav.vacmet.model.OrderModel;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -189,9 +190,16 @@ public class VacmetOverlayService extends Service {
 
     private void feedData() {
         user.setText("Welcome: "+userName);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE,1);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         //Todo: Exception here java.lang.IllegalArgumentException
-        Date d1 = new Date(simpleDateFormat.format(new Date()));
+        Date d1 = null;
+        try {
+            d1 = simpleDateFormat.parse(simpleDateFormat.format(cal.getTime()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         HashMap<Long,Integer> deliveryDiff = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();
         for(int i=0;i<orderModelList.size();i++){
