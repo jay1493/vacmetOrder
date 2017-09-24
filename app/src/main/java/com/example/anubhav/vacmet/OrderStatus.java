@@ -990,6 +990,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                     break;
                                 case MATNR:
                                     itemModel = new ItemModel();
+                                    itemModel.setMaterialNo(xmlPullParser.nextText());
                                     break;
                                 case VBELN:
                                     String orderNo = xmlPullParser.nextText();
