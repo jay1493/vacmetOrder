@@ -16,20 +16,33 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.transition.ChangeBounds;
+import android.transition.ChangeImageTransform;
+import android.transition.ChangeTransform;
+import android.transition.Explode;
+import android.transition.Fade;
+import android.transition.Transition;
+import android.transition.TransitionManager;
+import android.transition.TransitionSet;
 import android.util.Xml;
 import android.view.Gravity;
 import android.view.Menu;
@@ -57,20 +70,11 @@ import com.example.anubhav.vacmet.utils.CircleTransform;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,9 +97,29 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     public static final String OPEN_QTY = "OPEN_QTY";
     public static final String DESP_QTY = "DESP_QTY";
     public static final String STOCK_QTY = "STOCK_QTY";
+    public static final String ORDERED_QTY = "ORDERED_QTY";
     public static final String DOC_DATE = "DOC_DATE";
     public static final String DEL_DATE = "DEL_DATE";
     public static final String CUST_NM = "CUST_NM";
+    private static final String MATNR = "MATNR";
+    private static final String ITEM_STATUS_ = "STATUS";
+    private static final String ITEM_ORDERED_QTY_ = "ORDERED_QTY";
+    private static final String ITEM_OPEN_QTY_ = "OPEN_QTY";
+    private static final String ITEM_DESP_QTY_ = "DESP_QTY";
+    private static final String ITEM_STOCK_QTY_ = "STOCK_QTY";
+    private static final String ITEM_ORDER_DATE_ = "DOC_DATE";
+    private static final String ITEM_DEL_DATE_ = "DEL_DATE";
+    private static final String ITEM_MATERIAL_NM_ = "MATERIAL_NM";
+    private static final String ITEM_TOTAL_QTY_ = "TOTAL_QTY";
+    private static final String ITEM_CONTAINER_NO_ = "CONTAINER_NO";
+    private static final String ITEM_BILL_NO_ = "BL_NO";
+    private static final String ITEM_BL_DATE_ = "BL_DATE";
+    private static final String ITEM_LENGTH_ = "LENGTH";
+    private static final String ITEM_WIDTH_ = "WIDTH";
+    private static final String ITEM_TREATMENT1_ = "TREATMENT1";
+    private static final String ITEM_TREATMENT2_ = "TREATMENT2";
+    private static final String ITEM_SHADES_ = "SHADES";
+
     private RecyclerView recyclerView;
     private ArrayList<OrderModel> orderModelList;
     private RecyclerviewAdapter recyclerViewAdapter;
@@ -118,7 +142,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String LoggedInUserPassword = "LoggedInUserPassword";
     private String urlForOrders = "http://122.160.221.107:8020/sap/bc/get_pending?sap-client=500&";
     private ProgressDialog progressDialog;
-    private final String Main_Xml_Tag = "ZBAPI_SOSTATUS";
+    private final String Main_Table_Xml_Tag = "ZBAPI_HDR_SOSTATUS";
+    private final String Secondary_Table_Xml_Tag = "ZBAPI_SOSTATUS";
     private DrawerLayout drawerLayout;
     private LinearLayout mainDrawerView;
     private EditText etSapId;
@@ -242,6 +267,28 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             employeeDesig.setText(getResources().getString(R.string.Sales_executive));
             radioServer.setChecked(true);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setUpTransitionEffects();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void setUpTransitionEffects() {
+        getWindow().setExitTransition(new Fade(Fade.IN));
+        getWindow().setEnterTransition(new Fade(Fade.OUT));
+        TransitionSet sharedExitTransition = new TransitionSet();
+        sharedExitTransition.addTransition(new ChangeBounds());
+        sharedExitTransition.addTransition(new ChangeTransform());
+        sharedExitTransition.addTransition(new ChangeImageTransform());
+        getWindow().setSharedElementExitTransition(sharedExitTransition);
+        TransitionSet sharedEnterTransition = new TransitionSet();
+        sharedEnterTransition.addTransition(new ChangeImageTransform());
+        sharedEnterTransition.addTransition(new ChangeTransform());
+        sharedEnterTransition.addTransition(new ChangeBounds());
+        getWindow().setSharedElementEnterTransition(sharedEnterTransition);
+        getWindow().setAllowEnterTransitionOverlap(false);
+        getWindow().setAllowReturnTransitionOverlap(false);
+
     }
 
     @Override
@@ -280,11 +327,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.GONE);
                         recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
                             @Override
-                            public void onClick(View view, int position) {
+                            public void onClick(View view, int position, View clickedView) {
                                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                                 intent.putExtra("OrderInfo",orderModelList.get(position));
+                                intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+                                /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
+                                startActivity(intent,activityOptionsCompat.toBundle());*/
                                 startActivity(intent);
                             }
+
+
                         });
                         recyclerView.setAdapter(recyclerViewAdapter);
                     }else{
@@ -321,11 +374,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.GONE);
                         recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,openOrders,new ItemClickListener(){
                             @Override
-                            public void onClick(View view, int position) {
+                            public void onClick(View view, int position, View clickedView) {
                                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                                 intent.putExtra("OrderInfo",openOrders.get(position));
+                                intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+                                /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
+                                startActivity(intent,activityOptionsCompat.toBundle());*/
                                 startActivity(intent);
                             }
+
+
                         });
                         recyclerView.setAdapter(recyclerViewAdapter);
                     }else{
@@ -361,11 +420,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.GONE);
                         recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,closedOrders,new ItemClickListener(){
                             @Override
-                            public void onClick(View view, int position) {
+                            public void onClick(View view, int position, View clickedView) {
                                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                                 intent.putExtra("OrderInfo",closedOrders.get(position));
+                                intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+                               /* LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
+                                startActivity(intent,activityOptionsCompat.toBundle());*/
                                 startActivity(intent);
                             }
+
+
                         });
                         recyclerView.setAdapter(recyclerViewAdapter);
                     }else{
@@ -470,15 +535,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         orderModelList = new ArrayList<>();
         recyclerViewAdapter = new RecyclerviewAdapter(this,orderModelList,new ItemClickListener(){
             @Override
-            public void onClick(View view, int position) {
+            public void onClick(View view, int position, View clickedView) {
                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                 intent.putExtra("OrderInfo",orderModelList.get(position));
+                intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+                /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
+                startActivity(intent,activityOptionsCompat.toBundle());*/
                 startActivity(intent);
             }
+
+
         });
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
+/*
     private void feedDummyData() {
         Date date = new Date();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -529,6 +601,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
 
     }
+*/
 
     @Override
     protected void onResume() {
@@ -899,49 +972,84 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 xmlPullParser.setInput(inputStream,null);
                 int eventType = xmlPullParser.getEventType();
                 OrderModel orderModel = null;
+                ItemModel itemModel = null;
                 orderModelList = new ArrayList<>();
+                boolean saveItemInOrder = false;
                 while(eventType != XmlPullParser.END_DOCUMENT){
                     switch (eventType){
                         case XmlPullParser.START_DOCUMENT:
                             break;
                         case XmlPullParser.START_TAG:
                             switch (xmlPullParser.getName()){
-                                case Main_Xml_Tag:
+                                case Secondary_Table_Xml_Tag:
+                                    saveItemInOrder = true;
+                                    break;
+                                case Main_Table_Xml_Tag:
                                     //Main Tag
                                     orderModel = new OrderModel();
-
+                                    break;
+                                case MATNR:
+                                    itemModel = new ItemModel();
                                     break;
                                 case VBELN:
-                                    if(orderModel!=null){
-                                        orderModel.setOrderNo(xmlPullParser.nextText());
+                                    String orderNo = xmlPullParser.nextText();
+                                    if(orderModel!=null && !saveItemInOrder){
+                                        orderModel.setOrderNo(orderNo);
+                                    }else{
+                                        for(OrderModel orderModelFromList : orderModelList){
+                                            if(orderModelFromList.getOrderNo().equalsIgnoreCase(orderNo)){
+                                                orderModel = orderModelFromList;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case ORDERED_QTY:
+                                    if(orderModel!=null && !saveItemInOrder){
+                                        orderModel.setOrderQty(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setOrderedQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case STATUS:
-                                    if(orderModel!=null){
+                                    if(orderModel!=null && !saveItemInOrder){
                                         orderModel.setStatus(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setStatus(xmlPullParser.nextText());
                                     }
                                     break;
                                 case OPEN_QTY:
-                                    if(orderModel!=null){
+                                    if(orderModel!=null && !saveItemInOrder){
                                         orderModel.setInProdQty(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setInProdQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case DESP_QTY:
-                                    if(orderModel!=null){
+                                    if(orderModel!=null && !saveItemInOrder){
                                         orderModel.setDespQty(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setDespQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case STOCK_QTY:
-                                    //Todo
+                                    if(orderModel!=null && !saveItemInOrder){
+                                        orderModel.setStockQty(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setStockQty(xmlPullParser.nextText());
+                                    }
                                     break;
                                 case DOC_DATE:
-                                    if(orderModel!=null){
+                                    if(orderModel!=null && !saveItemInOrder){
                                         orderModel.setDeliveryDate(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setDeliveryDate(xmlPullParser.nextText());
                                     }
                                     break;
                                 case DEL_DATE:
-                                    if(orderModel!=null){
+                                    if(orderModel!=null && !saveItemInOrder){
                                         orderModel.setOrderDate(xmlPullParser.nextText());
+                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setOrderDate(xmlPullParser.nextText());
                                     }
                                     break;
                                 case CUST_NM:
@@ -949,11 +1057,62 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         orderModel.setPartyName(xmlPullParser.nextText());
                                     }
                                     break;
+                                case ITEM_MATERIAL_NM_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setItemName(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_TOTAL_QTY_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setTotalQty(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_CONTAINER_NO_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setContainerNo(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_BILL_NO_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setBillNo(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_BL_DATE_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setBillDate(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_LENGTH_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setLength(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_WIDTH_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setWidth(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_TREATMENT1_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setTreatment1(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_TREATMENT2_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setTreatment2(xmlPullParser.nextText());
+                                    }
+                                    break;
+                                case ITEM_SHADES_:
+                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                        itemModel.setShades(xmlPullParser.nextText());
+                                    }
+                                    break;
+
                             }
                             break;
                         case XmlPullParser.END_TAG:
                             switch (xmlPullParser.getName()){
-                                case Main_Xml_Tag:
+                                case Main_Table_Xml_Tag:
                                     //Main Tag
                                     if(orderModel!=null){
                                         if(!orderModelList.contains(orderModel)) {
@@ -961,6 +1120,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         }
                                     }
 
+                                    break;
+                                case Secondary_Table_Xml_Tag:
+                                    if(itemModel!=null) {
+                                        orderModel.addItemInOrder(itemModel);
+                                    }
+                                    saveItemInOrder = false;
                                     break;
 
                             }
@@ -997,7 +1162,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                 break;
                             case XmlPullParser.START_TAG:
                                 switch (pullParser.getName()){
-                                    case Main_Xml_Tag:
+                                    case Main_Table_Xml_Tag:
 
                                         break;
                                 }
@@ -1038,11 +1203,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
             recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
                 @Override
-                public void onClick(View view, int position) {
+                public void onClick(View view, int position, View clickedView) {
                     Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                     intent.putExtra("OrderInfo",orderModelList.get(position));
+                    intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+                    /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                    ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
+                    ActivityCompat.startActivity(OrderStatus.this,intent,activityOptionsCompat.toBundle());*/
                     startActivity(intent);
                 }
+
+
             });
             recyclerView.setAdapter(recyclerViewAdapter);
         }

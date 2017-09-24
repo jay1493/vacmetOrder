@@ -1,10 +1,13 @@
 package com.example.anubhav.vacmet.adapters;
 
 import android.content.Context;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.anubhav.vacmet.R;
@@ -66,7 +69,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     }
 
     @Override
-    public void onBindViewHolder(Viewholder holder, int position) {
+    public void onBindViewHolder(final Viewholder holder, final int position) {
         switch (holder.getItemViewType()){
             case 0:
                 holder.partyName.setText(list.get(position).getPartyName());
@@ -75,6 +78,13 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                 holder.orderQty.setText(String.valueOf(decimalFormat.format(Double.parseDouble(list.get(position).getDespQty())+Double.parseDouble(list.get(position).getInProdQty()))));
                 holder.despQty.setText(list.get(position).getDespQty());
                 holder.deliveryDate.setText(list.get(position).getDeliveryDate());
+                ViewCompat.setTransitionName(holder.orderNo,list.get(position).getOrderNo());
+                holder.llMain.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        itemClickListener.onClick(v,position,holder.orderNo);
+                    }
+                });
                 break;
             case 1:
                 holder.noRecords.setText(context.getResources().getString(R.string.No_records_found_for_this_query));
@@ -90,6 +100,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
 
 
     public class Viewholder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        LinearLayout llMain;
         TextView partyName ;
         TextView orderNo;
         TextView orderDate;
@@ -101,6 +112,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
             super(itemView);
             switch (viewType){
                 case 0:
+                    llMain = (LinearLayout) itemView.findViewById(R.id.ll_orderStatus);
                     partyName = (TextView) itemView.findViewById(R.id.partyName);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
@@ -118,7 +130,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
 
         @Override
         public void onClick(View view) {
-            itemClickListener.onClick(view,getAdapterPosition());
+//            itemClickListener.onClick(view,getAdapterPosition());
         }
     }
 }

@@ -22,21 +22,13 @@ public class OrderModel implements Serializable {
     private String deliveryDate;
     private String inProdQty;
     private String status;
+    private String stockQty;
     private ArrayList<ItemModel> itemModelArrayList;
 
     public OrderModel() {
+        itemModelArrayList = new ArrayList<>();
     }
 
-    public OrderModel(String partyName, String orderNo, String orderQty, String orderDate, String despQty, String deliveryDate, String inProdQty, ArrayList<ItemModel> itemModelArrayList) {
-        this.partyName = partyName;
-        this.orderNo = orderNo;
-        this.orderQty = orderQty;
-        this.orderDate = orderDate;
-        this.despQty = despQty;
-        this.deliveryDate = deliveryDate;
-        this.inProdQty = inProdQty;
-        this.itemModelArrayList = itemModelArrayList;
-    }
 
     public String getPartyName() {
         return partyName;
@@ -100,12 +92,14 @@ public class OrderModel implements Serializable {
         this.inProdQty = inProdQty;
     }
 
-    public ArrayList<ItemModel> getItemModelArrayList() {
-        return itemModelArrayList;
+    public void addItemInOrder(ItemModel itemModel){
+        if(itemModelArrayList!=null){
+            itemModelArrayList.add(itemModel);
+        }
     }
 
-    public void setItemModelArrayList(ArrayList<ItemModel> itemModelArrayList) {
-        this.itemModelArrayList = itemModelArrayList;
+    public ArrayList<ItemModel> getItemList(){
+        return itemModelArrayList;
     }
 
     public String getStatus() {
@@ -114,6 +108,17 @@ public class OrderModel implements Serializable {
 
     public OrderModel setStatus(String status) {
         this.status = status;
+        return this;
+    }
+
+    public String getStockQty() {
+        return stockQty;
+    }
+
+    public OrderModel setStockQty(String stockQty) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        stockQty = decimalFormat.format(Double.parseDouble(stockQty));
+        this.stockQty = stockQty;
         return this;
     }
 

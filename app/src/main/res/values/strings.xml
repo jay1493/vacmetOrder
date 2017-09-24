@@ -61,4 +61,16 @@
     <string name="open">open</string>
     <string name="enter_sap_id">Enter SAP ID</string>
     <string name="No_records_found_for_this_query">No records found for this query.</string>
+    <string name="item_details">Item Details</string>
+    <string name="material_no">Material No:</string>
+    <string name="bill_no">Bill No:</string>
+    <string name="bill_date">Bill Date:</string>
+    <string name="item_length">Length:</string>
+    <string name="item_width">Width:</string>
+    <string name="item_treatment1">Treatment1:</string>
+    <string name="item_treatment2">Treatment2:</string>
+    <string name="item_container_no">Container no:</string>
+    <string name="item_shades">Shades(if any):</string>
+    <string name="orderTransition">Order Transition</string>
+    <string name="status_not_known">Status(Not known)</string>
 </resources>

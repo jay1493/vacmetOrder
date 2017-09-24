@@ -2,19 +2,32 @@ package com.example.anubhav.vacmet;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.transition.AutoTransition;
+import android.transition.ChangeBounds;
+import android.transition.ChangeImageTransform;
+import android.transition.ChangeTransform;
+import android.transition.Explode;
+import android.transition.Fade;
+import android.transition.TransitionManager;
+import android.transition.TransitionSet;
 import android.util.Base64;
 import android.util.Xml;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.anubhav.vacmet.adapters.ListOrderInformation;
+import com.example.anubhav.vacmet.interfaces.OrderDetailsClickListener;
 import com.example.anubhav.vacmet.model.ItemModel;
 import com.example.anubhav.vacmet.model.OrderModel;
 
@@ -35,7 +48,7 @@ import java.util.List;
  * Created by anubhav on 27/1/17.
  */
 
-public class OrderInformation extends AppCompatActivity {
+public class OrderInformation extends AppCompatActivity implements OrderDetailsClickListener{
     public static final String soapUrlForItemsForAOrder = "http://122.160.221.107:8020/sap/bc/srt/rfc/sap/zget_so_status/500/zget_sosta/zget_so_sta";
     private static final String usernameForService = "BAPI";
     private static final String passwordForService = "123456";
@@ -69,6 +82,7 @@ public class OrderInformation extends AppCompatActivity {
     private ListOrderInformation listAdapter;
     private Toolbar toolbar;
     private ProgressDialog progressDialog;
+    private LinearLayout llParent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,8 +92,14 @@ public class OrderInformation extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(getResources().getDrawable(R.drawable.back_24dp));
+        supportPostponeEnterTransition();
         if(getIntent()!=null && getIntent().getExtras()!=null && getIntent().getExtras().getSerializable("OrderInfo")!=null){
             orderModel = (OrderModel) getIntent().getExtras().getSerializable("OrderInfo");
+            if(getIntent().getExtras().getString("TransitionName")!=null){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    orderNo.setTransitionName(getIntent().getExtras().getString("TransitionName"));
+                }
+            }
 
             partyName.setText(orderModel.getPartyName());
             orderNo.setText(orderModel.getOrderNo());
@@ -92,7 +112,7 @@ public class OrderInformation extends AppCompatActivity {
             getSupportActionBar().setWindowTitle(orderModel.getPartyName());
             getSupportActionBar().setTitle(orderModel.getPartyName());
             toolbar.setTitle(orderModel.getPartyName());
-            hitSOAPItemService(orderModel.getOrderNo());
+            hitSOAPItemService(orderModel);
         }else{
             partyName.setText("");
             orderNo.setText("");
@@ -107,12 +127,44 @@ public class OrderInformation extends AppCompatActivity {
 
     }
 
-    private void hitSOAPItemService(String orderNo) {
-        new CustomAsyncTask().execute(orderNo);
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setUpTransitions();
+        }
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void setUpTransitions() {
+
+     /*   getWindow().setEnterTransition(new Fade(Fade.OUT));
+        TransitionSet sharedExitTransition = new TransitionSet();
+        sharedExitTransition.addTransition(new ChangeBounds());
+        sharedExitTransition.addTransition(new ChangeTransform());
+        sharedExitTransition.addTransition(new ChangeImageTransform());
+        getWindow().setSharedElementEnterTransition(sharedExitTransition);
+        TransitionSet sharedEnterTransition = new TransitionSet();
+        sharedEnterTransition.addTransition(new ChangeImageTransform());
+        sharedEnterTransition.addTransition(new ChangeTransform());
+        sharedEnterTransition.addTransition(new ChangeBounds());
+        getWindow().setSharedElementEnterTransition(sharedEnterTransition);
+        getWindow().setAllowEnterTransitionOverlap(false);
+        getWindow().setAllowReturnTransitionOverlap(false);*/
+    }
+
+    private void hitSOAPItemService(OrderModel order) {
+        String orderNo = order.getOrderNo();
+//        new CustomAsyncTask().execute(orderNo);
+        if(order.getItemList()!=null && order.getItemList().size()>0){
+            listAdapter = new ListOrderInformation(OrderInformation.this,order.getItemList(),this);
+            itemsListView.setAdapter(listAdapter);
+        }
+        supportStartPostponedEnterTransition();
     }
 
     private void init() {
+        llParent = (LinearLayout) findViewById(R.id.ll_orderDetailsParent);
         partyName = (TextView) findViewById(R.id.orderInfo_partyName);
         orderNo = (TextView) findViewById(R.id.orderInfo_orderNo);
         orderDate = (TextView) findViewById(R.id.orderInfo_orderDate);
@@ -134,10 +186,46 @@ public class OrderInformation extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
-                finish();
+                supportFinishAfterTransition();
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+//        supportFinishAfterTransition();
+        super.onBackPressed();
+    }
+
+    @Override
+    public void onClick(View view, int position) {
+        LinearLayout expandedDetails = (LinearLayout) view.findViewById(R.id.expanded_item_details);
+        if(expandedDetails.getVisibility() == View.VISIBLE){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                TransitionSet transitionSet = new TransitionSet();
+                transitionSet.setDuration(1500);
+                transitionSet.addTransition(new Fade(Fade.IN));
+                transitionSet.addTransition(new ChangeBounds());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    transitionSet.addTransition(new ChangeTransform());
+                }
+                TransitionManager.beginDelayedTransition(expandedDetails,transitionSet);
+            }
+            expandedDetails.setVisibility(View.GONE);
+        }else{
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                TransitionSet transitionSet = new TransitionSet();
+                transitionSet.setDuration(1500);
+                transitionSet.addTransition(new Fade(Fade.OUT));
+                transitionSet.addTransition(new ChangeBounds());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    transitionSet.addTransition(new ChangeTransform());
+                }
+                TransitionManager.beginDelayedTransition(expandedDetails,transitionSet);
+            }
+            expandedDetails.setVisibility(View.VISIBLE);
+        }
     }
 
     private class CustomAsyncTask extends AsyncTask<String,Void,List<ItemModel>> {
@@ -254,7 +342,7 @@ public class OrderInformation extends AppCompatActivity {
                 progressDialog.dismiss();
             }
             if(itemModels!=null){
-                listAdapter = new ListOrderInformation(OrderInformation.this,itemModels);
+                listAdapter = new ListOrderInformation(OrderInformation.this,itemModels,OrderInformation.this);
                 itemsListView.setAdapter(listAdapter);
             }
         }

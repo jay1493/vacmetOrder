@@ -9,4 +9,5 @@
     <color name="dark_grey">#595959</color>
     <color name="tv_color">#cccccc</color>
     <color name="red_transperant">#a6710017</color>
+    <color name="red">#FF0000</color>
 </resources>
