@@ -186,17 +186,14 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
-                supportFinishAfterTransition();
+                finish();
+//                supportFinishAfterTransition();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onBackPressed() {
-//        supportFinishAfterTransition();
-        super.onBackPressed();
-    }
+
 
     @Override
     public void onClick(View view, int position) {

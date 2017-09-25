@@ -1,6 +1,8 @@
 package com.example.anubhav.vacmet.adapters;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,7 @@ public class ListOrderInformation extends BaseAdapter {
     private List<ItemModel> itemModelArrayList;
     private ListHolder holder;
     private OrderDetailsClickListener orderDetailsClickListener;
+    private RecyclerLengthWidthAdapter recyclerLengthWidthAdapter;
 
     public ListOrderInformation(Context context, List<ItemModel> itemModelArrayList, OrderDetailsClickListener listener) {
         this.context = context;
@@ -61,8 +64,8 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemNo = (TextView) view.findViewById(R.id.txt_materialNo);
             holder.itemBillNo = (TextView) view.findViewById(R.id.txt_detailsBillNo);
             holder.itemBillDate = (TextView) view.findViewById(R.id.txt_detailsBillDate);
-            holder.itemLength = (TextView) view.findViewById(R.id.txt_detailsLength);
-            holder.itemWidth = (TextView) view.findViewById(R.id.txt_detailsWidth);
+            holder.lengthWidthRecycler = (RecyclerView) view.findViewById(R.id.lengthWidthRecycler);
+            holder.lengthWidthRecycler.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,false));
             holder.itemTreatment1 = (TextView) view.findViewById(R.id.txt_detailsTreatment1);
             holder.itemTreatment2 = (TextView) view.findViewById(R.id.txt_detailsTreatment2);
             holder.itemContainerNo = (TextView) view.findViewById(R.id.txt_detailsContainerNo);
@@ -92,12 +95,16 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemBillNo.setText(((ItemModel) getItem(i)).getBillNo());
         }
         holder.itemBillDate.setText(((ItemModel)getItem(i)).getBillDate());
-        if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getLength())) {
-            holder.itemLength.setText(((ItemModel) getItem(i)).getLength());
+
+        if((((ItemModel)getItem(i)).getLengthList()!=null && ((ItemModel)getItem(i)).getLengthList().size()>0) ||
+                (((ItemModel)getItem(i)).getWidthList()!=null && ((ItemModel)getItem(i)).getWidthList().size()>0)){
+            holder.lengthWidthRecycler.setVisibility(View.VISIBLE);
+            recyclerLengthWidthAdapter = new RecyclerLengthWidthAdapter(context,((ItemModel)getItem(i)).getLengthList(),((ItemModel)getItem(i)).getWidthList());
+            holder.lengthWidthRecycler.setAdapter(recyclerLengthWidthAdapter);
+        }else{
+            holder.lengthWidthRecycler.setVisibility(View.GONE);
         }
-        if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getWidth())) {
-            holder.itemWidth.setText(((ItemModel) getItem(i)).getWidth());
-        }
+
         if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getContainerNo())) {
             holder.itemContainerNo.setText(((ItemModel) getItem(i)).getContainerNo());
         }
@@ -112,8 +119,7 @@ public class ListOrderInformation extends BaseAdapter {
        TextView despQty;
        TextView itemStatus;
        TextView itemNo;
-       TextView itemLength;
-       TextView itemWidth;
+       RecyclerView lengthWidthRecycler;
        TextView itemBillNo;
        TextView itemBillDate;
        TextView itemTreatment1;

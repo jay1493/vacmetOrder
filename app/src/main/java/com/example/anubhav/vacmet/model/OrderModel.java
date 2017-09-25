@@ -94,7 +94,21 @@ public class OrderModel implements Serializable {
 
     public void addItemInOrder(ItemModel itemModel){
         if(itemModelArrayList!=null){
-            itemModelArrayList.add(itemModel);
+            if(!itemModelArrayList.contains(itemModel)) {
+                itemModelArrayList.add(itemModel);
+            }else{
+                ItemModel itemModelFromList = null;
+                for(ItemModel itemModel1 : itemModelArrayList){
+                    if(itemModel1.equals(itemModel)){
+                        itemModelFromList = itemModel1;
+                        break;
+                    }
+                }
+                if(itemModelFromList!=null){
+                    itemModelFromList.setLength(itemModel.getLength());
+                    itemModelFromList.setWidth(itemModel.getWidth());
+                }
+            }
         }
     }
 

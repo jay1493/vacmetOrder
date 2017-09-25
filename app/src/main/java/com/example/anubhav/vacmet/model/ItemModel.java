@@ -3,6 +3,10 @@ package com.example.anubhav.vacmet.model;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by anubhav on 27/1/17.
@@ -27,13 +31,12 @@ public class ItemModel implements Serializable {
     private String containerNo;
     private String orderDate;
     private String deliveryDate;
-    public ItemModel(String itemName, String despQty, String totalQty) {
-        this.itemName = itemName;
-        this.despQty = despQty;
-        this.totalQty = totalQty;
-    }
+    private List<String> lengthList;
+    private List<String> widthList;
 
     public ItemModel() {
+        lengthList = new ArrayList<>();
+        widthList = new ArrayList<>();
     }
 
     public String getItemName() {
@@ -118,8 +121,12 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setLength(String length) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        length = decimalFormat.format(Double.parseDouble(length));
+        /*DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        length = decimalFormat.format(Double.parseDouble(length));*/
+//        length = NumberFormat.getInstance().format(length);
+        if(lengthList!=null){
+            lengthList.add(length);
+        }
         this.length = length;
         return this;
     }
@@ -128,9 +135,21 @@ public class ItemModel implements Serializable {
         return width;
     }
 
+    public List<String> getLengthList() {
+        return lengthList;
+    }
+
+    public List<String> getWidthList() {
+        return widthList;
+    }
+
     public ItemModel setWidth(String width) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        width = decimalFormat.format(Double.parseDouble(width));
+        /*DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        width = decimalFormat.format(Double.parseDouble(width));*/
+//        width = NumberFormat.getInstance().format(width);
+        if(widthList!=null){
+            widthList.add(width);
+        }
         this.width = width;
         return this;
     }
@@ -209,5 +228,18 @@ public class ItemModel implements Serializable {
     public ItemModel setDeliveryDate(String deliveryDate) {
         this.deliveryDate = deliveryDate;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemModel itemModel = (ItemModel) o;
+        return (materialNo == itemModel.materialNo) || (materialNo != null && materialNo.equals(itemModel.materialNo));
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(new Object[]{materialNo});
     }
 }

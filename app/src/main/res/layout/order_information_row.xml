@@ -45,7 +45,7 @@
         android:orientation="vertical"
         android:layout_marginTop="@dimen/d5"
         android:padding="@dimen/d10"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <TextView
             android:id="@+id/txt_detailsHeader"
@@ -150,53 +150,36 @@
             android:orientation="horizontal"
             android:padding="@dimen/d5"
             android:weightSum="10">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true">
+
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="3"
+                    android:layout_weight="5"
                     android:layout_height="wrap_content"
-                    android:text="@string/item_length"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:text="@string/item_length_cumulative"
+                    android:gravity="left"
                     android:textColor="#003C71" />
                 <TextView
-                    android:id="@+id/txt_detailsLength"
-                    android:layout_width="0dp"
-                    android:layout_weight="7"
-                    android:text="0.00"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
-            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_weight="5"
-                android:weightSum="10"
+                android:layout_height="wrap_content"
+                android:text="@string/item_width_cumulative"
+                android:gravity="right"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="4"
-                    android:layout_height="wrap_content"
-                    android:text="@string/item_width"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsWidth"
-                    android:layout_width="0dp"
-                    android:layout_weight="6"
-                    android:text="0.00"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
+                android:layout_alignParentRight="true"
+                android:textColor="#003C71" />
+
 
 
         </LinearLayout>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/lengthWidthRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+        </android.support.v7.widget.RecyclerView>
         <LinearLayout
             android:id="@+id/ll_treatment"
             android:layout_width="match_parent"

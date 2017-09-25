@@ -73,4 +73,6 @@
     <string name="item_shades">Shades(if any):</string>
     <string name="orderTransition">Order Transition</string>
     <string name="status_not_known">Status(Not known)</string>
+    <string name="item_length_cumulative">Length(s):</string>
+    <string name="item_width_cumulative">Width(s):</string>
 </resources>
