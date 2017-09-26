@@ -45,7 +45,7 @@
         android:orientation="vertical"
         android:layout_marginTop="@dimen/d5"
         android:padding="@dimen/d10"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/txt_detailsHeader"
@@ -149,25 +149,28 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="@dimen/d5"
-            android:weightSum="10">
+            android:weightSum="9">
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="5"
+                    android:layout_weight="3"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentLeft="true"
                     android:text="@string/item_length_cumulative"
                     android:gravity="left"
                     android:textColor="#003C71" />
                 <TextView
                 android:layout_width="0dp"
-                android:layout_weight="5"
+                android:layout_weight="3"
                 android:layout_height="wrap_content"
                 android:text="@string/item_width_cumulative"
+                android:gravity="center"
+                android:textColor="#003C71" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:text="@string/despQty_OrderQty"
                 android:gravity="right"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
                 android:textColor="#003C71" />
 
 

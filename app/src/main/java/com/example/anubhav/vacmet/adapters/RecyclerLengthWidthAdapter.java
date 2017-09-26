@@ -23,11 +23,15 @@ public class RecyclerLengthWidthAdapter extends RecyclerView.Adapter<RecyclerLen
     private Context context;
     private List<String> lengthList;
     private List<String> widthList;
-
-    public RecyclerLengthWidthAdapter(Context context, List<String> lengthList, List<String> widthList) {
+    private List<Double> despOrders;
+    private List<Double> inProdOrders;
+    public RecyclerLengthWidthAdapter(Context context, List<String> lengthList, List<String> widthList, List<Double> despList, List<Double> inProdList) {
         this.context = context;
         this.lengthList = lengthList;
         this.widthList = widthList;
+        this.despOrders = despList;
+        this.inProdOrders = inProdList;
+
     }
 
     @Override
@@ -39,11 +43,15 @@ public class RecyclerLengthWidthAdapter extends RecyclerView.Adapter<RecyclerLen
     public void onBindViewHolder(CustomHolder customHolder, int i) {
         customHolder.length.setText("0");
         customHolder.width.setText("0");
+        customHolder.orderQty.setText("0/0");
         if(lengthList!=null && !TextUtils.isEmpty(lengthList.get(i))) {
             customHolder.length.setText(lengthList.get(i));
         }
         if(widthList!=null && !TextUtils.isEmpty(widthList.get(i))){
             customHolder.width.setText(widthList.get(i));
+        }
+        if((despOrders!=null && despOrders.size()>0 && i<=despOrders.size()-1 && despOrders.get(i)!=null) && (inProdOrders!=null && inProdOrders.size()>0 && i<=inProdOrders.size()-1 && inProdOrders.get(i)!=null)){
+            customHolder.orderQty.setText(String.valueOf(despOrders.get(i))+"/"+String.valueOf(despOrders.get(i)+inProdOrders.get(i)));
         }
     }
 
@@ -70,11 +78,13 @@ public class RecyclerLengthWidthAdapter extends RecyclerView.Adapter<RecyclerLen
 
         private TextView length;
         private TextView width;
+        private TextView orderQty;
 
         public CustomHolder(View itemView) {
             super(itemView);
             length = (TextView) itemView.findViewById(R.id.txt_length);
             width = (TextView) itemView.findViewById(R.id.txt_width);
+            orderQty = (TextView) itemView.findViewById(R.id.txt_orderQty);
         }
     }
 }

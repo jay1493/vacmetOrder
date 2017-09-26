@@ -99,7 +99,7 @@ public class ListOrderInformation extends BaseAdapter {
         if((((ItemModel)getItem(i)).getLengthList()!=null && ((ItemModel)getItem(i)).getLengthList().size()>0) ||
                 (((ItemModel)getItem(i)).getWidthList()!=null && ((ItemModel)getItem(i)).getWidthList().size()>0)){
             holder.lengthWidthRecycler.setVisibility(View.VISIBLE);
-            recyclerLengthWidthAdapter = new RecyclerLengthWidthAdapter(context,((ItemModel)getItem(i)).getLengthList(),((ItemModel)getItem(i)).getWidthList());
+            recyclerLengthWidthAdapter = new RecyclerLengthWidthAdapter(context,((ItemModel)getItem(i)).getLengthList(),((ItemModel)getItem(i)).getWidthList() , ((ItemModel)getItem(i)).getDespList() , ((ItemModel)getItem(i)).getInProdList());
             holder.lengthWidthRecycler.setAdapter(recyclerLengthWidthAdapter);
         }else{
             holder.lengthWidthRecycler.setVisibility(View.GONE);
@@ -109,7 +109,13 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemContainerNo.setText(((ItemModel) getItem(i)).getContainerNo());
         }
         holder.itemShades.setText(((ItemModel) getItem(i)).getShades());
-        holder.despQty.setText(((ItemModel)getItem(i)).getDespQty()+"/"+((ItemModel)getItem(i)).getTotalQty());
+        if((((ItemModel)getItem(i)).getTotalDespQty()!=null && !((ItemModel)getItem(i)).getTotalDespQty().equalsIgnoreCase("0"))||
+                (((ItemModel)getItem(i)).getTotalOrderQty()!=null && !((ItemModel)getItem(i)).getTotalOrderQty().equalsIgnoreCase("0"))){
+            holder.despQty.setText(((ItemModel) getItem(i)).getTotalDespQty() + "/" + ((ItemModel) getItem(i)).getTotalOrderQty());
+
+        }else {
+            holder.despQty.setText(((ItemModel) getItem(i)).getDespQty() + "/" + ((ItemModel) getItem(i)).getTotalQty());
+        }
         return view;
     }
 

@@ -41,6 +41,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,7 +106,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
             orderNo.setText(orderModel.getOrderNo());
             orderDate.setText(orderModel.getOrderDate());
             requestDispatchDate.setText(orderModel.getDeliveryDate());
-            orderQty.setText(String.valueOf(Double.parseDouble(orderModel.getDespQty())+Double.parseDouble(orderModel.getInProdQty())));
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            orderQty.setText(decimalFormat.format(Double.parseDouble(orderModel.getDespQty())+Double.parseDouble(orderModel.getInProdQty())));
             despQty.setText(orderModel.getDespQty());
             prodQty.setText(orderModel.getInProdQty());
 //            itemList = orderModel.getItemModelArrayList();

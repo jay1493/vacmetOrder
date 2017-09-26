@@ -33,10 +33,14 @@ public class ItemModel implements Serializable {
     private String deliveryDate;
     private List<String> lengthList;
     private List<String> widthList;
+    private List<Double> totalDespQty;
+    private List<Double> totalInprodQty;
 
     public ItemModel() {
         lengthList = new ArrayList<>();
         widthList = new ArrayList<>();
+        totalDespQty = new ArrayList<>();
+        totalInprodQty = new ArrayList<>();
     }
 
     public String getItemName() {
@@ -54,6 +58,9 @@ public class ItemModel implements Serializable {
     public void setDespQty(String despQty) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         despQty = decimalFormat.format(Double.parseDouble(despQty));
+        if(totalDespQty!=null) {
+            totalDespQty.add(Double.valueOf(despQty));
+        }
         this.despQty = despQty;
     }
 
@@ -94,10 +101,41 @@ public class ItemModel implements Serializable {
     public void setInProdQty(String inProdQty) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
+        if(totalInprodQty!=null){
+            totalInprodQty.add(Double.valueOf(inProdQty));
+        }
         this.inProdQty = inProdQty;
 
     }
-
+    public List<Double> getDespList(){
+        return totalDespQty;
+    }
+    public List<Double> getInProdList(){
+        return totalInprodQty;
+    }
+    public String getTotalDespQty(){
+        if(totalDespQty!=null){
+            double sum = 0;
+            for(double d: totalDespQty){
+                sum += d;
+            }
+            return String.valueOf(sum);
+        }
+        return "0";
+    }
+    public String getTotalOrderQty(){
+        return String.valueOf(Double.parseDouble(getTotalDespQty())+Double.parseDouble(getTotalInProdQty()));
+    }
+    public String getTotalInProdQty(){
+        if(totalInprodQty!=null){
+            double sum = 0;
+            for(double d: totalInprodQty){
+                sum += d;
+            }
+            return String.valueOf(sum);
+        }
+        return "0";
+    }
     public String getBillNo() {
         return billNo;
     }
