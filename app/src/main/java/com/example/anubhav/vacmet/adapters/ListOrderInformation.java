@@ -15,6 +15,7 @@ import com.example.anubhav.vacmet.R;
 import com.example.anubhav.vacmet.interfaces.OrderDetailsClickListener;
 import com.example.anubhav.vacmet.model.ItemModel;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class ListOrderInformation extends BaseAdapter {
 
+    private DecimalFormat decimalFormat;
     private Context context;
     private List<ItemModel> itemModelArrayList;
     private ListHolder holder;
@@ -34,6 +36,7 @@ public class ListOrderInformation extends BaseAdapter {
         this.context = context;
         this.itemModelArrayList = itemModelArrayList;
         this.orderDetailsClickListener = listener;
+        decimalFormat = new DecimalFormat("#.##");
     }
 
     @Override
@@ -99,7 +102,8 @@ public class ListOrderInformation extends BaseAdapter {
         if((((ItemModel)getItem(i)).getLengthList()!=null && ((ItemModel)getItem(i)).getLengthList().size()>0) ||
                 (((ItemModel)getItem(i)).getWidthList()!=null && ((ItemModel)getItem(i)).getWidthList().size()>0)){
             holder.lengthWidthRecycler.setVisibility(View.VISIBLE);
-            recyclerLengthWidthAdapter = new RecyclerLengthWidthAdapter(context,((ItemModel)getItem(i)).getLengthList(),((ItemModel)getItem(i)).getWidthList() , ((ItemModel)getItem(i)).getDespList() , ((ItemModel)getItem(i)).getInProdList());
+            recyclerLengthWidthAdapter = new RecyclerLengthWidthAdapter(context,((ItemModel)getItem(i)).getLengthList(),((ItemModel)getItem(i)).getWidthList() , ((ItemModel)getItem(i)).getDespList() , ((ItemModel)getItem(i)).getOrderedList() ,
+                    ((ItemModel)getItem(i)).getItemDeliveryDatesList() , ((ItemModel)getItem(i)).getStockQtyList() , ((ItemModel)getItem(i)).getTreatment1List() , ((ItemModel)getItem(i)).getTreatment2List() , ((ItemModel)getItem(i)).getShadesList() , ((ItemModel)getItem(i)).getInProdList());
             holder.lengthWidthRecycler.setAdapter(recyclerLengthWidthAdapter);
         }else{
             holder.lengthWidthRecycler.setVisibility(View.GONE);
@@ -110,11 +114,11 @@ public class ListOrderInformation extends BaseAdapter {
         }
         holder.itemShades.setText(((ItemModel) getItem(i)).getShades());
         if((((ItemModel)getItem(i)).getTotalDespQty()!=null && !((ItemModel)getItem(i)).getTotalDespQty().equalsIgnoreCase("0"))||
-                (((ItemModel)getItem(i)).getTotalOrderQty()!=null && !((ItemModel)getItem(i)).getTotalOrderQty().equalsIgnoreCase("0"))){
-            holder.despQty.setText(((ItemModel) getItem(i)).getTotalDespQty() + "/" + ((ItemModel) getItem(i)).getTotalOrderQty());
+                (((ItemModel)getItem(i)).getTotalOrderedQty()!=null && !((ItemModel)getItem(i)).getTotalOrderedQty().equalsIgnoreCase("0"))){
+            holder.despQty.setText( decimalFormat.format(Double.parseDouble(((ItemModel) getItem(i)).getTotalDespQty()))+ "/" + decimalFormat.format(Double.parseDouble(((ItemModel) getItem(i)).getTotalOrderedQty())));
 
         }else {
-            holder.despQty.setText(((ItemModel) getItem(i)).getDespQty() + "/" + ((ItemModel) getItem(i)).getTotalQty());
+            holder.despQty.setText(((ItemModel) getItem(i)).getDespQty() + "/" + ((ItemModel) getItem(i)).getOrderedQty());
         }
         return view;
     }

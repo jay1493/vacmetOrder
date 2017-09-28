@@ -157,30 +157,60 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/stock_desp_qty"
                 android:orientation="horizontal"
-                android:id="@+id/llOrderInfo_despQty"
                 android:layout_below="@id/llOrderInfo_orderQty"
                 android:gravity="start"
-                android:padding="@dimen/d5">
-                <TextView
-                    android:layout_width="wrap_content"
+                android:padding="@dimen/d5"
+                android:weightSum="10">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="5"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:text="@string/Order_Desp_Qty"/>
-                <TextView
-                    android:layout_width="wrap_content"
+                    android:orientation="horizontal"
+                    android:id="@+id/llOrderInfo_despQty">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:text="@string/Order_Desp_Qty"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/orderInfo_despQty"
+                        android:textStyle="bold"
+                        android:textColor="#003C71"
+                        android:text=""/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="5"
                     android:layout_height="wrap_content"
-                    android:id="@+id/orderInfo_despQty"
-                    android:textStyle="bold"
-                    android:textColor="#003C71"
-                    android:text=""/>
+                    android:orientation="horizontal"
+                    android:id="@+id/llOrderInfo_stockQty">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/orderInfo_stockQty"
+                        android:textStyle="bold"
+                        android:textColor="@color/red"
+                        android:text=""/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:textColor="@color/red"
+                        android:text="@string/stock_left"/>
+
+                </LinearLayout>
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:id="@+id/llOrderInfo_prodQty"
-                android:layout_below="@id/llOrderInfo_despQty"
+                android:layout_below="@id/stock_desp_qty"
                 android:gravity="start"
                 android:padding="@dimen/d5">
                 <TextView

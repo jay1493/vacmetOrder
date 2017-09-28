@@ -107,6 +107,14 @@ public class OrderModel implements Serializable {
                 if(itemModelFromList!=null){
                     itemModelFromList.setLength(itemModel.getLength());
                     itemModelFromList.setWidth(itemModel.getWidth());
+                    itemModelFromList.setDespQty(itemModel.getDespQty());
+                    itemModelFromList.setInProdQty(itemModel.getInProdQty());
+                    itemModelFromList.setOrderedQty(itemModel.getOrderedQty());
+                    itemModelFromList.setTreatment1(itemModel.getTreatment1());
+                    itemModelFromList.setTreatment2(itemModel.getTreatment2());
+                    itemModelFromList.setStockQty(itemModel.getStockQty());
+                    itemModelFromList.setDeliveryDate(itemModel.getDeliveryDate());
+
                 }
             }
         }

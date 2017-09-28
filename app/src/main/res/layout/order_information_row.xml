@@ -144,38 +144,6 @@
 
 
         </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/d5"
-            android:weightSum="9">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="3"
-                    android:layout_height="wrap_content"
-                    android:text="@string/item_length_cumulative"
-                    android:gravity="left"
-                    android:textColor="#003C71" />
-                <TextView
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:text="@string/item_width_cumulative"
-                android:gravity="center"
-                android:textColor="#003C71" />
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:text="@string/despQty_OrderQty"
-                android:gravity="right"
-                android:textColor="#003C71" />
-
-
-
-        </LinearLayout>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/lengthWidthRecycler"
             android:layout_width="match_parent"

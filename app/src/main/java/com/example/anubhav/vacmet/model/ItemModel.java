@@ -35,12 +35,26 @@ public class ItemModel implements Serializable {
     private List<String> widthList;
     private List<Double> totalDespQty;
     private List<Double> totalInprodQty;
+    private List<Double> totalOrderedQty;
+    private List<String> treatment1List;
+    private List<String> treatment2List;
+    private List<String> itemDeliveryDatesList;
+    private List<String> shadesList;
+    private List<String> containerNoList;
+    private List<String> stockQtyList;
 
     public ItemModel() {
         lengthList = new ArrayList<>();
         widthList = new ArrayList<>();
         totalDespQty = new ArrayList<>();
         totalInprodQty = new ArrayList<>();
+        totalOrderedQty = new ArrayList<>();
+        treatment1List = new ArrayList<>();
+        treatment2List = new ArrayList<>();
+        itemDeliveryDatesList = new ArrayList<>();
+        shadesList = new ArrayList<>();
+        containerNoList = new ArrayList<>();
+        stockQtyList = new ArrayList<>();
     }
 
     public String getItemName() {
@@ -113,6 +127,24 @@ public class ItemModel implements Serializable {
     public List<Double> getInProdList(){
         return totalInprodQty;
     }
+    public List<Double> getOrderedList(){
+        return totalOrderedQty;
+    }
+    public List<String> getStockQtyList(){
+        return stockQtyList;
+    }
+    public List<String> getItemDeliveryDatesList(){
+        return itemDeliveryDatesList;
+    }
+    public List<String> getTreatment1List(){
+        return treatment1List;
+    }
+    public List<String> getTreatment2List(){
+        return treatment2List;
+    }
+    public List<String> getShadesList(){
+        return shadesList;
+    }
     public String getTotalDespQty(){
         if(totalDespQty!=null){
             double sum = 0;
@@ -123,9 +155,7 @@ public class ItemModel implements Serializable {
         }
         return "0";
     }
-    public String getTotalOrderQty(){
-        return String.valueOf(Double.parseDouble(getTotalDespQty())+Double.parseDouble(getTotalInProdQty()));
-    }
+
     public String getTotalInProdQty(){
         if(totalInprodQty!=null){
             double sum = 0;
@@ -197,6 +227,9 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setTreatment1(String treatment1) {
+        if(treatment1List!=null){
+            treatment1List.add(treatment1);
+        }
         this.treatment1 = treatment1;
         return this;
     }
@@ -206,6 +239,9 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setTreatment2(String treatment2) {
+        if(treatment2List!=null){
+            treatment2List.add(treatment2);
+        }
         this.treatment2 = treatment2;
         return this;
     }
@@ -215,6 +251,9 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setShades(String shades) {
+        if(shadesList!=null){
+            shadesList.add(shades);
+        }
         this.shades = shades;
         return this;
     }
@@ -224,6 +263,9 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setContainerNo(String containerNo) {
+        if(containerNoList!=null){
+            containerNoList.add(containerNo);
+        }
         this.containerNo = containerNo;
         return this;
     }
@@ -235,8 +277,21 @@ public class ItemModel implements Serializable {
     public ItemModel setOrderedQty(String orderedQty) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         orderedQty = decimalFormat.format(Double.parseDouble(orderedQty));
+        if(totalOrderedQty!=null){
+            totalOrderedQty.add(Double.valueOf(orderedQty));
+        }
         this.orderedQty = orderedQty;
         return this;
+    }
+    public String getTotalOrderedQty(){
+        if(totalOrderedQty!=null){
+            double sum = 0;
+            for(double d: totalOrderedQty){
+                sum += d;
+            }
+            return String.valueOf(sum);
+        }
+        return "0";
     }
 
     public String getStockQty() {
@@ -246,6 +301,9 @@ public class ItemModel implements Serializable {
     public ItemModel setStockQty(String stockQty) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         stockQty = decimalFormat.format(Double.parseDouble(stockQty));
+        if(stockQtyList!=null){
+            stockQtyList.add(stockQty);
+        }
         this.stockQty = stockQty;
         return this;
     }
@@ -264,6 +322,9 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setDeliveryDate(String deliveryDate) {
+        if(itemDeliveryDatesList!=null){
+            itemDeliveryDatesList.add(deliveryDate);
+        }
         this.deliveryDate = deliveryDate;
         return this;
     }

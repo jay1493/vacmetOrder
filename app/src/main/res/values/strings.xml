@@ -36,7 +36,7 @@
     <string name="Delivery_Date">"Delivery Date: "</string>
     <string name="otp_not_matched">Otp not matched.</string>
     <string name="Request_dispatch_date">"Request Dispatch Date: "</string>
-    <string name="Quantity_Info">Quantity Info</string>
+    <string name="Quantity_Info">Quantity Info(For all items)</string>
     <string name="Order_Prod_Qty">"In Production: "</string>
     <string name="Item_Name">Item Name</string>
     <string name="despQty_OrderQty">Desp Qty/Order Qty</string>
@@ -75,4 +75,6 @@
     <string name="status_not_known">Status(Not known)</string>
     <string name="item_length_cumulative">Length(s):</string>
     <string name="item_width_cumulative">Width(s):</string>
+    <string name="open_qty">Open Qty:</string>
+    <string name="stock_left">(Stock left)</string>
 </resources>

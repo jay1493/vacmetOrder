@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:padding="@dimen/d5"
     android:layout_marginBottom="@dimen/d20"
-    android:elevation="50dp"
+    android:elevation="@dimen/d50"
     android:orientation="horizontal">
     <LinearLayout
         android:layout_width="match_parent"

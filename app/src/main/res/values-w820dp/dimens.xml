@@ -8,6 +8,7 @@
     <dimen name="d10">15dp</dimen>
     <dimen name="d20">25dp</dimen>
     <dimen name="d30">35dp</dimen>
+    <dimen name="d50">55dp</dimen>
     <dimen name="d75">80dp</dimen>
     <dimen name="d250">260dp</dimen>
 </resources>

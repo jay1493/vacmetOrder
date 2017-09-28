@@ -84,6 +84,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     private Toolbar toolbar;
     private ProgressDialog progressDialog;
     private LinearLayout llParent;
+    private TextView stockQty;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -107,7 +108,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
             orderDate.setText(orderModel.getOrderDate());
             requestDispatchDate.setText(orderModel.getDeliveryDate());
             DecimalFormat decimalFormat = new DecimalFormat("#.##");
-            orderQty.setText(decimalFormat.format(Double.parseDouble(orderModel.getDespQty())+Double.parseDouble(orderModel.getInProdQty())));
+            orderQty.setText(orderModel.getOrderQty());
+            stockQty.setText(orderModel.getStockQty());
             despQty.setText(orderModel.getDespQty());
             prodQty.setText(orderModel.getInProdQty());
 //            itemList = orderModel.getItemModelArrayList();
@@ -173,6 +175,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
         requestDispatchDate = (TextView) findViewById(R.id.orderInfo_rdd);
         orderQty = (TextView) findViewById(R.id.orderInfo_orderQty);
         despQty = (TextView) findViewById(R.id.orderInfo_despQty);
+        stockQty = (TextView) findViewById(R.id.orderInfo_stockQty);
         prodQty = (TextView) findViewById(R.id.orderInfo_prodQty);
         itemsListView = (ListView) findViewById(R.id.list_orderInformation);
         toolbar = (Toolbar) findViewById(R.id.toolbar);

@@ -75,7 +75,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                 holder.partyName.setText(list.get(position).getPartyName());
                 holder.orderNo.setText(list.get(position).getOrderNo());
                 holder.orderDate.setText(list.get(position).getOrderDate());
-                holder.orderQty.setText(decimalFormat.format(Double.parseDouble(list.get(position).getDespQty())+Double.parseDouble(list.get(position).getInProdQty())));
+                holder.orderQty.setText(list.get(position).getOrderQty());
                 holder.despQty.setText(list.get(position).getDespQty());
                 holder.deliveryDate.setText(list.get(position).getDeliveryDate());
                 ViewCompat.setTransitionName(holder.orderNo,list.get(position).getOrderNo());
