@@ -10,4 +10,6 @@
     <color name="tv_color">#cccccc</color>
     <color name="red_transperant">#a6710017</color>
     <color name="red">#FF0000</color>
+    <color name="charcoal">#FF394249</color>
+    <color name="medium_jungle_green">#FF273238</color>
 </resources>

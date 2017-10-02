@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
 
@@ -142,15 +143,213 @@
                     />
             </LinearLayout>
 
-
         </LinearLayout>
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/lengthWidthRecycler"
+
+        <!--<com.cleveroad.adaptivetablelayout.AdaptiveTableLayout
+            android:id="@+id/tableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone">
+            app:cellMargin="1dp"
+            app:fixedHeaders="true"
+            app:solidRowHeaders="true"
+            app:dragAndDropEnabled="true"/>-->
 
-        </android.support.v7.widget.RecyclerView>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/d10">
+        <TableLayout
+            android:id="@+id/table_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TableRow android:weightSum="7">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Delivery_Date"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/item_length_cumulative"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/item_width_cumulative"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d20"
+                    android:layout_height="wrap_content"
+                    android:text="@string/despQty_OrderQty"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stock_qty"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d20"
+                    android:layout_height="wrap_content"
+                    android:text="@string/item_treatment1"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d20"
+                    android:layout_height="wrap_content"
+                    android:text="@string/item_treatment2"
+                    android:textColor="#003C71" />
+            </TableRow>
+           <!-- <TableRow>
+                &lt;!&ndash;<android.support.v7.widget.RecyclerView
+                    android:id="@+id/lengthWidthRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                </android.support.v7.widget.RecyclerView>&ndash;&gt;
+
+                    <TextView
+                        android:id="@+id/txt_item_delivery_date"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginRight="@dimen/d20"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d10"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:gravity="left"
+                        android:textColor="@color/red" />
+                    <TextView
+                        android:id="@+id/txt_length"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginRight="@dimen/d20"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d10"
+                        android:text=""
+                        android:gravity="left" />
+                    <TextView
+                        android:id="@+id/txt_width"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginRight="@dimen/d20"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d10"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:gravity="left" />
+                    <TextView
+                        android:id="@+id/txt_orderQty"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginRight="@dimen/d20"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d20"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:gravity="left" />
+                    <TextView
+                        android:id="@+id/txt_item_stock"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginRight="@dimen/d20"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d10"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="@color/red"
+                        android:gravity="left"/>
+                    <TextView
+                        android:id="@+id/txt_treatment1"
+                        android:gravity="left"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d20"
+                        android:layout_marginRight="@dimen/d20"
+                        android:layout_height="wrap_content"
+                        android:text="" />
+                    <TextView
+                        android:id="@+id/txt_treatment2"
+                        android:gravity="left"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1"
+                        android:paddingLeft="@dimen/d20"
+                        android:paddingRight="@dimen/d20"
+                        android:layout_marginRight="@dimen/d20"
+                        android:layout_height="wrap_content"
+                        android:text="" />
+
+
+            </TableRow>-->
+
+        </TableLayout>
+        </HorizontalScrollView>
+<!--
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/d5"
+            android:weightSum="9">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:text="@string/item_length_cumulative"
+                android:gravity="left"
+                android:textColor="#003C71" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:text="@string/item_width_cumulative"
+                android:gravity="center"
+                android:textColor="#003C71" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:text="@string/despQty_OrderQty"
+                android:gravity="right"
+                android:textColor="#003C71" />
+
+
+
+        </LinearLayout>
+-->
+
         <LinearLayout
             android:id="@+id/ll_treatment"
             android:layout_width="match_parent"

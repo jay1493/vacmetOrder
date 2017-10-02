@@ -192,8 +192,9 @@ public class ItemModel implements Serializable {
         /*DecimalFormat decimalFormat = new DecimalFormat("#.##");
         length = decimalFormat.format(Double.parseDouble(length));*/
 //        length = NumberFormat.getInstance().format(length);
+        int w = (int) Double.parseDouble(length);
         if(lengthList!=null){
-            lengthList.add(length);
+            lengthList.add(String.valueOf(w));
         }
         this.length = length;
         return this;
@@ -215,8 +216,9 @@ public class ItemModel implements Serializable {
         /*DecimalFormat decimalFormat = new DecimalFormat("#.##");
         width = decimalFormat.format(Double.parseDouble(width));*/
 //        width = NumberFormat.getInstance().format(width);
+        int w = (int) Double.parseDouble(width);
         if(widthList!=null){
-            widthList.add(width);
+            widthList.add(String.valueOf(w));
         }
         this.width = width;
         return this;

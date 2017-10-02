@@ -77,4 +77,5 @@
     <string name="item_width_cumulative">Width(s):</string>
     <string name="open_qty">Open Qty:</string>
     <string name="stock_left">(Stock left)</string>
+    <string name="stock_qty">Stock Qty(s):</string>
 </resources>
