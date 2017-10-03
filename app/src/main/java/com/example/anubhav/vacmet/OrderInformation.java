@@ -202,6 +202,18 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
 
     @Override
     public void onClick(View view, int position) {
+        if(itemsListView!=null){
+            for(int i=0;i<itemsListView.getChildCount();i++){
+                if(i==position){
+                    continue;
+                }
+                View listItemView = itemsListView.getChildAt(i);
+                View listItemExpandedDetails = listItemView.findViewById(R.id.expanded_item_details);
+                if(listItemExpandedDetails.getVisibility()==View.VISIBLE){
+                    listItemExpandedDetails.setVisibility(View.GONE);
+                }
+            }
+        }
         LinearLayout expandedDetails = (LinearLayout) view.findViewById(R.id.expanded_item_details);
         if(expandedDetails.getVisibility() == View.VISIBLE){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
