@@ -109,6 +109,13 @@ public class ListOrderInformation extends BaseAdapter {
             recyclerLengthWidthAdapter = new RecyclerLengthWidthAdapter(context,((ItemModel)getItem(i)).getLengthList(),((ItemModel)getItem(i)).getWidthList() , ((ItemModel)getItem(i)).getDespList() , ((ItemModel)getItem(i)).getOrderedList() ,
                     ((ItemModel)getItem(i)).getItemDeliveryDatesList() , ((ItemModel)getItem(i)).getStockQtyList() , ((ItemModel)getItem(i)).getTreatment1List() , ((ItemModel)getItem(i)).getTreatment2List() , ((ItemModel)getItem(i)).getShadesList() , ((ItemModel)getItem(i)).getInProdList());
             holder.lengthWidthRecycler.setAdapter(recyclerLengthWidthAdapter);*/
+            if(holder.tableLayout.getChildCount()>1){
+                for(int childPos = 1; childPos<holder.tableLayout.getChildCount(); childPos++){
+                    if(holder.tableLayout.getChildAt(childPos)!=null) {
+                        holder.tableLayout.removeView(holder.tableLayout.getChildAt(childPos));
+                    }
+                }
+            }
             for(int p=0;p<rowsCount(i);p++){
                 View itemView = LayoutInflater.from(context).inflate(R.layout.table_row_layout,null,false);
                 TextView length;
