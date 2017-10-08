@@ -59,7 +59,7 @@ public class ListOrderInformation extends BaseAdapter {
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
 
-        if(view == null){
+//        if(view == null){
             holder = new ListHolder();
             view = LayoutInflater.from(context).inflate(R.layout.order_information_row,null);
             holder.itemName = (TextView) view.findViewById(R.id.orderInfo_itemName);
@@ -68,6 +68,7 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemStatus = (TextView) view.findViewById(R.id.txt_detailsStatus);
             holder.itemNo = (TextView) view.findViewById(R.id.txt_materialNo);
             holder.itemBillNo = (TextView) view.findViewById(R.id.txt_detailsBillNo);
+            holder.expandedItemLayout = (LinearLayout) view.findViewById(R.id.expanded_item_details);
             holder.itemBillDate = (TextView) view.findViewById(R.id.txt_detailsBillDate);
             holder.tableLayout = (TableLayout) view.findViewById(R.id.table_layout);
 //            holder.adaptiveTableLayout = (AdaptiveTableLayout) view.findViewById(R.id.tableLayout);
@@ -78,9 +79,9 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemContainerNo = (TextView) view.findViewById(R.id.txt_detailsContainerNo);
             holder.itemShades = (TextView) view.findViewById(R.id.txt_detailsShades);
             view.setTag(holder);
-        }else{
+        /*}else{
             holder = (ListHolder) view.getTag();
-        }
+        }*/
         if(((ItemModel)getItem(i)).getStatus().equalsIgnoreCase(context.getString(R.string.closed))){
             holder.mainLayout.setBackgroundColor(context.getResources().getColor(R.color.red_transperant));
         }else{
@@ -174,7 +175,13 @@ public class ListOrderInformation extends BaseAdapter {
         }else{
 //            holder.lengthWidthRecycler.setVisibility(View.GONE);
         }
-
+        if(holder.tableLayout.getChildCount() != rowsCount(i)+1){
+            for(int childPos = 1; childPos<=(holder.tableLayout.getChildCount()-1)-rowsCount(i); childPos++){
+                if(holder.tableLayout.getChildAt(childPos)!=null) {
+                    holder.tableLayout.removeView(holder.tableLayout.getChildAt(childPos));
+                }
+            }
+        }
        /* if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getContainerNo())) {
             holder.itemContainerNo.setText(((ItemModel) getItem(i)).getContainerNo());
         }
@@ -207,8 +214,19 @@ public class ListOrderInformation extends BaseAdapter {
         return 0;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return getCount();
+    }
+
     private class ListHolder{
        LinearLayout mainLayout;
+       LinearLayout expandedItemLayout;
        TextView itemName;
        TextView despQty;
        TextView itemStatus;

@@ -11,102 +11,7 @@
         android:layout_marginTop="@dimen/d5"
         android:padding="@dimen/d10">
 
-        <TextView
-            android:id="@+id/txt_detailsHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/item_details"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/black"
-            android:textSize="18sp" />
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/black"
-            android:padding="@dimen/d5"/>
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="@dimen/d5">
-            <TextView
-                android:id="@+id/txt_materialNo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/material_no"
-                android:layout_gravity="start"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textColor="@color/red"
-                android:textSize="18sp"
-                android:gravity="left"
-                android:layout_toLeftOf="@+id/txt_detailsStatus"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true"/>
-            <TextView
-                android:id="@+id/txt_detailsStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="@string/status_not_known"
-                android:gravity="end"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textColor="@color/red"
-                android:textSize="18sp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"/>
-        </RelativeLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/d5"
-            android:weightSum="10">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="3"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bill_no"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsBillNo"
-                    android:layout_width="0dp"
-                    android:layout_weight="7"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="4"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bill_date"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsBillDate"
-                    android:layout_width="0dp"
-                    android:layout_weight="6"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
 
-        </LinearLayout>
 
         <!--<com.cleveroad.adaptivetablelayout.AdaptiveTableLayout
             android:id="@+id/tableLayout"
@@ -126,7 +31,8 @@
                 android:id="@+id/table_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <TableRow android:weightSum="7">
+                <TableRow android:weightSum="7"
+                    android:id="@+id/headerColumn">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_weight="1"

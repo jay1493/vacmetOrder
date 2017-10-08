@@ -12,7 +12,7 @@
     android:layout_height="wrap_content"
     android:id="@+id/main_layout_order_info"
     android:weightSum="9"
-    android:padding="@dimen/d10">
+    android:padding="@dimen/d20">
     <TextView
         android:id="@+id/orderInfo_itemName"
         android:layout_width="0dp"
@@ -21,14 +21,14 @@
         android:layout_gravity="left"
         android:maxLines="5"
         android:textColor="#003C71"
-        android:layout_weight="7"
+        android:layout_weight="6"
         android:textStyle="bold"
         android:text="Item 1"/>
     <TextView
         android:id="@+id/orderInfo_itemQtyStatus"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:textStyle="bold"
         android:textColor="#003C71"
         android:singleLine="false"
