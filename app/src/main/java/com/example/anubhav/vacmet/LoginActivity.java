@@ -594,7 +594,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       }else{
                           SmsManager smsManager = SmsManager.getDefault();
 //                          PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
-                          smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+getString(R.string.requestingAuth), null, null);
+                          smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+" "+getString(R.string.requestingAuth), null, null);
 
                       }
 
@@ -608,7 +608,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           if(wifi.isConnected() || mobileNet.isConnected()) {
                               GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
                               try {
-                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+getString(R.string.requestingAuth), etEmail_signUp.getText().toString().trim(), getString(R.string.adminEmails));
+                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
 
                               } catch (Exception e) {
                                   e.printStackTrace();
@@ -624,7 +624,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                   progressDialog.dismiss();
                   frameLayout.removeAllViews();
-
+                  login_btns.setVisibility(View.VISIBLE);
                  /* behaviour = "SignUp";
                   signAnonymousFirebaseUser();*/
 
@@ -795,7 +795,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if(wifi.isConnected() || mobileNet.isConnected()) {
                 GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
                 try {
-                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+getString(R.string.requestingAuth), etEmail_signUp.getText().toString().trim(), getString(R.string.adminEmails));
+                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
 
                 } catch (Exception e) {
                     e.printStackTrace();
