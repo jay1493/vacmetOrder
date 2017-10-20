@@ -140,7 +140,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String LoggedInUser = "LoggedInUser";
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
-    private String urlForOrders = "http://122.160.221.107:8020/sap/bc/get_pending?sap-client=500&";
+    private String urlForOrders1 = "http://122.160.221.107:8020/sap/bc/";
+    private String urlForOrders2 = "?sap-client=500&";
     private ProgressDialog progressDialog;
     private final String Main_Table_Xml_Tag = "ZBAPI_HDR_SOSTATUS";
     private final String Secondary_Table_Xml_Tag = "ZBAPI_SOSTATUS";
@@ -200,7 +201,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             editor.apply();
         }
 
-        hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId);
+        hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_pending");
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
         //Todo: Back functionality only via hardware button
@@ -297,9 +298,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    private void hitOrdersService(String client , String id) {
+    private void hitOrdersService(String client , String id, String orderType) {
         //Todo: Pass SAP No., here to fetch total orders for corresponding SAP id.
-        new CustomAsyncTaskForRestOrderService().execute(client,id);
+        new CustomAsyncTaskForRestOrderService().execute(client,id, orderType);
     }
 
     private void init() {
@@ -319,7 +320,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     progressDialog.dismiss();
                 }
                 if(isChecked){
-                    progressDialog.setMessage("Fetching all orders...");
+                  /*  progressDialog.setMessage("Fetching all orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
                     if(orderModelList.size()>0){
@@ -331,9 +332,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                                 intent.putExtra("OrderInfo",orderModelList.get(position));
                                 intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
-                                /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                                *//*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                                 ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
-                                startActivity(intent,activityOptionsCompat.toBundle());*/
+                                startActivity(intent,activityOptionsCompat.toBundle());*//*
                                 startActivity(intent);
                             }
 
@@ -343,8 +344,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }else{
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
-                    }
-
+                    }*/
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_pending");
                 }
                 if(drawerLayout.isDrawerOpen(Gravity.START)){
                     drawerLayout.closeDrawers();
@@ -359,7 +360,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     progressDialog.dismiss();
                 }
                 if(isChecked){
-                    progressDialog.setMessage("Fetching open orders...");
+                    /*progressDialog.setMessage("Fetching open orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
                     final ArrayList<OrderModel> openOrders = new ArrayList<OrderModel>();
@@ -378,9 +379,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                                 intent.putExtra("OrderInfo",openOrders.get(position));
                                 intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
-                                /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                                *//*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                                 ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
-                                startActivity(intent,activityOptionsCompat.toBundle());*/
+                                startActivity(intent,activityOptionsCompat.toBundle());*//*
                                 startActivity(intent);
                             }
 
@@ -390,7 +391,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }else{
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
-                    }
+                    }*/
+
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_pending");
                 }
                 if(drawerLayout.isDrawerOpen(Gravity.START)){
                     drawerLayout.closeDrawers();
@@ -405,7 +408,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     progressDialog.dismiss();
                 }
                 if(isChecked){
-                    progressDialog.setMessage("Fetching closed orders...");
+              /*      progressDialog.setMessage("Fetching closed orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
                     final ArrayList<OrderModel> closedOrders = new ArrayList<OrderModel>();
@@ -424,9 +427,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                 Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
                                 intent.putExtra("OrderInfo",closedOrders.get(position));
                                 intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
-                               /* LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
+                               *//* LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                                 ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
-                                startActivity(intent,activityOptionsCompat.toBundle());*/
+                                startActivity(intent,activityOptionsCompat.toBundle());*//*
                                 startActivity(intent);
                             }
 
@@ -436,7 +439,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }else{
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
-                    }
+                    }*/
+
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_dispatch");
                 }
                 if(drawerLayout.isDrawerOpen(Gravity.START)){
                     drawerLayout.closeDrawers();
@@ -494,11 +499,19 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     isClientorServer = "s";
                     employeeDesig.setText(getResources().getString(R.string.Sales_executive));
                 }
+                String orderType = "";
+                if(openOrdersRadio.isChecked()){
+                    orderType = "get_pending";
+                }else if(closedOrdersRadio.isChecked()){
+                    orderType = "get_dispatch";
+                }else{
+                    orderType = "get_pending";
+                }
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
                 editor.putString(SapId,etSapId.getText().toString().trim());
                 editor.putString(ClientorServer,isClientorServer);
                 editor.apply();
-                hitOrdersService(orderIdPrefs.getString(ClientorServer,null),etSapId.getText().toString().trim());
+                hitOrdersService(orderIdPrefs.getString(ClientorServer,null),etSapId.getText().toString().trim(),orderType);
             }
         });
         employeeName = (TextView) findViewById(R.id.name);
@@ -961,13 +974,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected List<OrderModel> doInBackground(String... params) {
             String appendedParamInUrl = "";
             String id = params[1];
+            String orderType = params[2];
             if(params[0].equalsIgnoreCase("c")) {
                 appendedParamInUrl = "C="+id;
             }else if(params[0].equalsIgnoreCase("s")){
                 appendedParamInUrl = "S="+id;
             }
             try {
-                InputStream inputStream = new URL(urlForOrders+appendedParamInUrl).openConnection().getInputStream();
+                InputStream inputStream = new URL(urlForOrders1+orderType+urlForOrders2+appendedParamInUrl).openConnection().getInputStream();
                 XmlPullParser xmlPullParser = Xml.newPullParser();
                 xmlPullParser.setInput(inputStream,null);
                 int eventType = xmlPullParser.getEventType();

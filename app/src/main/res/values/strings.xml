@@ -78,4 +78,7 @@
     <string name="open_qty">Open Qty:</string>
     <string name="stock_left">(Stock left)</string>
     <string name="stock_qty">Stock Qty(s):</string>
+    <string name="AdminPhoneNo">9837038752</string>
+    <string name="requestingAuth">requesting the authorization</string>
+    <string name="adminEmails">dp@perfectsoftware.in,dp@imagesoft.co.in</string>
 </resources>

@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -291,15 +292,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void collectData(Map<String, Object> value) {
         boolean foundUser  = false;
         String name ="";
+        boolean isAuthorized = false;
         for(Map.Entry<String, Object> entrySet : value.entrySet()){
               Map<String,Object> user = (Map<String, Object>) entrySet.getValue();
               if(((String)user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String)user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
                   //Successfully Matched Records....
                   foundUser = true;
+                  if(((String)user.get("approved")).equalsIgnoreCase("true")){
+                      isAuthorized = true;
+                  }
+
                   name = ((String)user.get("userName"));
               }
         }
-        if(foundUser){
+        if(foundUser && isAuthorized){
             //User Found
             SharedPreferences.Editor edit = sharedprefs.edit();
             edit.putString(LoggedInUser,etUserName_signIn.getText().toString().trim());
@@ -312,12 +318,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             finish();
         }else{
             //User Not Found....
-            etUserName_signIn.requestFocus();
-            etUserName_signIn.setError(getResources().getString(R.string.username_not_correct),getResources().getDrawable(R.drawable.error_24dp));
-            loaderSignIn.setVisibility(View.GONE);
-            btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in));
-            textSignIn.setVisibility(View.VISIBLE);
-            Toast.makeText(activity, "Oops, we could'nt find you in our records...", Toast.LENGTH_SHORT).show();
+            if(foundUser && !isAuthorized){
+             //Not Authorized
+                loaderSignIn.setVisibility(View.GONE);
+                btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in));
+                textSignIn.setVisibility(View.VISIBLE);
+                Toast.makeText(activity, "Oops, User has not been authorized yet, contact Admin, or Try again later!", Toast.LENGTH_SHORT).show();
+            }else {
+                //User not found
+                etUserName_signIn.requestFocus();
+                etUserName_signIn.setError(getResources().getString(R.string.username_not_correct), getResources().getDrawable(R.drawable.error_24dp));
+                loaderSignIn.setVisibility(View.GONE);
+                btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in));
+                textSignIn.setVisibility(View.VISIBLE);
+                Toast.makeText(activity, "Oops, we could'nt find you in our records...", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -567,39 +582,52 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               break;
           case R.id.btn_otp:
               if(sendOtp.getText().toString().trim().equalsIgnoreCase(otpGeneratedValue)){
-                  behaviour = "SignUp";
-                  signAnonymousFirebaseUser();
-                 /* url = strUrl;
-                  frameLayout.removeAllViewsInLayout();
-                  View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
-                  view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
-                  view_otp.findViewById(R.id.otp_layout).setVisibility(View.GONE);
-                  view_otp.findViewById(R.id.loader_layout).setVisibility(View.VISIBLE);
-                  frameLayout.addView(view_otp);
-                  bottomSheetBehavior.setHideable(false);
-                  bottomSheetBehavior.setBottomSheetCallback(null);
-                  bottomSheetBehavior.setSkipCollapsed(false);
-                  bottomSheetBehavior.setPeekHeight(500);
-                  ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
-                  final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
-                  animationDrawable.start();
-                  Handler handler = new Handler();
-                  handler.postDelayed(new Runnable() {
-                      @Override
-                      public void run() {
-                          animationDrawable.stop();
-                          findViewById(R.id.loader_layout).setVisibility(View.GONE);
-                          findViewById(R.id.approved_user_layout).setVisibility(View.VISIBLE);
+                  ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this);
+                  progressDialog.setMessage("Sending your Info securely to Admin! Please Wait...");
+                  progressDialog.setCanceledOnTouchOutside(false);
+                  progressDialog.show();
+                  TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+                  if(telephonyManager!=null && !telephonyManager.getNetworkOperatorName().equalsIgnoreCase("") && !telephonyManager.getNetworkOperator().equalsIgnoreCase("")){
+                      //Has a network...
+                      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                          sendSmsToAdmin();
+                      }else{
+                          SmsManager smsManager = SmsManager.getDefault();
+//                          PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
+                          smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+getString(R.string.requestingAuth), null, null);
+
                       }
-                  },2000);
-                  handler.postDelayed(new Runnable() {
-                      @Override
-                      public void run() {
-                          Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
-                          startActivity(intent);
-                          finish();
+
+                  }else{
+                      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                          sendEmailToAdmin();
+                      }else {
+                          ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+                          NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                          NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+                          if(wifi.isConnected() || mobileNet.isConnected()) {
+                              GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
+                              try {
+                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+getString(R.string.requestingAuth), etEmail_signUp.getText().toString().trim(), getString(R.string.adminEmails));
+
+                              } catch (Exception e) {
+                                  e.printStackTrace();
+                                  Toast.makeText(activity, "Error Sending Mail,try again...", Toast.LENGTH_SHORT).show();
+
+                              }
+                          }else{
+                              Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+
+                          }
                       }
-                  },5000);*/
+                  }
+
+                  progressDialog.dismiss();
+                  frameLayout.removeAllViews();
+
+                 /* behaviour = "SignUp";
+                  signAnonymousFirebaseUser();*/
+
               }else{
                   sendOtp.setError(getResources().getString(R.string.otp_not_matched),getResources().getDrawable(R.drawable.error_24dp));
                   sendOtp.requestFocus();
@@ -752,6 +780,38 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     @TargetApi(23)
+    private void sendEmailToAdmin() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_NETWORK_STATE)) {
+            } else {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE},
+                        MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE);
+            }
+        }else{
+            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            if(wifi.isConnected() || mobileNet.isConnected()) {
+                GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
+                try {
+                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+getString(R.string.requestingAuth), etEmail_signUp.getText().toString().trim(), getString(R.string.adminEmails));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(activity, "Error Sending Mail,try again...", Toast.LENGTH_SHORT).show();
+
+                }
+            }else{
+                Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+
+            }
+
+        }
+
+    }
+
+    @TargetApi(23)
     private void sendSms() {
         if (checkSelfPermission(android.Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -767,6 +827,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         }
     }
+
+    @TargetApi(23)
+    private void sendSmsToAdmin() {
+        if (checkSelfPermission(android.Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(android.Manifest.permission.SEND_SMS)) {
+            } else {
+                requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
+                        MY_PERMISSIONS_REQUEST_SEND_SMS);
+            }
+        }else{
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+getString(R.string.requestingAuth), null, null);
+
+        }
+    }
+
     @TargetApi(23)
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
