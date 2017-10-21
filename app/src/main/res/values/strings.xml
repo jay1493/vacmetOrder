@@ -53,8 +53,8 @@
     <string name="party">Party</string>
     <string name="Sales_executive">Sales Executive</string>
     <string name="sort_orders_by">Sort orders by:</string>
-    <string name="open_orders">Open Orders</string>
-    <string name="closed_orders">Closed Orders</string>
+    <string name="open_orders">Orders</string>
+    <string name="closed_orders">Dispatched Orders</string>
     <string name="orders">Orders</string>
     <string name="admin_console">Admin Console</string>
     <string name="update_records">Update Records</string>
@@ -79,6 +79,6 @@
     <string name="stock_left">(Stock left)</string>
     <string name="stock_qty">Stock Qty(s):</string>
     <string name="AdminPhoneNo">9837038752</string>
-    <string name="requestingAuth">requesting the authorization</string>
+    <string name="requestingAuth">requesting the authorization for vacmet application.</string>
     <string name="adminEmails">dp@perfectsoftware.in,dp@imagesoft.co.in</string>
 </resources>

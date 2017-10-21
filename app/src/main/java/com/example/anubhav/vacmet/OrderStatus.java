@@ -159,7 +159,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private RadioButton radioClient,radioServer;
     private LinearLayout adminConsole;
     private RadioGroup sortOrdersGroup;
-    private RadioButton allOrdersRadio,openOrdersRadio,closedOrdersRadio;
+    private RadioButton openOrdersRadio,closedOrdersRadio;
 
     @Override
     protected void onStart() {
@@ -307,52 +307,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         progressDialog = new ProgressDialog(this);
         adminConsole = (LinearLayout) findViewById(R.id.admin_drawer);
         sortOrdersGroup = (RadioGroup) findViewById(R.id.sort_orders_by_group);
-        allOrdersRadio = (RadioButton) findViewById(R.id.radioAllOrders);
+
         openOrdersRadio = (RadioButton) findViewById(R.id.radioOpenOrders);
         closedOrdersRadio = (RadioButton) findViewById(R.id.radioClosedOrders);
         if(!BuildConfig.DEBUG){
             adminConsole.setVisibility(View.GONE);
         }
-        allOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(progressDialog.isShowing()){
-                    progressDialog.dismiss();
-                }
-                if(isChecked){
-                  /*  progressDialog.setMessage("Fetching all orders...");
-                    progressDialog.setCanceledOnTouchOutside(false);
-                    progressDialog.show();
-                    if(orderModelList.size()>0){
-                        recyclerView.setVisibility(View.VISIBLE);
-                        noSearchResultFound.setVisibility(View.GONE);
-                        recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
-                            @Override
-                            public void onClick(View view, int position, View clickedView) {
-                                Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
-                                intent.putExtra("OrderInfo",orderModelList.get(position));
-                                intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
-                                *//*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
-                                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
-                                startActivity(intent,activityOptionsCompat.toBundle());*//*
-                                startActivity(intent);
-                            }
 
-
-                        });
-                        recyclerView.setAdapter(recyclerViewAdapter);
-                    }else{
-                        noSearchResultFound.setVisibility(View.VISIBLE);
-                        recyclerView.setVisibility(View.GONE);
-                    }*/
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_pending");
-                }
-                if(drawerLayout.isDrawerOpen(Gravity.START)){
-                    drawerLayout.closeDrawers();
-                }
-                progressDialog.dismiss();
-            }
-        });
         openOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

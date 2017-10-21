@@ -40,18 +40,14 @@
                     android:orientation="vertical"
                     android:padding="@dimen/d10"
                     android:layout_marginTop="@dimen/d10"
-                    android:checkedButton="@+id/radioAllOrders">
+                    android:checkedButton="@+id/radioOpenOrders">
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
                         android:text="@string/sort_orders_by"
                         />
-                    <RadioButton
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/radioAllOrders"
-                        android:text="@string/orders"/>
+
                     <RadioButton
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

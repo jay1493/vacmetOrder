@@ -125,6 +125,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private RadioButton radioClient,radioSales;
     private SharedPreferences orderIdPrefs;
     private String userSapId,userClientOrServer;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,12 +173,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }else{
                     //SignedOut
                 }
-                updateUI(user);
+                updateUI(user,false);
             }
         };
     }
 
-    private void updateUI(FirebaseUser user) {
+    private void updateUI(FirebaseUser user, final boolean isAuthRequired) {
         boolean isAuthSuccess = (user!=null);
         if(isAuthSuccess){
             //Anonymous User SignedIn to Firebase., Now access Database...
@@ -191,6 +192,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if(dataSnapshot.exists()){
+                            if(progressDialog!=null && progressDialog.isShowing()){
+                                progressDialog.dismiss();
+                            }
                             Toast.makeText(activity, "User already exists! Please try a different user or SignIn", Toast.LENGTH_SHORT).show();
                             bottomSheetBehavior.setHideable(true);
                             //Setting state to hideable without setting the above property could result in crash
@@ -209,12 +213,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     }
                 });
+
 //                mDatabase.child(userEmail).setValue(userModel);
                 mDatabase.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if(!dataSnapshot.exists()) {
-                            passUser();
+                            if(isAuthRequired){
+                                if(progressDialog!=null && progressDialog.isShowing()){
+                                    progressDialog.dismiss();
+                                }
+                                Toast.makeText(activity, "Please wait for Admins to Approve...", Toast.LENGTH_SHORT).show();
+                                bottomSheetBehavior.setHideable(true);
+                                //Setting state to hideable without setting the above property could result in crash
+                                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+//                            frameLayout.removeAllViews();
+                                login_btns.setVisibility(View.VISIBLE);
+                                btnSignIn.setVisibility(View.VISIBLE);
+                                btnSignUp.setVisibility(View.VISIBLE);
+                            }else {
+                                passUser();
+                            }
                         }
                     }
 
@@ -242,7 +261,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         }else{
             //Not SignedIn
-            Toast.makeText(activity, "There seems a problem connecting you with our server...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "User not connected to server...", Toast.LENGTH_SHORT).show();
+        }
+        if(isAuthRequired){
+            if(progressDialog!=null && progressDialog.isShowing()){
+                progressDialog.dismiss();
+            }
+            Toast.makeText(activity, "Please wait for Admins to Approve...", Toast.LENGTH_SHORT).show();
+            bottomSheetBehavior.setHideable(true);
+            //Setting state to hideable without setting the above property could result in crash
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+//                            frameLayout.removeAllViews();
+            login_btns.setVisibility(View.VISIBLE);
+            btnSignIn.setVisibility(View.VISIBLE);
+            btnSignUp.setVisibility(View.VISIBLE);
         }
     }
 
@@ -298,11 +330,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               if(((String)user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String)user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
                   //Successfully Matched Records....
                   foundUser = true;
-                  if(((String)user.get("approved")).equalsIgnoreCase("true")){
+                  if(((boolean)user.get("approved"))){
                       isAuthorized = true;
                   }
 
                   name = ((String)user.get("userName"));
+                  userSapId = ((String)user.get("sapId"));
+                  userClientOrServer = ((String)user.get("clientOrServer"));
               }
         }
         if(foundUser && isAuthorized){
@@ -312,6 +346,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             edit.putString(LoggedInUserName,name);
             edit.putString(LoggedInUserPassword,etPassword_signIn.getText().toString().trim());
             edit.apply();
+
+            SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
+            orderIdPrefsEdit.putString(SapId,userSapId);
+            orderIdPrefsEdit.putString(ClientorServer,userClientOrServer);
+            orderIdPrefsEdit.apply();
 //            Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
             startActivity(intent);
@@ -384,7 +423,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 loaderSignIn.setVisibility(View.VISIBLE);
                 GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
                 Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
-                signAnonymousFirebaseUser();
+                signAnonymousFirebaseUser(false);
             }
             /*btnLogin.performClick();*/
             int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
@@ -582,9 +621,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
               break;
           case R.id.btn_otp:
               if(sendOtp.getText().toString().trim().equalsIgnoreCase(otpGeneratedValue)){
-                  ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this);
+                  progressDialog = new ProgressDialog(LoginActivity.this);
                   progressDialog.setMessage("Sending your Info securely to Admin! Please Wait...");
                   progressDialog.setCanceledOnTouchOutside(false);
+                  progressDialog.setCancelable(false);
                   progressDialog.show();
                   TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
                   if(telephonyManager!=null && !telephonyManager.getNetworkOperatorName().equalsIgnoreCase("") && !telephonyManager.getNetworkOperator().equalsIgnoreCase("")){
@@ -594,7 +634,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       }else{
                           SmsManager smsManager = SmsManager.getDefault();
 //                          PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
-                          smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+" "+getString(R.string.requestingAuth), null, null);
+                          smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), null, null);
 
                       }
 
@@ -608,7 +648,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           if(wifi.isConnected() || mobileNet.isConnected()) {
                               GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
                               try {
-                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
+                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
 
                               } catch (Exception e) {
                                   e.printStackTrace();
@@ -622,11 +662,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       }
                   }
 
-                  progressDialog.dismiss();
-                  frameLayout.removeAllViews();
-                  login_btns.setVisibility(View.VISIBLE);
-                 /* behaviour = "SignUp";
-                  signAnonymousFirebaseUser();*/
+
+                  behaviour = "SignUp";
+                  signAnonymousFirebaseUser(true);
 
               }else{
                   sendOtp.setError(getResources().getString(R.string.otp_not_matched),getResources().getDrawable(R.drawable.error_24dp));
@@ -654,7 +692,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                   loaderSignIn.setVisibility(View.VISIBLE);
                   GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
                   Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
-                  signAnonymousFirebaseUser();
+                  signAnonymousFirebaseUser(false);
               }
       /*        if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet") &&
                       etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
@@ -725,7 +763,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
       }
     }
 
-    private void signAnonymousFirebaseUser() {
+    private void signAnonymousFirebaseUser(final boolean isAuthRequired) {
         firebaseAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -735,7 +773,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(LoginActivity.this, "Authentication failed.",
                             Toast.LENGTH_SHORT).show();
                 }else if(task.isSuccessful()){
-                    updateUI(task.getResult().getUser());
+                    if(isAuthRequired){
+                        updateUI(task.getResult().getUser(),true);
+                    }else{
+                        updateUI(task.getResult().getUser(),false);
+                    }
+
                 }
             }
         });
@@ -795,7 +838,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if(wifi.isConnected() || mobileNet.isConnected()) {
                 GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
                 try {
-                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
+                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -839,7 +882,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             }
         }else{
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+getString(R.string.requestingAuth), null, null);
+            smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), null, null);
 
         }
     }
