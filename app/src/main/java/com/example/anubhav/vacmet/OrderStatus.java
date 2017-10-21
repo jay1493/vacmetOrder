@@ -128,11 +128,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ImageView ivCollapsingtoolbar;
     private CollapsingToolbarLayout collapsingToolbar;
     private CoordinatorLayout coordinatorLayout;
-    private HashMap<Integer,OrderModel> deletedOrders;
+    private HashMap<Integer, OrderModel> deletedOrders;
     private ArrayList<OrderModel> searchList;
-    private FloatingActionButton floatingActionButton,floatingLogOut;
+    private FloatingActionButton floatingActionButton, floatingLogOut;
     private ItemTouchHelper itemTouchHelper;
-    private SharedPreferences sharedPreferences,logingSharePrefs;
+    private SharedPreferences sharedPreferences, logingSharePrefs;
     private final String LoginPrefs = "LoginPrefs";
     private final String SapId = "SapId";
     private final String OrderIdPrefs = "OrderIdPrefs";
@@ -149,22 +149,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private LinearLayout mainDrawerView;
     private EditText etSapId;
     private ImageView imgEditSapId;
-    private TextView employeeName,employeeDesig;
+    private TextView employeeName, employeeDesig;
     private ImageView employeePic;
     private ActionBarDrawerToggle drawerToggle;
     private SharedPreferences orderIdPrefs;
     private String DefaultSapId = "1400056";
     private Button btnUpdateService;
     private RadioGroup radioGroup;
-    private RadioButton radioClient,radioServer;
+    private RadioButton radioClient, radioServer;
     private LinearLayout adminConsole;
     private RadioGroup sortOrdersGroup;
-    private RadioButton openOrdersRadio,closedOrdersRadio;
+    private RadioButton openOrdersRadio, closedOrdersRadio;
 
     @Override
     protected void onStart() {
         super.onStart();
-        if(getSupportActionBar()!=null) {
+        if (getSupportActionBar() != null) {
             setSupportActionBar(toolbar);
             ActionBar bar = getSupportActionBar();
             bar.setDisplayHomeAsUpEnabled(true);
@@ -181,35 +181,35 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status_nav_drawer);
         init();
-        logingSharePrefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
-        orderIdPrefs = getSharedPreferences(OrderIdPrefs,MODE_PRIVATE);
-        if(orderIdPrefs.getString(SapId,null)==null){
+        logingSharePrefs = getSharedPreferences(LoginPrefs, MODE_APPEND);
+        orderIdPrefs = getSharedPreferences(OrderIdPrefs, MODE_PRIVATE);
+        if (orderIdPrefs.getString(SapId, null) == null) {
             SharedPreferences.Editor editor = orderIdPrefs.edit();
-            editor.putString(SapId,DefaultSapId);
+            editor.putString(SapId, DefaultSapId);
             editor.apply();
-        }else{
-            DefaultSapId = orderIdPrefs.getString(SapId,null);
+        } else {
+            DefaultSapId = orderIdPrefs.getString(SapId, null);
         }
-        etSapId.setText(orderIdPrefs.getString(SapId,null));
-        if(logingSharePrefs.getString(LoggedInUserName,null)!=null){
-            employeeName.setText(logingSharePrefs.getString(LoggedInUserName,null));
+        etSapId.setText(orderIdPrefs.getString(SapId, null));
+        if (logingSharePrefs.getString(LoggedInUserName, null) != null) {
+            employeeName.setText(logingSharePrefs.getString(LoggedInUserName, null));
         }
 //        feedDummyData();
-        if(orderIdPrefs.getString(ClientorServer,null)==null){
+        if (orderIdPrefs.getString(ClientorServer, null) == null) {
             SharedPreferences.Editor editor = orderIdPrefs.edit();
-            editor.putString(ClientorServer,"c");
+            editor.putString(ClientorServer, "c");
             editor.apply();
         }
 
-        hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_pending");
+        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
         //Todo: Back functionality only via hardware button
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
-        if(getSupportActionBar()!=null) {
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        drawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.open_drawer,R.string.close_drawer){
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open_drawer, R.string.close_drawer) {
 
             @Override
             public void onDrawerOpened(View drawerView) {
@@ -237,18 +237,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingLogOut.setOnClickListener(this);
         drawerToggle.setDrawerIndicatorEnabled(true);
         drawerLayout.closeDrawers();
-         itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP|ItemTouchHelper.DOWN
-                ,ItemTouchHelper.START | ItemTouchHelper.END) {
+        itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN
+                , ItemTouchHelper.START | ItemTouchHelper.END) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                updateList(viewHolder.getAdapterPosition(),target.getAdapterPosition());
+                updateList(viewHolder.getAdapterPosition(), target.getAdapterPosition());
                 recyclerViewAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
                 return false;
             }
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                deletedOrders.put(new Integer(viewHolder.getAdapterPosition()),orderModelList.get(viewHolder.getAdapterPosition()));
+                deletedOrders.put(new Integer(viewHolder.getAdapterPosition()), orderModelList.get(viewHolder.getAdapterPosition()));
                 orderModelList.remove(viewHolder.getAdapterPosition());
                 dispalySnackBar(viewHolder.getAdapterPosition());
                 recyclerViewAdapter.notifyItemRemoved(viewHolder.getAdapterPosition());
@@ -261,10 +261,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
-        if(orderIdPrefs.getString(ClientorServer,null).equalsIgnoreCase("c")){
+        if (orderIdPrefs.getString(ClientorServer, null).equalsIgnoreCase("c")) {
             employeeDesig.setText(getResources().getString(R.string.client));
             radioClient.setChecked(true);
-        }else if(orderIdPrefs.getString(ClientorServer,null).equalsIgnoreCase("s")){
+        } else if (orderIdPrefs.getString(ClientorServer, null).equalsIgnoreCase("s")) {
             employeeDesig.setText(getResources().getString(R.string.Sales_executive));
             radioServer.setChecked(true);
         }
@@ -298,9 +298,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    private void hitOrdersService(String client , String id, String orderType) {
+    private void hitOrdersService(String client, String id, String orderType) {
         //Todo: Pass SAP No., here to fetch total orders for corresponding SAP id.
-        new CustomAsyncTaskForRestOrderService().execute(client,id, orderType);
+        new CustomAsyncTaskForRestOrderService().execute(client, id, orderType);
     }
 
     private void init() {
@@ -310,17 +310,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         openOrdersRadio = (RadioButton) findViewById(R.id.radioOpenOrders);
         closedOrdersRadio = (RadioButton) findViewById(R.id.radioClosedOrders);
-        if(!BuildConfig.DEBUG){
+        if (!BuildConfig.DEBUG) {
             adminConsole.setVisibility(View.GONE);
         }
 
         openOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(progressDialog.isShowing()){
+                if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
-                if(isChecked){
+                if (isChecked) {
                     /*progressDialog.setMessage("Fetching open orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
@@ -354,9 +354,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
 
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_pending");
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
                 }
-                if(drawerLayout.isDrawerOpen(Gravity.START)){
+                if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
                 }
                 progressDialog.dismiss();
@@ -365,10 +365,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         closedOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(progressDialog.isShowing()){
+                if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
-                if(isChecked){
+                if (isChecked) {
               /*      progressDialog.setMessage("Fetching closed orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
@@ -402,9 +402,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
 
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer,null),DefaultSapId,"get_dispatch");
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_dispatch");
                 }
-                if(drawerLayout.isDrawerOpen(Gravity.START)){
+                if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
                 }
                 progressDialog.dismiss();
@@ -420,7 +420,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         etSapId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(etSapId.isEnabled()){
+                if (etSapId.isEnabled()) {
                     etSapId.requestFocus();
 
                 }
@@ -453,26 +453,26 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 radioClient.setEnabled(false);
                 radioClient.setClickable(false);
                 String isClientorServer = null;
-                if(radioClient.isChecked()){
+                if (radioClient.isChecked()) {
                     isClientorServer = "c";
                     employeeDesig.setText(getResources().getString(R.string.client));
-                }else if(radioServer.isChecked()){
+                } else if (radioServer.isChecked()) {
                     isClientorServer = "s";
                     employeeDesig.setText(getResources().getString(R.string.Sales_executive));
                 }
                 String orderType = "";
-                if(openOrdersRadio.isChecked()){
+                if (openOrdersRadio.isChecked()) {
                     orderType = "get_pending";
-                }else if(closedOrdersRadio.isChecked()){
+                } else if (closedOrdersRadio.isChecked()) {
                     orderType = "get_dispatch";
-                }else{
+                } else {
                     orderType = "get_pending";
                 }
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
-                editor.putString(SapId,etSapId.getText().toString().trim());
-                editor.putString(ClientorServer,isClientorServer);
+                editor.putString(SapId, etSapId.getText().toString().trim());
+                editor.putString(ClientorServer, isClientorServer);
                 editor.apply();
-                hitOrdersService(orderIdPrefs.getString(ClientorServer,null),etSapId.getText().toString().trim(),orderType);
+                hitOrdersService(orderIdPrefs.getString(ClientorServer, null), etSapId.getText().toString().trim(), orderType);
             }
         });
         employeeName = (TextView) findViewById(R.id.name);
@@ -483,15 +483,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
         /**Todo : Problem for MODE_WORLD_READABLE LOOK==============================================**/
-        sharedPreferences = getSharedPreferences("GooglePic",MODE_APPEND);
-        if(sharedPreferences.getString("PhotoUrl",null)!=null) {
-            Glide.with(this).load(sharedPreferences.getString("PhotoUrl",null))
+        sharedPreferences = getSharedPreferences("GooglePic", MODE_APPEND);
+        if (sharedPreferences.getString("PhotoUrl", null) != null) {
+            Glide.with(this).load(sharedPreferences.getString("PhotoUrl", null))
                     .crossFade()
                     .thumbnail(0.5f)
                     .bitmapTransform(new CircleTransform(this))
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(employeePic);
-        }else{
+        } else {
             Glide.with(this).load(LoginActivity.url)
                     .crossFade()
                     .thumbnail(0.5f)
@@ -505,14 +505,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         ivCollapsingtoolbar = (ImageView) findViewById(R.id.ivCollapsingtoolbar);
         recyclerView = (RecyclerView) findViewById(R.id.orderStatusList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         orderModelList = new ArrayList<>();
-        recyclerViewAdapter = new RecyclerviewAdapter(this,orderModelList,new ItemClickListener(){
+        recyclerViewAdapter = new RecyclerviewAdapter(this, orderModelList, new ItemClickListener() {
             @Override
             public void onClick(View view, int position, View clickedView) {
-                Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
-                intent.putExtra("OrderInfo",orderModelList.get(position));
-                intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+                Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
+                intent.putExtra("OrderInfo", orderModelList.get(position));
+                intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
                 /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                 ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                 startActivity(intent,activityOptionsCompat.toBundle());*/
@@ -597,10 +597,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
    // USE THIS FUNCTION IF A SEARCHABLE ACTIVITY IS DEFINED WITH <intentfilter = ACTION_SEARCH>
         if(Intent.ACTION_SEARCH.equals(intent.getAction())){
             String query = intent.getStringExtra(SearchManager.QUERY);
-            *//**
-             * Write logic here to update recycler list, and make nestedscrollview layout visible and reclerview
-             * gone - if no results found...
-             *//*
+            */
+
+    /**
+     * Write logic here to update recycler list, and make nestedscrollview layout visible and reclerview
+     * gone - if no results found...
+     *//*
 
              boolean foundResult = false;
             if(!query.equalsIgnoreCase("")){
@@ -635,38 +637,38 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
     }*/
     private void handleSearch(String query) {
-            /**
-             * Write logic here to update recycler list, and make nestedscrollview layout visible and reclerview
-             * gone - if no results found...
-             */
+        /**
+         * Write logic here to update recycler list, and make nestedscrollview layout visible and reclerview
+         * gone - if no results found...
+         */
 
-             boolean foundResult = false;
-            if(!query.equalsIgnoreCase("")){
-                orderModelList.clear();
-                for(int i=0;i<searchList.size();i++){
-                    if(searchList.get(i).getPartyName().contains(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)){
-                        orderModelList.add(searchList.get(i));
-                        foundResult = true;
-                    }
-                }
-                if(!foundResult){
-                    //No result found
-                    recyclerView.setVisibility(View.GONE);
-                    noSearchResultFound.setVisibility(View.VISIBLE);
-                }else{
-                    noSearchResultFound.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    recyclerViewAdapter.notifyDataSetChanged();
-                }
-            }else{
-                orderModelList.clear();
-                for(int i =0;i<searchList.size();i++){
+        boolean foundResult = false;
+        if (!query.equalsIgnoreCase("")) {
+            orderModelList.clear();
+            for (int i = 0; i < searchList.size(); i++) {
+                if (searchList.get(i).getPartyName().contains(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)) {
                     orderModelList.add(searchList.get(i));
+                    foundResult = true;
                 }
+            }
+            if (!foundResult) {
+                //No result found
+                recyclerView.setVisibility(View.GONE);
+                noSearchResultFound.setVisibility(View.VISIBLE);
+            } else {
                 noSearchResultFound.setVisibility(View.GONE);
                 recyclerView.setVisibility(View.VISIBLE);
                 recyclerViewAdapter.notifyDataSetChanged();
             }
+        } else {
+            orderModelList.clear();
+            for (int i = 0; i < searchList.size(); i++) {
+                orderModelList.add(searchList.get(i));
+            }
+            noSearchResultFound.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            recyclerViewAdapter.notifyDataSetChanged();
+        }
 
     }
 
@@ -681,11 +683,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         }
     }
+
     private boolean dispalySnackBar(final int position) {
-        Snackbar snackbar = Snackbar.make(coordinatorLayout,"Undo Removed Order",Snackbar.LENGTH_SHORT).setAction("Undo", new View.OnClickListener() {
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, "Undo Removed Order", Snackbar.LENGTH_SHORT).setAction("Undo", new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                orderModelList.add(position,deletedOrders.get(new Integer(position)));
+                orderModelList.add(position, deletedOrders.get(new Integer(position)));
                 recyclerViewAdapter.notifyItemInserted(position);
                 recyclerView.scrollToPosition(position);
             }
@@ -701,25 +704,25 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.search,menu);
+        menuInflater.inflate(R.menu.search, menu);
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         final SearchView searchView =
                 (SearchView) menu.findItem(R.id.menu_search).getActionView();
-        ((TextView)searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setHint(getResources().getString(R.string.search_hint));
-        ((TextView)searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setHintTextColor(getResources().getColor(R.color.white));
-        ((ImageView)searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn)).setImageDrawable(getResources().getDrawable(R.drawable.search_24dp));
-        if(!searchView.isIconified()){
+        ((TextView) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setHint(getResources().getString(R.string.search_hint));
+        ((TextView) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text)).setHintTextColor(getResources().getColor(R.color.white));
+        ((ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn)).setImageDrawable(getResources().getDrawable(R.drawable.search_24dp));
+        if (!searchView.isIconified()) {
             collapsingToolbar.setTitle("");
-        }else{
+        } else {
             collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
         }
         searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(new ComponentName(getApplicationContext(),OrderStatus.class)));
+                searchManager.getSearchableInfo(new ComponentName(getApplicationContext(), OrderStatus.class)));
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
                 orderModelList.clear();
-                for(int i =0;i<searchList.size();i++){
+                for (int i = 0; i < searchList.size(); i++) {
                     orderModelList.add(searchList.get(i));
                 }
                 noSearchResultFound.setVisibility(View.GONE);
@@ -731,17 +734,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                collapsingToolbar.setTitle(getResources().getString(R.string.order_status)+" "+query);
+                collapsingToolbar.setTitle(getResources().getString(R.string.order_status) + " " + query);
                 handleSearch(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(newText.equalsIgnoreCase("")){
+                if (newText.equalsIgnoreCase("")) {
                     collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
                     orderModelList.clear();
-                    for(int i =0;i<searchList.size();i++){
+                    for (int i = 0; i < searchList.size(); i++) {
                         orderModelList.add(searchList.get(i));
                     }
                     noSearchResultFound.setVisibility(View.GONE);
@@ -761,10 +764,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         /*if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }*/
-        if(drawerToggle.onOptionsItemSelected(item)){
+        if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        if(item.getItemId() == android.R.id.home){
+        if (item.getItemId() == android.R.id.home) {
 
 
 
@@ -798,37 +801,38 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
         return super.onOptionsItemSelected(item);
     }
+
     @TargetApi(23)
     private void permissionsCheck() {
-      if(checkSelfPermission(android.Manifest.permission.SYSTEM_ALERT_WINDOW)!= PackageManager.PERMISSION_GRANTED){
-          if (shouldShowRequestPermissionRationale(android.Manifest.permission.SYSTEM_ALERT_WINDOW)) {
-          } else {
-              requestPermissions(new String[]{android.Manifest.permission.SYSTEM_ALERT_WINDOW},
-                      MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW);
-          }
-      }else{
-          Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
-          intent.putExtra("OrderList",orderModelList);
+        if (checkSelfPermission(android.Manifest.permission.SYSTEM_ALERT_WINDOW) != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(android.Manifest.permission.SYSTEM_ALERT_WINDOW)) {
+            } else {
+                requestPermissions(new String[]{android.Manifest.permission.SYSTEM_ALERT_WINDOW},
+                        MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW);
+            }
+        } else {
+            Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
+            intent.putExtra("OrderList", orderModelList);
 //          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-          intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
-          this.finish();
-          startService(intent);
-      }
+            intent.putExtra("User", logingSharePrefs.getString(LoggedInUserName, null));
+            this.finish();
+            startService(intent);
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
+        switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW:
-                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
 //                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("OrderList",orderModelList);
-                    intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
+                    intent.putExtra("OrderList", orderModelList);
+                    intent.putExtra("User", logingSharePrefs.getString(LoggedInUserName, null));
                     this.finish();
                     startService(intent);
-                }else{
+                } else {
                     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                             Uri.parse("package:" + getPackageName()));
                     startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
@@ -839,26 +843,26 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION){
-            if(resultCode == RESULT_OK){
+        if (requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION) {
+            if (resultCode == RESULT_OK) {
                 Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
 //                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra("OrderList",orderModelList);
-                intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
-                if(LoginActivity.url!=null){
-                    if(sharedPreferences.getString("PhotoUrl",null)==null) {
+                intent.putExtra("OrderList", orderModelList);
+                intent.putExtra("User", logingSharePrefs.getString(LoggedInUserName, null));
+                if (LoginActivity.url != null) {
+                    if (sharedPreferences.getString("PhotoUrl", null) == null) {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("PhotoUrl", LoginActivity.url);
                         editor.apply();
                     }
-                    intent.putExtra("PhotoUrl",LoginActivity.url);
-                }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
-                    intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
+                    intent.putExtra("PhotoUrl", LoginActivity.url);
+                } else if (sharedPreferences.getString("PhotoUrl", null) != null) {
+                    intent.putExtra("PhotoUrl", sharedPreferences.getString("PhotoUrl", null));
                 }
                 this.finish();
                 startService(intent);
             }
-        }else{
+        } else {
             super.onActivityResult(requestCode, resultCode, data);
 
         }
@@ -869,24 +873,24 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         /**
          * start service here
          */
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M&& !Settings.canDrawOverlays(this)){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName()));
             startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
-        }else{
+        } else {
             Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
 //            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra("OrderList",orderModelList);
-            intent.putExtra("User",logingSharePrefs.getString(LoggedInUserName,null));
-            if(LoginActivity.url!=null){
-                if(sharedPreferences.getString("PhotoUrl",null)==null) {
+            intent.putExtra("OrderList", orderModelList);
+            intent.putExtra("User", logingSharePrefs.getString(LoggedInUserName, null));
+            if (LoginActivity.url != null) {
+                if (sharedPreferences.getString("PhotoUrl", null) == null) {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("PhotoUrl", LoginActivity.url);
                     editor.apply();
                 }
-                intent.putExtra("PhotoUrl",LoginActivity.url);
-            }else if(sharedPreferences.getString("PhotoUrl",null)!=null){
-                intent.putExtra("PhotoUrl",sharedPreferences.getString("PhotoUrl",null));
+                intent.putExtra("PhotoUrl", LoginActivity.url);
+            } else if (sharedPreferences.getString("PhotoUrl", null) != null) {
+                intent.putExtra("PhotoUrl", sharedPreferences.getString("PhotoUrl", null));
             }
             this.finish();
             startService(intent);
@@ -895,13 +899,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public void onClick(View view) {
-        switch(view.getId()){
+        switch (view.getId()) {
             case R.id.floatingEdit:
-                if(floatingActionButton.getDrawable().getConstantState()==getResources().getDrawable(R.drawable.edit_done).getConstantState()){
+                if (floatingActionButton.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.edit_done).getConstantState()) {
                     floatingActionButton.setImageResource(R.drawable.editing);
                     itemTouchHelper.attachToRecyclerView(recyclerView);
 
-                }else if(floatingActionButton.getDrawable().getConstantState()==getResources().getDrawable(R.drawable.editing).getConstantState()){
+                } else if (floatingActionButton.getDrawable().getConstantState() == getResources().getDrawable(R.drawable.editing).getConstantState()) {
                     floatingActionButton.setImageResource(R.drawable.edit_done);
                     itemTouchHelper.attachToRecyclerView(null);
 
@@ -909,22 +913,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 break;
             case R.id.floatingLogout:
                 SharedPreferences.Editor editor = logingSharePrefs.edit();
-                editor.putString(LoggedInUser,null);
-                editor.putString(LoggedInUserPassword,null);
+                editor.putString(LoggedInUser, null);
+                editor.putString(LoggedInUserPassword, null);
                 editor.apply();
-                Intent intent = new Intent(OrderStatus.this,LoginActivity.class);
+                Intent intent = new Intent(OrderStatus.this, LoginActivity.class);
                 startActivity(intent);
                 this.finish();
                 break;
         }
     }
 
-    private class CustomAsyncTaskForRestOrderService extends AsyncTask<String,Void,List<OrderModel>>{
+    private class CustomAsyncTaskForRestOrderService extends AsyncTask<String, Void, List<OrderModel>> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if(progressDialog!=null && progressDialog.isShowing()){
-              progressDialog.dismiss();
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
             }
             progressDialog.setMessage(getResources().getString(R.string.fetching_orders));
             progressDialog.setCanceledOnTouchOutside(false);
@@ -936,26 +940,26 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             String appendedParamInUrl = "";
             String id = params[1];
             String orderType = params[2];
-            if(params[0].equalsIgnoreCase("c")) {
-                appendedParamInUrl = "C="+id;
-            }else if(params[0].equalsIgnoreCase("s")){
-                appendedParamInUrl = "S="+id;
+            if (params[0].equalsIgnoreCase("c")) {
+                appendedParamInUrl = "C=" + id;
+            } else if (params[0].equalsIgnoreCase("s")) {
+                appendedParamInUrl = "S=" + id;
             }
             try {
-                InputStream inputStream = new URL(urlForOrders1+orderType+urlForOrders2+appendedParamInUrl).openConnection().getInputStream();
+                InputStream inputStream = new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection().getInputStream();
                 XmlPullParser xmlPullParser = Xml.newPullParser();
-                xmlPullParser.setInput(inputStream,null);
+                xmlPullParser.setInput(inputStream, null);
                 int eventType = xmlPullParser.getEventType();
                 OrderModel orderModel = null;
                 ItemModel itemModel = null;
                 orderModelList = new ArrayList<>();
                 boolean saveItemInOrder = false;
-                while(eventType != XmlPullParser.END_DOCUMENT){
-                    switch (eventType){
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    switch (eventType) {
                         case XmlPullParser.START_DOCUMENT:
                             break;
                         case XmlPullParser.START_TAG:
-                            switch (xmlPullParser.getName()){
+                            switch (xmlPullParser.getName()) {
                                 case Secondary_Table_Xml_Tag:
                                     saveItemInOrder = true;
                                     break;
@@ -969,117 +973,117 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                     break;
                                 case VBELN:
                                     String orderNo = xmlPullParser.nextText();
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setOrderNo(orderNo);
-                                    }else{
-                                        for(OrderModel orderModelFromList : orderModelList){
-                                            if(orderModelFromList.getOrderNo().equalsIgnoreCase(orderNo)){
+                                    } else {
+                                        for (OrderModel orderModelFromList : orderModelList) {
+                                            if (orderModelFromList.getOrderNo().equalsIgnoreCase(orderNo)) {
                                                 orderModel = orderModelFromList;
                                             }
                                         }
                                     }
                                     break;
                                 case ORDERED_QTY:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setOrderQty(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setOrderedQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case STATUS:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setStatus(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setStatus(xmlPullParser.nextText());
                                     }
                                     break;
                                 case OPEN_QTY:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setInProdQty(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setInProdQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case DESP_QTY:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setDespQty(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setDespQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case STOCK_QTY:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setStockQty(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setStockQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case DOC_DATE:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setDeliveryDate(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setDeliveryDate(xmlPullParser.nextText());
                                     }
                                     break;
                                 case DEL_DATE:
-                                    if(orderModel!=null && !saveItemInOrder){
+                                    if (orderModel != null && !saveItemInOrder) {
                                         orderModel.setOrderDate(xmlPullParser.nextText());
-                                    }else if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setOrderDate(xmlPullParser.nextText());
                                     }
                                     break;
                                 case CUST_NM:
-                                    if(orderModel!=null){
+                                    if (orderModel != null) {
                                         orderModel.setPartyName(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_MATERIAL_NM_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setItemName(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_TOTAL_QTY_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setTotalQty(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_CONTAINER_NO_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setContainerNo(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_BILL_NO_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setBillNo(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_BL_DATE_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setBillDate(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_LENGTH_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setLength(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_WIDTH_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setWidth(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_TREATMENT1_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setTreatment1(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_TREATMENT2_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setTreatment2(xmlPullParser.nextText());
                                     }
                                     break;
                                 case ITEM_SHADES_:
-                                    if(orderModel!=null && saveItemInOrder && itemModel!=null){
+                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
                                         itemModel.setShades(xmlPullParser.nextText());
                                     }
                                     break;
@@ -1087,18 +1091,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             }
                             break;
                         case XmlPullParser.END_TAG:
-                            switch (xmlPullParser.getName()){
+                            switch (xmlPullParser.getName()) {
                                 case Main_Table_Xml_Tag:
                                     //Main Tag
-                                    if(orderModel!=null){
-                                        if(!orderModelList.contains(orderModel)) {
+                                    if (orderModel != null) {
+                                        if (!orderModelList.contains(orderModel)) {
                                             orderModelList.add(orderModel);
                                         }
                                     }
 
                                     break;
                                 case Secondary_Table_Xml_Tag:
-                                    if(itemModel!=null) {
+                                    if (itemModel != null) {
                                         orderModel.addItemInOrder(itemModel);
                                     }
                                     saveItemInOrder = false;
@@ -1169,46 +1173,55 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         @Override
         protected void onPostExecute(List<OrderModel> s) {
             super.onPostExecute(s);
-            sortList(orderModelList);
-            for(OrderModel o: orderModelList){
-                searchList.add(o);
-            }
             progressDialog.dismiss();
-            if(drawerLayout.isDrawerOpen(Gravity.START)){
-                drawerLayout.closeDrawers();
-            }
-            recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this,orderModelList,new ItemClickListener(){
-                @Override
-                public void onClick(View view, int position, View clickedView) {
-                    Intent intent = new Intent(OrderStatus.this,OrderInformation.class);
-                    intent.putExtra("OrderInfo",orderModelList.get(position));
-                    intent.putExtra("TransitionName",ViewCompat.getTransitionName(clickedView));
+            if (s.size() > 0) {
+                sortList(orderModelList);
+                for (OrderModel o : orderModelList) {
+                    searchList.add(o);
+                }
+
+                if (drawerLayout.isDrawerOpen(Gravity.START)) {
+                    drawerLayout.closeDrawers();
+                }
+                recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this, orderModelList, new ItemClickListener() {
+                    @Override
+                    public void onClick(View view, int position, View clickedView) {
+                        Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
+                        intent.putExtra("OrderInfo", orderModelList.get(position));
+                        intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
                     /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                     ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                     ActivityCompat.startActivity(OrderStatus.this,intent,activityOptionsCompat.toBundle());*/
-                    startActivity(intent);
-                }
+                        startActivity(intent);
+                    }
 
 
-            });
-            recyclerView.setAdapter(recyclerViewAdapter);
+                });
+                recyclerView.setAdapter(recyclerViewAdapter);
+                recyclerView.setVisibility(View.VISIBLE);
+                noSearchResultFound.setVisibility(View.GONE);
+            } else {
+                recyclerView.setVisibility(View.GONE);
+                noSearchResultFound.setVisibility(View.VISIBLE);
+            }
+
         }
     }
-
-    private void sortList(ArrayList<OrderModel> orderModelList) {
-        Collections.sort(orderModelList, new Comparator<OrderModel>() {
-            @Override
-            public int compare(OrderModel o1, OrderModel o2) {
-                if(o1.getPartyName().compareTo(o2.getPartyName())==0){
-                 //Do Comparison on order no.
-                    Long order1 = Long.parseLong(o1.getOrderNo());
-                    Long order2 = Long.parseLong(o2.getOrderNo());
-                    return order2.compareTo(order1);
-                }else{
-                    //Do comparison on Party name
-                    return o1.getPartyName().compareTo(o2.getPartyName());
+        private void sortList(ArrayList<OrderModel> orderModelList) {
+            Collections.sort(orderModelList, new Comparator<OrderModel>() {
+                @Override
+                public int compare(OrderModel o1, OrderModel o2) {
+                    if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
+                        //Do Comparison on order no.
+                        Long order1 = Long.parseLong(o1.getOrderNo());
+                        Long order2 = Long.parseLong(o2.getOrderNo());
+                        return order2.compareTo(order1);
+                    } else {
+                        //Do comparison on Party name
+                        return o1.getPartyName().compareTo(o2.getPartyName());
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+
 }
