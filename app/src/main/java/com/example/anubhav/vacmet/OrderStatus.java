@@ -35,6 +35,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.TextUtils;
 import android.transition.ChangeBounds;
 import android.transition.ChangeImageTransform;
 import android.transition.ChangeTransform;
@@ -43,6 +44,7 @@ import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionManager;
 import android.transition.TransitionSet;
+import android.util.Log;
 import android.util.Xml;
 import android.view.Gravity;
 import android.view.Menu;
@@ -64,6 +66,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
 import com.example.anubhav.vacmet.interfaces.ItemClickListener;
 import com.example.anubhav.vacmet.model.ItemModel;
+import com.example.anubhav.vacmet.model.OrderContainer;
 import com.example.anubhav.vacmet.model.OrderModel;
 import com.example.anubhav.vacmet.services.VacmetOverlayService;
 import com.example.anubhav.vacmet.utils.CircleTransform;
@@ -71,8 +74,11 @@ import com.example.anubhav.vacmet.utils.CircleTransform;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -93,6 +99,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 9092;
     public static final String VBELN = "VBELN";
+    public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
     public static final String STATUS = "STATUS";
     public static final String OPEN_QTY = "OPEN_QTY";
     public static final String DESP_QTY = "DESP_QTY";
@@ -102,6 +109,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     public static final String DEL_DATE = "DEL_DATE";
     public static final String CUST_NM = "CUST_NM";
     private static final String MATNR = "MATNR";
+    private static final String MATERIAL_NO = "MATERIAL_NO";
+    private static final String MAIN_INVOICE = "ZBAPI_HDR_SISTATUS";
+    private static final String INVOICE_NO = "INVOICE_NO";
+    private static final String INVOICE_DATE = "INVOICE_DATE";
     private static final String ITEM_STATUS_ = "STATUS";
     private static final String ITEM_ORDERED_QTY_ = "ORDERED_QTY";
     private static final String ITEM_OPEN_QTY_ = "OPEN_QTY";
@@ -145,6 +156,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ProgressDialog progressDialog;
     private final String Main_Table_Xml_Tag = "ZBAPI_HDR_SOSTATUS";
     private final String Secondary_Table_Xml_Tag = "ZBAPI_SOSTATUS";
+    private final String Secondary_Table_Invoice_Xml_Tag = "ZBAPI_SISTATUS";
     private DrawerLayout drawerLayout;
     private LinearLayout mainDrawerView;
     private EditText etSapId;
@@ -160,6 +172,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private LinearLayout adminConsole;
     private RadioGroup sortOrdersGroup;
     private RadioButton openOrdersRadio, closedOrdersRadio;
+    private ArrayList<OrderContainer> orderContainerList;
 
     @Override
     protected void onStart() {
@@ -317,9 +330,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         openOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (progressDialog.isShowing()) {
+                /*if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
-                }
+                }*/
                 if (isChecked) {
                     /*progressDialog.setMessage("Fetching open orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
@@ -359,15 +372,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
                 }
-                progressDialog.dismiss();
+
             }
         });
         closedOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (progressDialog.isShowing()) {
+                /*if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
-                }
+                }*/
                 if (isChecked) {
               /*      progressDialog.setMessage("Fetching closed orders...");
                     progressDialog.setCanceledOnTouchOutside(false);
@@ -407,7 +420,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
                 }
-                progressDialog.dismiss();
+
             }
         });
 
@@ -513,6 +526,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
                 intent.putExtra("OrderInfo", orderModelList.get(position));
                 intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
+                intent.putExtra("isDispatched",false);
+
                 /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                 ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                 startActivity(intent,activityOptionsCompat.toBundle());*/
@@ -520,7 +535,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        });
+        },false);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
@@ -924,6 +939,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private class CustomAsyncTaskForRestOrderService extends AsyncTask<String, Void, List<OrderModel>> {
+        String orderType = null;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -932,6 +949,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
             progressDialog.setMessage(getResources().getString(R.string.fetching_orders));
             progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCancelable(false);
             progressDialog.show();
         }
 
@@ -939,20 +957,34 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected List<OrderModel> doInBackground(String... params) {
             String appendedParamInUrl = "";
             String id = params[1];
-            String orderType = params[2];
+            orderType = params[2];
             if (params[0].equalsIgnoreCase("c")) {
                 appendedParamInUrl = "C=" + id;
             } else if (params[0].equalsIgnoreCase("s")) {
                 appendedParamInUrl = "S=" + id;
             }
             try {
-                InputStream inputStream = new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection().getInputStream();
+                HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.setRequestProperty("Authorization","Basic QkFQSToxMjM0NTY=");
+                httpURLConnection.setRequestProperty("Content-Type","application/xml");
+                InputStream inputStream = httpURLConnection.getInputStream();
+                String line = "";
+                String response ="";
+               /* BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
+                while ((line=br.readLine()) != null) {
+                    response+=line;
+                }*/
+                Log.d("", "doInBackground: "+httpURLConnection.getResponseCode());
+                Log.d("", "doInBackground: "+response);
                 XmlPullParser xmlPullParser = Xml.newPullParser();
                 xmlPullParser.setInput(inputStream, null);
                 int eventType = xmlPullParser.getEventType();
                 OrderModel orderModel = null;
                 ItemModel itemModel = null;
+                OrderContainer orderContainer = null;
                 orderModelList = new ArrayList<>();
+                orderContainerList = new ArrayList<>();
                 boolean saveItemInOrder = false;
                 while (eventType != XmlPullParser.END_DOCUMENT) {
                     switch (eventType) {
@@ -963,11 +995,40 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                 case Secondary_Table_Xml_Tag:
                                     saveItemInOrder = true;
                                     break;
+                                case Secondary_Table_Invoice_Xml_Tag:
+                                    saveItemInOrder = true;
+                                    break;
+                                case MAIN_INVOICE:
+                                    orderModel = new OrderModel();
+                                    break;
                                 case Main_Table_Xml_Tag:
                                     //Main Tag
                                     orderModel = new OrderModel();
                                     break;
+                                case INVOICE_NO:
+                                    String invoiceNo = xmlPullParser.nextText();
+                                    if (orderModel != null && !saveItemInOrder) {
+                                        orderModel.setInvoiceNo(invoiceNo);
+                                    } else {
+                                        for (OrderModel orderModelFromList : orderModelList) {
+                                            if (orderModelFromList.getInvoiceNo().equalsIgnoreCase(invoiceNo)) {
+                                                orderModel = orderModelFromList;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case INVOICE_DATE:
+                                    if (orderModel != null && !saveItemInOrder) {
+                                        orderModel.setInvoiceDate(xmlPullParser.nextText());
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                        itemModel.setInvoiceDate(xmlPullParser.nextText());
+                                    }
+                                    break;
                                 case MATNR:
+                                    itemModel = new ItemModel();
+                                    itemModel.setMaterialNo(xmlPullParser.nextText());
+                                    break;
+                                case MATERIAL_NO:
                                     itemModel = new ItemModel();
                                     itemModel.setMaterialNo(xmlPullParser.nextText());
                                     break;
@@ -983,11 +1044,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         }
                                     }
                                     break;
+                                case SALES_ORDER_NO:
+                                    if(itemModel!=null) {
+                                        itemModel.setContainedOrderNo(xmlPullParser.nextText());
+                                    }
+                                    break;
                                 case ORDERED_QTY:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setOrderQty(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setOrderedQty(xmlPullParser.nextText());
+                                    String qty = xmlPullParser.nextText();
+                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty)) {
+                                        orderModel.setOrderQty(qty);
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty)) {
+                                        itemModel.setOrderedQty(qty);
                                     }
                                     break;
                                 case STATUS:
@@ -998,24 +1065,27 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                     }
                                     break;
                                 case OPEN_QTY:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setInProdQty(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setInProdQty(xmlPullParser.nextText());
+                                    String qty1 = xmlPullParser.nextText();
+                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty1)) {
+                                        orderModel.setInProdQty(qty1);
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty1)) {
+                                        itemModel.setInProdQty(qty1);
                                     }
                                     break;
                                 case DESP_QTY:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setDespQty(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setDespQty(xmlPullParser.nextText());
+                                    String qty2 = xmlPullParser.nextText();
+                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty2)) {
+                                        orderModel.setDespQty(qty2);
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty2)) {
+                                        itemModel.setDespQty(qty2);
                                     }
                                     break;
                                 case STOCK_QTY:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setStockQty(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setStockQty(xmlPullParser.nextText());
+                                    String qty3 = xmlPullParser.nextText();
+                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty3)) {
+                                        orderModel.setStockQty(qty3);
+                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty3)) {
+                                        itemModel.setStockQty(qty3);
                                     }
                                     break;
                                 case DOC_DATE:
@@ -1101,13 +1171,23 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                     }
 
                                     break;
+                                case MAIN_INVOICE:
+                                    if (orderModel != null) {
+                                        orderModelList.add(orderModel);
+                                    }
+                                    break;
                                 case Secondary_Table_Xml_Tag:
                                     if (itemModel != null) {
-                                        orderModel.addItemInOrder(itemModel);
+                                        orderModel.addItemInOrder(itemModel,orderType.equalsIgnoreCase("get_dispatch")?true:false);
                                     }
                                     saveItemInOrder = false;
                                     break;
-
+                                case Secondary_Table_Invoice_Xml_Tag:
+                                    if (itemModel != null) {
+                                        orderModel.addItemInOrder(itemModel,orderType.equalsIgnoreCase("get_dispatch")?true:false);
+                                    }
+                                    saveItemInOrder = false;
+                                    break;
                             }
                             break;
 
@@ -1161,11 +1241,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong, Check Your Connection!!", Toast.LENGTH_SHORT).show();
+                orderModelList.clear();
             } catch (IOException e) {
                 e.printStackTrace();
+                orderModelList.clear();
             } catch (XmlPullParserException e) {
                 e.printStackTrace();
                 Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong...", Toast.LENGTH_SHORT).show();
+                orderModelList.clear();
             }
             return orderModelList;
         }
@@ -1175,7 +1258,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             super.onPostExecute(s);
             progressDialog.dismiss();
             if (s.size() > 0) {
-                sortList(orderModelList);
+                sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
                 for (OrderModel o : orderModelList) {
                     searchList.add(o);
                 }
@@ -1189,6 +1272,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
                         intent.putExtra("OrderInfo", orderModelList.get(position));
                         intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
+                        intent.putExtra("isDispatched",orderType.equalsIgnoreCase("get_dispatch")?true:false);
                     /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                     ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                     ActivityCompat.startActivity(OrderStatus.this,intent,activityOptionsCompat.toBundle());*/
@@ -1196,7 +1280,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                });
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);
@@ -1207,15 +1291,21 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         }
     }
-        private void sortList(ArrayList<OrderModel> orderModelList) {
+        private void sortList(ArrayList<OrderModel> orderModelList, final boolean isDispatched) {
             Collections.sort(orderModelList, new Comparator<OrderModel>() {
                 @Override
                 public int compare(OrderModel o1, OrderModel o2) {
                     if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
                         //Do Comparison on order no.
-                        Long order1 = Long.parseLong(o1.getOrderNo());
-                        Long order2 = Long.parseLong(o2.getOrderNo());
-                        return order2.compareTo(order1);
+                        if(!isDispatched) {
+                            Long order1 = Long.parseLong(o1.getOrderNo());
+                            Long order2 = Long.parseLong(o2.getOrderNo());
+                            return order2.compareTo(order1);
+                        }else{
+                            Long order1 = Long.parseLong(o1.getInvoiceNo());
+                            Long order2 = Long.parseLong(o2.getInvoiceNo());
+                            return order2.compareTo(order1);
+                        }
                     } else {
                         //Do comparison on Party name
                         return o1.getPartyName().compareTo(o2.getPartyName());

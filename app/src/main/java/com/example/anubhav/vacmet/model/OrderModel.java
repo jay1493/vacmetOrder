@@ -23,6 +23,8 @@ public class OrderModel implements Serializable {
     private String inProdQty;
     private String status;
     private String stockQty;
+    private String invoiceNo;
+    private String invoiceDate;
     private ArrayList<ItemModel> itemModelArrayList;
 
     public OrderModel() {
@@ -92,7 +94,7 @@ public class OrderModel implements Serializable {
         this.inProdQty = inProdQty;
     }
 
-    public void addItemInOrder(ItemModel itemModel){
+    public void addItemInOrder(ItemModel itemModel, boolean get_dispatch){
         if(itemModelArrayList!=null){
             if(!itemModelArrayList.contains(itemModel)) {
                 itemModelArrayList.add(itemModel);
@@ -112,8 +114,11 @@ public class OrderModel implements Serializable {
                     itemModelFromList.setOrderedQty(itemModel.getOrderedQty());
                     itemModelFromList.setTreatment1(itemModel.getTreatment1());
                     itemModelFromList.setTreatment2(itemModel.getTreatment2());
-                    itemModelFromList.setStockQty(itemModel.getStockQty());
+                    if(!get_dispatch) {
+                        itemModelFromList.setStockQty(itemModel.getStockQty());
+                    }
                     itemModelFromList.setDeliveryDate(itemModel.getDeliveryDate());
+                    itemModelFromList.setContainedOrderNo(itemModel.getContainedOrderNo());
 
                 }
             }
@@ -141,6 +146,24 @@ public class OrderModel implements Serializable {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         stockQty = decimalFormat.format(Double.parseDouble(stockQty));
         this.stockQty = stockQty;
+        return this;
+    }
+
+    public String getInvoiceNo() {
+        return invoiceNo;
+    }
+
+    public OrderModel setInvoiceNo(String invoiceNo) {
+        this.invoiceNo = invoiceNo;
+        return this;
+    }
+
+    public String getInvoiceDate() {
+        return invoiceDate;
+    }
+
+    public OrderModel setInvoiceDate(String invoiceDate) {
+        this.invoiceDate = invoiceDate;
         return this;
     }
 

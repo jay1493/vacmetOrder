@@ -85,6 +85,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     private ProgressDialog progressDialog;
     private LinearLayout llParent;
     private TextView stockQty;
+    private boolean isDispatch;
+    private TextView txtLabelInvoiceOrOrder,txtLabelDispatchOrInvoice;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,6 +99,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
         supportPostponeEnterTransition();
         if(getIntent()!=null && getIntent().getExtras()!=null && getIntent().getExtras().getSerializable("OrderInfo")!=null){
             orderModel = (OrderModel) getIntent().getExtras().getSerializable("OrderInfo");
+            isDispatch = getIntent().getExtras().getBoolean("isDispatched");
             if(getIntent().getExtras().getString("TransitionName")!=null){
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     orderNo.setTransitionName(getIntent().getExtras().getString("TransitionName"));
@@ -104,9 +107,18 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
             }
 
             partyName.setText(orderModel.getPartyName());
-            orderNo.setText(orderModel.getOrderNo());
-            orderDate.setText(orderModel.getOrderDate());
-            requestDispatchDate.setText(orderModel.getDeliveryDate());
+            if(isDispatch){
+                txtLabelInvoiceOrOrder.setText(getResources().getString(R.string.invoice_no));
+                txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.invoice_date));
+                orderNo.setText(orderModel.getInvoiceNo());
+                requestDispatchDate.setText(orderModel.getInvoiceDate());
+            }else {
+                txtLabelInvoiceOrOrder.setText(getResources().getString(R.string.Order_No));
+                txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.Request_dispatch_date));
+                orderNo.setText(orderModel.getOrderNo());
+                requestDispatchDate.setText(orderModel.getDeliveryDate());
+            }
+                orderDate.setText(orderModel.getOrderDate());
             DecimalFormat decimalFormat = new DecimalFormat("#.##");
             orderQty.setText(orderModel.getOrderQty());
             stockQty.setText(orderModel.getStockQty());
@@ -161,13 +173,15 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
         String orderNo = order.getOrderNo();
 //        new CustomAsyncTask().execute(orderNo);
         if(order.getItemList()!=null && order.getItemList().size()>0){
-            listAdapter = new ListOrderInformation(OrderInformation.this,order.getItemList(),this);
+            listAdapter = new ListOrderInformation(OrderInformation.this,order.getItemList(),this,isDispatch);
             itemsListView.setAdapter(listAdapter);
         }
         supportStartPostponedEnterTransition();
     }
 
     private void init() {
+        txtLabelInvoiceOrOrder = (TextView) findViewById(R.id.labelOrderOrInvoice);
+        txtLabelDispatchOrInvoice = (TextView) findViewById(R.id.labelDispatchOrInvoice);
         llParent = (LinearLayout) findViewById(R.id.ll_orderDetailsParent);
         partyName = (TextView) findViewById(R.id.orderInfo_partyName);
         orderNo = (TextView) findViewById(R.id.orderInfo_orderNo);
@@ -250,6 +264,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
             super.onPreExecute();
             progressDialog.setMessage(getResources().getString(R.string.fetching_items_in_order));
             progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCancelable(false);
             progressDialog.show();
         }
 
@@ -356,7 +371,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
                 progressDialog.dismiss();
             }
             if(itemModels!=null){
-                listAdapter = new ListOrderInformation(OrderInformation.this,itemModels,OrderInformation.this);
+                listAdapter = new ListOrderInformation(OrderInformation.this,itemModels,OrderInformation.this,isDispatch);
                 itemsListView.setAdapter(listAdapter);
             }
         }

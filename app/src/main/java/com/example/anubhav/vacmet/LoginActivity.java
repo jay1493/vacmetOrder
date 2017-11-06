@@ -65,7 +65,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
     private static final int GOOGLE_SIGN_IN = 9090;
@@ -143,7 +142,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
          * Below two lines helped in playing Gif's.
          */
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
-        Glide.with(this).load(R.raw.vacmet1).into(imageViewTarget);
+        Glide.with(this).load(R.raw.gif2).into(imageViewTarget);
         sharedprefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
         orderIdPrefs = getSharedPreferences(OrderIdPrefs,MODE_PRIVATE);
         intentFilter = new IntentFilter();

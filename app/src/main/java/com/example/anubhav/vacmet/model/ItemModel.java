@@ -25,12 +25,15 @@ public class ItemModel implements Serializable {
     private String billDate;
     private String length;
     private String width;
+    private String containedOrderNo;
     private String treatment1;
     private String treatment2;
     private String shades;
     private String containerNo;
     private String orderDate;
     private String deliveryDate;
+    private String invoiceDate;
+    private String invoiceNo;
     private List<String> lengthList;
     private List<String> widthList;
     private List<Double> totalDespQty;
@@ -42,6 +45,7 @@ public class ItemModel implements Serializable {
     private List<String> shadesList;
     private List<String> containerNoList;
     private List<String> stockQtyList;
+    private List<String> containedOrderNoList;
 
     public ItemModel() {
         lengthList = new ArrayList<>();
@@ -55,6 +59,7 @@ public class ItemModel implements Serializable {
         shadesList = new ArrayList<>();
         containerNoList = new ArrayList<>();
         stockQtyList = new ArrayList<>();
+        containedOrderNoList = new ArrayList<>();
     }
 
     public String getItemName() {
@@ -145,6 +150,9 @@ public class ItemModel implements Serializable {
     public List<String> getShadesList(){
         return shadesList;
     }
+    public List<String> getContainedOrderNoList(){
+        return containedOrderNoList;
+    }
     public String getTotalDespQty(){
         if(totalDespQty!=null){
             double sum = 0;
@@ -192,9 +200,12 @@ public class ItemModel implements Serializable {
         /*DecimalFormat decimalFormat = new DecimalFormat("#.##");
         length = decimalFormat.format(Double.parseDouble(length));*/
 //        length = NumberFormat.getInstance().format(length);
-        int w = (int) Double.parseDouble(length);
+        /*if(length.contains(",")){
+            length.replace(",","");
+        }
+        int w = (int) Double.parseDouble(length);*/
         if(lengthList!=null){
-            lengthList.add(String.valueOf(w));
+            lengthList.add(length);
         }
         this.length = length;
         return this;
@@ -216,9 +227,12 @@ public class ItemModel implements Serializable {
         /*DecimalFormat decimalFormat = new DecimalFormat("#.##");
         width = decimalFormat.format(Double.parseDouble(width));*/
 //        width = NumberFormat.getInstance().format(width);
-        int w = (int) Double.parseDouble(width);
+/*        if(width.contains(",")){
+            width.replace(",","");
+        }
+        int w = (int) Double.parseDouble(width);*/
         if(widthList!=null){
-            widthList.add(String.valueOf(w));
+            widthList.add(width);
         }
         this.width = width;
         return this;
@@ -328,6 +342,36 @@ public class ItemModel implements Serializable {
             itemDeliveryDatesList.add(deliveryDate);
         }
         this.deliveryDate = deliveryDate;
+        return this;
+    }
+
+    public String getContainedOrderNo() {
+        return containedOrderNo;
+    }
+
+    public ItemModel setContainedOrderNo(String containedOrderNo) {
+        if(containedOrderNoList!=null){
+                containedOrderNoList.add(containedOrderNo);
+          }
+        this.containedOrderNo = containedOrderNo;
+        return this;
+    }
+
+    public String getInvoiceDate() {
+        return invoiceDate;
+    }
+
+    public ItemModel setInvoiceDate(String invoiceDate) {
+        this.invoiceDate = invoiceDate;
+        return this;
+    }
+
+    public String getInvoiceNo() {
+        return invoiceNo;
+    }
+
+    public ItemModel setInvoiceNo(String invoiceNo) {
+        this.invoiceNo = invoiceNo;
         return this;
     }
 

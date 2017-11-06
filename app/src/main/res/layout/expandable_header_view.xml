@@ -4,151 +4,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/main_layout_order_info"
-        android:weightSum="10"
         android:background="@drawable/item_expandable_group"
         android:padding="@dimen/d10">
         <TextView
-            android:id="@+id/orderInfo_itemName"
-            android:layout_width="0dp"
+            android:id="@+id/dispatch_delivery_date"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:singleLine="false"
-            android:layout_gravity="left"
-            android:maxLines="5"
-            android:textColor="#003C71"
-            android:layout_weight="7"
-            android:textStyle="bold"
-            android:text="Item 1"/>
-        <TextView
-            android:id="@+id/orderInfo_itemQtyStatus"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:textStyle="bold"
-            android:textColor="#003C71"
-            android:singleLine="false"
-            android:gravity="right"
+            android:singleLine="true"
             android:layout_gravity="right"
-            android:paddingRight="@dimen/d5"
-            android:maxLines="2"
-            android:text="30/30"/>
-        <ImageView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:paddingLeft="@dimen/d10"
-            android:paddingRight="@dimen/d10"
-            android:src="@drawable/arrow_expandable_group_selector"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/expanded_item_details"
-        android:orientation="vertical"
-        android:layout_marginTop="@dimen/d5"
-        android:padding="@dimen/d10"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/txt_detailsHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/item_details"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/black"
-            android:textSize="18sp" />
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/black"
-            android:padding="@dimen/d5"/>
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="@dimen/d5">
-            <TextView
-                android:id="@+id/txt_materialNo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/material_no"
-                android:layout_gravity="start"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textColor="@color/red"
-                android:textSize="18sp"
-                android:gravity="left"
-                android:layout_toLeftOf="@+id/txt_detailsStatus"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true"/>
-            <TextView
-                android:id="@+id/txt_detailsStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="@string/status_not_known"
-                android:gravity="end"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textColor="@color/red"
-                android:textSize="18sp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"/>
-        </RelativeLayout>
+            android:gravity="right"
+            android:textColor="@color/red_transperant"
+            android:textStyle="bold"
+            android:text="# Item Delivery Date #"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/d5"
-            android:weightSum="10">
-            <LinearLayout
-                android:layout_width="0dp"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="3"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bill_no"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsBillNo"
-                    android:layout_width="0dp"
-                    android:layout_weight="7"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
+                android:padding="@dimen/d5"
+                android:singleLine="true"
+                android:layout_gravity="left"
+                android:gravity="left"
+                android:textColor="#003C71"
+                android:textStyle="bold"
+                android:text="@string/invoice_no"/>
+            <TextView
+                android:id="@+id/dispatch_invoice_no"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="4"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bill_date"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsBillDate"
-                    android:layout_width="0dp"
-                    android:layout_weight="6"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
-
+                android:padding="@dimen/d5"
+                android:singleLine="true"
+                android:textColor="#003C71" />
         </LinearLayout>
+        <TextView
+            android:id="@+id/dispatch_party_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="#003C71"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:text="Party Name"
+            android:visibility="gone"/>
 
 
     </LinearLayout>

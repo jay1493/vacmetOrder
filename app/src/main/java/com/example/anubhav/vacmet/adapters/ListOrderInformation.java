@@ -33,11 +33,13 @@ public class ListOrderInformation extends BaseAdapter {
     private ListHolder holder;
     private OrderDetailsClickListener orderDetailsClickListener;
     private RecyclerLengthWidthAdapter recyclerLengthWidthAdapter;
+    private boolean isDispatched;
 
-    public ListOrderInformation(Context context, List<ItemModel> itemModelArrayList, OrderDetailsClickListener listener) {
+    public ListOrderInformation(Context context, List<ItemModel> itemModelArrayList, OrderDetailsClickListener listener, boolean isDispatched) {
         this.context = context;
         this.itemModelArrayList = itemModelArrayList;
         this.orderDetailsClickListener = listener;
+        this.isDispatched = isDispatched;
         decimalFormat = new DecimalFormat("#.##");
     }
 
@@ -63,13 +65,14 @@ public class ListOrderInformation extends BaseAdapter {
             holder = new ListHolder();
             view = LayoutInflater.from(context).inflate(R.layout.order_information_row,null);
             holder.itemName = (TextView) view.findViewById(R.id.orderInfo_itemName);
+            holder.labelSalesOrder = (TextView) view.findViewById(R.id.label_sales_order_no);
             holder.despQty = (TextView) view.findViewById(R.id.orderInfo_itemQtyStatus);
             holder.mainLayout = (LinearLayout) view.findViewById(R.id.main_layout_order_info);
-            holder.itemStatus = (TextView) view.findViewById(R.id.txt_detailsStatus);
+
             holder.itemNo = (TextView) view.findViewById(R.id.txt_materialNo);
-            holder.itemBillNo = (TextView) view.findViewById(R.id.txt_detailsBillNo);
+
             holder.expandedItemLayout = (LinearLayout) view.findViewById(R.id.expanded_item_details);
-            holder.itemBillDate = (TextView) view.findViewById(R.id.txt_detailsBillDate);
+
             holder.tableLayout = (TableLayout) view.findViewById(R.id.table_layout);
 //            holder.adaptiveTableLayout = (AdaptiveTableLayout) view.findViewById(R.id.tableLayout);
 //            holder.lengthWidthRecycler = (RecyclerView) view.findViewById(R.id.lengthWidthRecycler);
@@ -79,14 +82,15 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemContainerNo = (TextView) view.findViewById(R.id.txt_detailsContainerNo);
             holder.itemShades = (TextView) view.findViewById(R.id.txt_detailsShades);
             view.setTag(holder);
+        if(!isDispatched){
+            holder.labelSalesOrder.setVisibility(View.GONE);
+        }else{
+            holder.labelSalesOrder.setVisibility(View.VISIBLE);
+        }
         /*}else{
             holder = (ListHolder) view.getTag();
         }*/
-        if(((ItemModel)getItem(i)).getStatus().equalsIgnoreCase(context.getString(R.string.closed))){
-            holder.mainLayout.setBackgroundColor(context.getResources().getColor(R.color.red_transperant));
-        }else{
-            holder.mainLayout.setBackgroundColor(context.getResources().getColor(R.color.white));
-        }
+
         final View finalView = view;
         holder.mainLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,14 +99,11 @@ public class ListOrderInformation extends BaseAdapter {
             }
         });
         holder.itemName.setText(((ItemModel)getItem(i)).getItemName());
-        if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getStatus())) {
+        /*if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getStatus())) {
             holder.itemStatus.setText(((ItemModel) getItem(i)).getStatus());
-        }
+        }*/
         holder.itemNo.setText(((ItemModel)getItem(i)).getMaterialNo());
-        if(!TextUtils.isEmpty(((ItemModel)getItem(i)).getBillNo())) {
-            holder.itemBillNo.setText(((ItemModel) getItem(i)).getBillNo());
-        }
-        holder.itemBillDate.setText(((ItemModel)getItem(i)).getBillDate());
+
 
         if((((ItemModel)getItem(i)).getLengthList()!=null && ((ItemModel)getItem(i)).getLengthList().size()>0) ||
                 (((ItemModel)getItem(i)).getWidthList()!=null && ((ItemModel)getItem(i)).getWidthList().size()>0)){
@@ -126,7 +127,12 @@ public class ListOrderInformation extends BaseAdapter {
                 TextView stockQty;
                 TextView treatment1;
                 TextView treatment2;
+                TextView salesOrder;
+                TextView shades;
+
                 length = (TextView) itemView.findViewById(R.id.txt_length);
+                shades = (TextView) itemView.findViewById(R.id.txt_shades);
+                salesOrder = (TextView) itemView.findViewById(R.id.txt_sales_order);
                 width = (TextView) itemView.findViewById(R.id.txt_width);
                 orderQty = (TextView) itemView.findViewById(R.id.txt_orderQty);
                 deliveryDate = (TextView) itemView.findViewById(R.id.txt_item_delivery_date);
@@ -136,6 +142,14 @@ public class ListOrderInformation extends BaseAdapter {
                 length.setText("0");
                 width.setText("0");
                 orderQty.setText("0/0");
+                if(isDispatched){
+                    salesOrder.setVisibility(View.VISIBLE);
+                    if(((ItemModel)getItem(i)).getContainedOrderNoList()!=null && ((ItemModel)getItem(i)).getContainedOrderNoList().size()>0 && p<=((ItemModel)getItem(i)).getContainedOrderNoList().size()-1){
+                        salesOrder.setText(((ItemModel)getItem(i)).getContainedOrderNoList().get(p));
+                    }
+                }else{
+                    salesOrder.setVisibility(View.GONE);
+                }
 
 
                 stockQty.setText("0");
@@ -167,6 +181,10 @@ public class ListOrderInformation extends BaseAdapter {
 
                 if((((ItemModel)getItem(i)).getDespList()!=null && ((ItemModel)getItem(i)).getDespList().size()>0 && p<=((ItemModel)getItem(i)).getDespList().size()-1 && ((ItemModel)getItem(i)).getDespList().get(p)!=null) && (((ItemModel)getItem(i)).getOrderedList() !=null && ((ItemModel)getItem(i)).getOrderedList().size()>0 && p<= ((ItemModel)getItem(i)).getOrderedList().size()-1 && ((ItemModel)getItem(i)).getOrderedList().get(p)!=null)){
                     orderQty.setText(String.valueOf(((ItemModel)getItem(i)).getDespList().get(p))+"/"+((ItemModel)getItem(i)).getOrderedList().get(p));
+                }
+
+                if(((ItemModel)getItem(i)).getShadesList()!=null && ((ItemModel)getItem(i)).getShadesList().size()>0 && p<=((ItemModel)getItem(i)).getShadesList().size()-1){
+                    shades.setText(((ItemModel)getItem(i)).getShadesList().get(p));
                 }
 
                 holder.tableLayout.addView(itemView);
@@ -231,6 +249,7 @@ public class ListOrderInformation extends BaseAdapter {
        TextView despQty;
        TextView itemStatus;
        TextView itemNo;
+       TextView labelSalesOrder;
 //       RecyclerView lengthWidthRecycler;
 //       AdaptiveTableLayout adaptiveTableLayout;
        TableLayout tableLayout;

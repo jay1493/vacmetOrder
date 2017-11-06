@@ -81,69 +81,9 @@
                 android:layout_toLeftOf="@+id/txt_detailsStatus"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"/>
-            <TextView
-                android:id="@+id/txt_detailsStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="@string/status_not_known"
-                android:gravity="end"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textColor="@color/red"
-                android:textSize="18sp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"/>
-        </RelativeLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="@dimen/d5"
-            android:weightSum="10">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentLeft="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="3"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bill_no"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsBillNo"
-                    android:layout_width="0dp"
-                    android:layout_weight="7"
-                    android:layout_height="wrap_content"
-                     />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="5"
-                android:weightSum="10"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="4"
-                    android:layout_height="wrap_content"
-                    android:text="@string/bill_date"
-                    android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/txt_detailsBillDate"
-                    android:layout_width="0dp"
-                    android:layout_weight="6"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
 
-        </LinearLayout>
+        </RelativeLayout>
+
 
         <!--<com.cleveroad.adaptivetablelayout.AdaptiveTableLayout
             android:id="@+id/tableLayout"
@@ -164,15 +104,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <TableRow android:weightSum="7">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginRight="@dimen/d20"
-                    android:paddingLeft="@dimen/d20"
-                    android:paddingRight="@dimen/d10"
-                    android:layout_height="wrap_content"
-                    android:text="@string/Delivery_Date"
-                    android:textColor="#003C71" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
@@ -192,23 +124,16 @@
                     android:text="@string/item_width_cumulative"
                     android:textColor="#003C71" />
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginRight="@dimen/d20"
-                    android:paddingLeft="@dimen/d20"
-                    android:paddingRight="@dimen/d20"
-                    android:layout_height="wrap_content"
-                    android:text="@string/despQty_OrderQty"
-                    android:textColor="#003C71" />
-                <TextView
+                    android:id="@+id/label_sales_order_no"
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginRight="@dimen/d20"
                     android:paddingLeft="@dimen/d20"
                     android:paddingRight="@dimen/d10"
                     android:layout_height="wrap_content"
-                    android:text="@string/stock_qty"
-                    android:textColor="#003C71" />
+                    android:text="@string/sales_order_no"
+                    android:textColor="#003C71"
+                    android:visibility="gone"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
@@ -226,6 +151,46 @@
                     android:paddingRight="@dimen/d20"
                     android:layout_height="wrap_content"
                     android:text="@string/item_treatment2"
+                    android:textColor="#003C71" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d20"
+                    android:layout_height="wrap_content"
+                    android:text="@string/item_shades"
+                    android:textColor="#003C71" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d20"
+                    android:layout_height="wrap_content"
+                    android:text="@string/despQty_OrderQty"
+                    android:textColor="#003C71" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stock_qty"
+                    android:textColor="#003C71" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Delivery_Date"
                     android:textColor="#003C71" />
             </TableRow>
            <!-- <TableRow>

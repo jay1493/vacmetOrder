@@ -81,4 +81,7 @@
     <string name="AdminPhoneNo">9837038752</string>
     <string name="requestingAuth">requesting the authorization for vacmet application.</string>
     <string name="adminEmails">dp@perfectsoftware.in,dp@imagesoft.co.in</string>
+    <string name="invoice_no">"Invoice No: "</string>
+    <string name="invoice_date">"Invoice Date: "</string>
+    <string name="sales_order_no">Sales Order No:</string>
 </resources>

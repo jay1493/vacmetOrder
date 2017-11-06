@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/logo"
+        android:icon="@mipmap/vac1"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
@@ -24,6 +24,7 @@
         </activity>
         <activity android:name="com.example.anubhav.vacmet.OrderStatus"
             android:label="@string/order_status"
+            android:screenOrientation="portrait"
             android:launchMode="singleInstance">
             <meta-data android:resource="@xml/searchable"
                        android:name="android.app.searchable"
@@ -38,7 +39,8 @@
             </intent-filter>-->
 
         </activity>
-        <activity android:name="com.example.anubhav.vacmet.OrderInformation"/>
+        <activity android:name="com.example.anubhav.vacmet.OrderInformation"
+            android:screenOrientation="portrait"/>
         <service android:name="com.example.anubhav.vacmet.services.VacmetOverlayService"
             android:enabled="true"
             android:process=":vacmetBackgroundService"

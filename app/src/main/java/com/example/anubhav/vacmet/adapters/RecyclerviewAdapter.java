@@ -29,12 +29,14 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     List<OrderModel> list;
     private ItemClickListener itemClickListener;
     private DecimalFormat decimalFormat;
-    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener) {
+    private boolean isDispatched;
+    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
         this.itemClickListener = itemClickListener;
         decimalFormat = new DecimalFormat("#.##");
+        this.isDispatched = isDispatched;
     }
 
     @Override
@@ -73,11 +75,10 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         switch (holder.getItemViewType()){
             case 0:
                 holder.partyName.setText(list.get(position).getPartyName());
-                holder.orderNo.setText(list.get(position).getOrderNo());
                 holder.orderDate.setText(list.get(position).getOrderDate());
                 holder.orderQty.setText(list.get(position).getOrderQty());
                 holder.despQty.setText(list.get(position).getDespQty());
-                holder.deliveryDate.setText(list.get(position).getDeliveryDate());
+
                 ViewCompat.setTransitionName(holder.orderNo,list.get(position).getOrderNo());
                 holder.llMain.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -85,6 +86,17 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         itemClickListener.onClick(v,position,holder.orderNo);
                     }
                 });
+                if(isDispatched){
+                    holder.llInvoice.setVisibility(View.VISIBLE);
+                    holder.txtInvoice.setText(list.get(position).getInvoiceNo());
+                    holder.llOrderNo.setVisibility(View.GONE);
+                    holder.deliveryDate.setText(list.get(position).getInvoiceDate());
+                }else{
+                    holder.llInvoice.setVisibility(View.GONE);
+                    holder.llOrderNo.setVisibility(View.VISIBLE);
+                    holder.orderNo.setText(list.get(position).getOrderNo());
+                    holder.deliveryDate.setText(list.get(position).getDeliveryDate());
+                }
                 break;
             case 1:
                 holder.noRecords.setText(context.getResources().getString(R.string.No_records_found_for_this_query));
@@ -108,6 +120,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         TextView despQty;
         TextView deliveryDate;
         TextView noRecords;
+        LinearLayout llInvoice;
+        LinearLayout llOrderNo;
+        TextView txtInvoice;
         public Viewholder(View itemView, int viewType) {
             super(itemView);
             switch (viewType){
@@ -119,6 +134,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
                     despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
                     deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);
+                    llInvoice = (LinearLayout) itemView.findViewById(R.id.ll_invoiceNo);
+                    llOrderNo = (LinearLayout) itemView.findViewById(R.id.ll_OrderNo);
+                    txtInvoice = (TextView) itemView.findViewById(R.id.tvInvoiceNo);
                     itemView.setOnClickListener(this);
                     break;
                 case 1:
