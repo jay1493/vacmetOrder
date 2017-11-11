@@ -87,6 +87,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     private TextView stockQty;
     private boolean isDispatch;
     private TextView txtLabelInvoiceOrOrder,txtLabelDispatchOrInvoice;
+    private LinearLayout llInProdQty;
+    private LinearLayout llStockQty;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,11 +114,15 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
                 txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.invoice_date));
                 orderNo.setText(orderModel.getInvoiceNo());
                 requestDispatchDate.setText(orderModel.getInvoiceDate());
+                llInProdQty.setVisibility(View.GONE);
+                llStockQty.setVisibility(View.GONE);
             }else {
                 txtLabelInvoiceOrOrder.setText(getResources().getString(R.string.Order_No));
                 txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.Request_dispatch_date));
                 orderNo.setText(orderModel.getOrderNo());
                 requestDispatchDate.setText(orderModel.getDeliveryDate());
+                llInProdQty.setVisibility(View.VISIBLE);
+                llStockQty.setVisibility(View.VISIBLE);
             }
                 orderDate.setText(orderModel.getOrderDate());
             DecimalFormat decimalFormat = new DecimalFormat("#.##");
@@ -180,6 +186,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     }
 
     private void init() {
+        llInProdQty = (LinearLayout) findViewById(R.id.llOrderInfo_prodQty);
+        llStockQty = (LinearLayout) findViewById(R.id.llOrderInfo_stockQty);
         txtLabelInvoiceOrOrder = (TextView) findViewById(R.id.labelOrderOrInvoice);
         txtLabelDispatchOrInvoice = (TextView) findViewById(R.id.labelDispatchOrInvoice);
         llParent = (LinearLayout) findViewById(R.id.ll_orderDetailsParent);

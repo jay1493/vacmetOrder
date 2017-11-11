@@ -78,7 +78,6 @@
                 android:textColor="@color/red"
                 android:textSize="18sp"
                 android:gravity="left"
-                android:layout_toLeftOf="@+id/txt_detailsStatus"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"/>
 
@@ -123,17 +122,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/item_width_cumulative"
                     android:textColor="#003C71" />
-                <TextView
-                    android:id="@+id/label_sales_order_no"
-                    android:layout_width="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginRight="@dimen/d20"
-                    android:paddingLeft="@dimen/d20"
-                    android:paddingRight="@dimen/d10"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sales_order_no"
-                    android:textColor="#003C71"
-                    android:visibility="gone"/>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_weight="1"
@@ -192,6 +181,19 @@
                     android:layout_height="wrap_content"
                     android:text="@string/Delivery_Date"
                     android:textColor="#003C71" />
+
+                <TextView
+                    android:id="@+id/label_sales_order_no"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sales_order_no"
+                    android:textColor="#003C71"
+                    android:visibility="gone"/>
+
             </TableRow>
            <!-- <TableRow>
                 &lt;!&ndash;<android.support.v7.widget.RecyclerView

@@ -366,7 +366,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     }*/
-
+                    toolbar.setTitle(getResources().getString(R.string.order_status));
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
@@ -414,7 +414,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     }*/
-
+                    toolbar.setTitle(getResources().getString(R.string.delivery_status));
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_dispatch");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
