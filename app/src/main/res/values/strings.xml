@@ -85,4 +85,18 @@
     <string name="invoice_date">"Invoice Date: "</string>
     <string name="sales_order_no">Sales Order No:</string>
     <string name="delivery_status">Delivery Status</string>
+    <string name="upload_invoices">Upload Invoices</string>
+    <string name="toast_permissions_given">Permission Given</string>
+    <string name="toast_insufficient_permissions">Insufficient Permissions</string>
+    <string name="toast_images_added">Images added</string>
+    <string name="cropImage_activityTitle">Crop Image :</string>
+    <string name="toast_imagecropped">Image Cropped</string>
+    <string name="toast_error_getCropped">Image can\'t be cropped</string>
+    <string name="toast_no_images">No images selected</string>
+    <string name="creating_pdf">Creating Pdf</string>
+    <string name="enter_file_name">Enter file name</string>
+    <string name="example">9000012</string>
+    <string name="toast_name_not_blank">Filename cannot be left blank</string>
+    <string name="please_wait">Please Wait...</string>
+    <string name="preparing_pdf">Preparing PDF!</string>
 </resources>

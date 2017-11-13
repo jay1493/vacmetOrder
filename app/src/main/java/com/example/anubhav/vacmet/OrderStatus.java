@@ -1,18 +1,23 @@
 package com.example.anubhav.vacmet;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -21,15 +26,13 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -39,10 +42,7 @@ import android.text.TextUtils;
 import android.transition.ChangeBounds;
 import android.transition.ChangeImageTransform;
 import android.transition.ChangeTransform;
-import android.transition.Explode;
 import android.transition.Fade;
-import android.transition.Transition;
-import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.util.Log;
 import android.util.Xml;
@@ -61,6 +61,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
@@ -70,24 +71,34 @@ import com.example.anubhav.vacmet.model.OrderContainer;
 import com.example.anubhav.vacmet.model.OrderModel;
 import com.example.anubhav.vacmet.services.VacmetOverlayService;
 import com.example.anubhav.vacmet.utils.CircleTransform;
+import com.gun0912.tedpicker.ImagePickerActivity;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.theartofdev.edmodo.cropper.CropImage;
 
+import org.xml.sax.XMLReader;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.XMLFormatter;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Created by anubhav on 23/1/17.
@@ -98,6 +109,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 9092;
+    private static final int INTENT_REQUEST_GET_IMAGES = 13;
+    private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT = 1;
+    private static int mImageCounter = 0;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
     public static final String STATUS = "STATUS";
@@ -173,6 +187,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private RadioGroup sortOrdersGroup;
     private RadioButton openOrdersRadio, closedOrdersRadio;
     private ArrayList<OrderContainer> orderContainerList;
+    private Button uploadInvoices;
+    private ArrayList<String> cameraSelectedImagesUris;
+    private ArrayList<String> croppedImagesUri;
+    private String filename;
+    private Context activity;
 
     @Override
     protected void onStart() {
@@ -317,6 +336,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void init() {
+        activity = this;
+        cameraSelectedImagesUris = new ArrayList<>();
+        croppedImagesUri = new ArrayList<>();
         progressDialog = new ProgressDialog(this);
         adminConsole = (LinearLayout) findViewById(R.id.admin_drawer);
         sortOrdersGroup = (RadioGroup) findViewById(R.id.sort_orders_by_group);
@@ -428,6 +450,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         radioClient = (RadioButton) findViewById(R.id.radioYes);
         radioServer = (RadioButton) findViewById(R.id.radioNo);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_order_status);
+        uploadInvoices = (Button) findViewById(R.id.btn_uploadInvoices);
+
         mainDrawerView = (LinearLayout) findViewById(R.id.mainDrawerView);
         etSapId = (EditText) findViewById(R.id.et_sap_id);
         etSapId.setOnClickListener(new View.OnClickListener() {
@@ -853,6 +877,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
                 }
                 break;
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    selectImages();
+                    Toast.makeText(this, R.string.toast_permissions_given, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, R.string.toast_insufficient_permissions, Toast.LENGTH_LONG).show();
+                }
+            }
+            break;
         }
     }
 
@@ -877,7 +910,38 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 this.finish();
                 startService(intent);
             }
-        } else {
+        }else if (requestCode == INTENT_REQUEST_GET_IMAGES && resultCode == Activity.RESULT_OK) {
+
+            cameraSelectedImagesUris.clear();
+
+            ArrayList<Uri> imageUris = data.getParcelableArrayListExtra(ImagePickerActivity.EXTRA_IMAGE_URIS);
+            for (int i = 0; i < imageUris.size(); i++) {
+                cameraSelectedImagesUris.add(imageUris.get(i).getPath());
+            }
+            Toast.makeText(this, R.string.toast_images_added, Toast.LENGTH_LONG).show();
+            nextImageToCrop();
+        } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == Activity.RESULT_OK) {
+                Uri resultUri = result.getUri();
+                croppedImagesUri.add(resultUri.getPath());
+                Toast.makeText(this, R.string.toast_imagecropped, Toast.LENGTH_LONG).show();
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+                Toast.makeText(this, R.string.toast_error_getCropped, Toast.LENGTH_LONG).show();
+                croppedImagesUri.add(cameraSelectedImagesUris.get(mImageCounter));
+                error.printStackTrace();
+            } else {
+                croppedImagesUri.add(cameraSelectedImagesUris.get(mImageCounter));
+            }
+
+            mImageCounter++;
+            nextImageToCrop();
+            if(mImageCounter == cameraSelectedImagesUris.size()){
+                createPdf();
+            }
+        }
+        else {
             super.onActivityResult(requestCode, resultCode, data);
 
         }
@@ -1313,5 +1377,167 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
             });
         }
+    void startAddingImages() {
+        // Check if permissions are granted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                                android.Manifest.permission.CAMERA},
+                        PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT);
+            } else {
+                selectImages();
+            }
+        } else {
+            selectImages();
+        }
+    }
+    public void selectImages() {
+        Intent intent = new Intent(this, ImagePickerActivity.class);
+
+        //add to intent the URIs of the already selected images
+        //first they are converted to Uri objects
+        ArrayList<Uri> uris = new ArrayList<>(cameraSelectedImagesUris.size());
+        for (String stringUri : cameraSelectedImagesUris) {
+            uris.add(Uri.fromFile(new File(stringUri)));
+        }
+        // add them to the intent
+        intent.putExtra(ImagePickerActivity.EXTRA_IMAGE_URIS, uris);
+
+        startActivityForResult(intent, INTENT_REQUEST_GET_IMAGES);
+    }
+
+
+
+    void nextImageToCrop() {
+        if (mImageCounter != cameraSelectedImagesUris.size()) {
+            CropImage.activity(Uri.fromFile(new File(cameraSelectedImagesUris.get(mImageCounter))))
+                    .setActivityMenuIconColor(getResources().getColor(R.color.colorPrimary))
+                    .setInitialCropWindowPaddingRatio(0)
+                    .setAllowRotation(true)
+                    .setActivityTitle(getString(R.string.cropImage_activityTitle) + (mImageCounter + 1))
+                    .start(this);
+        }
+    }
+
+    void createPdf() {
+        if (croppedImagesUri.size() == 0) {
+            if (cameraSelectedImagesUris.size() == 0) {
+                Toast.makeText(this, R.string.toast_no_images, Toast.LENGTH_LONG).show();
+                return;
+            } else {
+                croppedImagesUri = (ArrayList<String>) cameraSelectedImagesUris.clone();
+            }
+        }
+        new MaterialDialog.Builder(this)
+                .title(R.string.creating_pdf)
+                .content(R.string.enter_file_name)
+                .input(getString(R.string.example), null, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(MaterialDialog dialog, CharSequence input) {
+                        if (input == null || input.toString().trim().equals("")) {
+                            Toast.makeText(OrderStatus.this, R.string.toast_name_not_blank, Toast.LENGTH_LONG).show();
+                        } else {
+                            filename = input.toString();
+
+                            new CreatingPdf().execute();
+
+
+                        }
+                    }
+                })
+                .show();
+    }
+
+    public class CreatingPdf extends AsyncTask<String, String, byte[]> {
+
+        // Progress dialog
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(OrderStatus.this)
+                .title(R.string.please_wait)
+                .content(R.string.preparing_pdf)
+                .cancelable(false)
+                .progress(true, 0);
+        MaterialDialog dialog = builder.build();
+        private Image image;
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.show();
+        }
+
+        @Override
+        protected byte[] doInBackground(String... params) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            Document document = new Document(PageSize.A4, 38, 38, 50, 38);
+            Rectangle documentRect = document.getPageSize();
+
+            try {
+                PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
+                document.open();
+                for (int i = 0; i < croppedImagesUri.size(); i++) {
+
+                    Bitmap bmp = MediaStore.Images.Media.getBitmap(
+                            activity.getContentResolver(), Uri.fromFile(new File(croppedImagesUri.get(i))));
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.PNG, 70, stream);
+
+                    image = Image.getInstance(croppedImagesUri.get(i));
+
+
+                    if (bmp.getWidth() > documentRect.getWidth()
+                            || bmp.getHeight() > documentRect.getHeight()) {
+                        //bitmap is larger than page,so set bitmap's size similar to the whole page
+                        image.scaleAbsolute(documentRect.getWidth(), documentRect.getHeight());
+                    } else {
+                        //bitmap is smaller than page, so add bitmap simply.
+                        //[note: if you want to fill page by stretching image,
+                        // you may set size similar to page as above]
+                        image.scaleAbsolute(bmp.getWidth(), bmp.getHeight());
+                    }
+
+                    image.setAbsolutePosition(
+                            (documentRect.getWidth() - image.getScaledWidth()) / 2,
+                            (documentRect.getHeight() - image.getScaledHeight()) / 2);
+                    image.setBorder(Image.BOX);
+                    image.setBorderWidth(15);
+                    document.add(image);
+                    document.newPage();
+                }
+
+                document.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            document.close();
+            croppedImagesUri.clear();
+            cameraSelectedImagesUris.clear();
+            mImageCounter = 0;
+
+            byte[] pdfBytes = byteArrayOutputStream.toByteArray();
+            return pdfBytes;
+        }
+
+        @Override
+        protected void onPostExecute(byte[] bytes) {
+            super.onPostExecute(bytes);
+            if(bytes!=null && bytes.length>0){
+                if(!TextUtils.isEmpty(filename)){
+                    /**
+                     * HIT Service
+                     */
+                }
+            }
+
+        }
+    }
+
+
+
 
 }
