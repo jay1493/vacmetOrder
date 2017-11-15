@@ -85,12 +85,14 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -115,6 +117,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT = 1;
     private static final String SERVER_IP = "localhost:8080";
     private static final String URL_SAVE_INVOICE = "/Springs_Chat/chatServlet/saveInvoice";
+    private static final String URL_GET_INVOICE = "/Springs_Chat/chatServlet/getInvoice/";
     private static int mImageCounter = 0;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
@@ -1677,9 +1680,30 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 if(TextUtils.isEmpty(invoice)){
                     return "-1";
                 }else{
-                    /**
-                     * Hit Service using invoice and fetch model
-                     */
+
+                    try {
+                        URL url = new URL(SERVER_IP + URL_GET_INVOICE + invoice );
+                        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                        httpURLConnection.setRequestMethod("GET");
+                        httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                        httpURLConnection.setDoInput(true);
+                        httpURLConnection.setDoOutput(true);
+                        if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(),"UTF-8"));
+                            String response = "";
+                            String line ="";
+                            while((line = bufferedReader.readLine())!=null){
+                                response += line;
+                            }
+                            return response;
+                        }
+                    } catch(MalformedURLException e){
+                        e.printStackTrace();
+                        Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+                    } catch(IOException e){
+                        e.printStackTrace();
+                        Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
             return "-1";
@@ -1689,7 +1713,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             dialog.dismiss();
-            if(!s.equalsIgnoreCase("-1")) {
+            if(!"-1".equalsIgnoreCase(s)) {
                 if(responseStr.equalsIgnoreCase("Save")) {
                     if (!TextUtils.isEmpty(s)) {
                         Toast.makeText(activity, "Invoice saved successfully in database", Toast.LENGTH_SHORT).show();
@@ -1697,10 +1721,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         Toast.makeText(activity, "Invoice can't be saved, try again later!", Toast.LENGTH_SHORT).show();
                     }
                 }else if(responseStr.equalsIgnoreCase("Open")){
-                    /**
-                     * After successfully fetching model from Db, open it
-                     */
-                  //  new CreatingPdf().execute("Open",bytes,invoiceNo);
+                    if(!TextUtils.isEmpty(s)){
+                        Gson gson = new Gson();
+                        InvoiceTo invoiceTo = gson.fromJson(s,InvoiceTo.class);
+                        try {
+                            new CreatingPdf().execute("Open",new String(invoiceTo.getInvoice(),"UTF-8"),invoiceTo.getInvoiceNo());
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                            Toast.makeText(activity, "Encoding exception occurred! Contact admin", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
                 }
             }
         }
