@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -66,28 +65,34 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
 import com.example.anubhav.vacmet.interfaces.ItemClickListener;
+import com.example.anubhav.vacmet.model.InvoiceTo;
 import com.example.anubhav.vacmet.model.ItemModel;
 import com.example.anubhav.vacmet.model.OrderContainer;
 import com.example.anubhav.vacmet.model.OrderModel;
 import com.example.anubhav.vacmet.services.VacmetOverlayService;
 import com.example.anubhav.vacmet.utils.CircleTransform;
+import com.google.gson.Gson;
 import com.gun0912.tedpicker.ImagePickerActivity;
 import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.theartofdev.edmodo.cropper.CropImage;
 
-import org.xml.sax.XMLReader;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -96,21 +101,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.XMLFormatter;
-
-import static java.util.Collections.singletonList;
 
 /**
  * Created by anubhav on 23/1/17.
  */
 
-public class OrderStatus extends AppCompatActivity implements View.OnClickListener {
+public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked {
 
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 9092;
     private static final int INTENT_REQUEST_GET_IMAGES = 13;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT = 1;
+    private static final String SERVER_IP = "localhost:8080";
+    private static final String URL_SAVE_INVOICE = "/Springs_Chat/chatServlet/saveInvoice";
     private static int mImageCounter = 0;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
@@ -190,8 +194,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private Button uploadInvoices;
     private ArrayList<String> cameraSelectedImagesUris;
     private ArrayList<String> croppedImagesUri;
-    private String filename;
+    private String filenameToSaveInDb;
     private Context activity;
+    private File fileToSave;
+
 
     @Override
     protected void onStart() {
@@ -559,7 +565,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        },false);
+        },false, this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
@@ -1002,6 +1008,21 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
     }
 
+    @Override
+    public void onPdfClick(int pos) {
+        String invoiveNo = orderModelList.get(pos)!=null? orderModelList.get(pos).getInvoiceNo():null;
+        /**
+         * HIT Service only if we dont have that file in cache.
+         */
+        if(fileToSave!=null && invoiveNo.equalsIgnoreCase(fileToSave.getName())){
+            //Cache File
+            openPdf();
+        }else{
+            //Hit Service
+            new CustomServiceAsync().execute("Open",null,invoiveNo);
+        }
+    }
+
     private class CustomAsyncTaskForRestOrderService extends AsyncTask<String, Void, List<OrderModel>> {
         String orderType = null;
 
@@ -1344,7 +1365,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,(RecyclerviewAdapter.OpenPdfClicked) this);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);
@@ -1440,9 +1461,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         if (input == null || input.toString().trim().equals("")) {
                             Toast.makeText(OrderStatus.this, R.string.toast_name_not_blank, Toast.LENGTH_LONG).show();
                         } else {
-                            filename = input.toString();
+                            filenameToSaveInDb = input.toString();
 
-                            new CreatingPdf().execute();
+                            new CreatingPdf().execute("Save",null,null);
 
 
                         }
@@ -1451,7 +1472,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 .show();
     }
 
-    public class CreatingPdf extends AsyncTask<String, String, byte[]> {
+    public class CreatingPdf extends AsyncTask<String, String, String> {
 
         // Progress dialog
         MaterialDialog.Builder builder = new MaterialDialog.Builder(OrderStatus.this)
@@ -1461,6 +1482,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 .progress(true, 0);
         MaterialDialog dialog = builder.build();
         private Image image;
+        private byte[] pdfBytes;
 
 
         @Override
@@ -1470,74 +1492,218 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
 
         @Override
-        protected byte[] doInBackground(String... params) {
+        protected String doInBackground(String... params) {
+            String saveOrOpen = params[0];
+            byte[] bytes = new byte[0];
+            if(params[1]!=null) {
+                bytes = params[1].getBytes();
+            }
+            String invoiceNo = null;
+            if(params[2]!=null){
+                invoiceNo = params[2];
+            }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             Document document = new Document(PageSize.A4, 38, 38, 50, 38);
             Rectangle documentRect = document.getPageSize();
+            if(saveOrOpen.equalsIgnoreCase("Save")) {
+                try {
+                    PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
+                    document.open();
+                    for (int i = 0; i < croppedImagesUri.size(); i++) {
 
-            try {
-                PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
-                document.open();
-                for (int i = 0; i < croppedImagesUri.size(); i++) {
+                        Bitmap bmp = MediaStore.Images.Media.getBitmap(
+                                activity.getContentResolver(), Uri.fromFile(new File(croppedImagesUri.get(i))));
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bmp.compress(Bitmap.CompressFormat.PNG, 70, stream);
 
-                    Bitmap bmp = MediaStore.Images.Media.getBitmap(
-                            activity.getContentResolver(), Uri.fromFile(new File(croppedImagesUri.get(i))));
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    bmp.compress(Bitmap.CompressFormat.PNG, 70, stream);
-
-                    image = Image.getInstance(croppedImagesUri.get(i));
+                        image = Image.getInstance(croppedImagesUri.get(i));
 
 
-                    if (bmp.getWidth() > documentRect.getWidth()
-                            || bmp.getHeight() > documentRect.getHeight()) {
-                        //bitmap is larger than page,so set bitmap's size similar to the whole page
-                        image.scaleAbsolute(documentRect.getWidth(), documentRect.getHeight());
-                    } else {
-                        //bitmap is smaller than page, so add bitmap simply.
-                        //[note: if you want to fill page by stretching image,
-                        // you may set size similar to page as above]
-                        image.scaleAbsolute(bmp.getWidth(), bmp.getHeight());
+                        if (bmp.getWidth() > documentRect.getWidth()
+                                || bmp.getHeight() > documentRect.getHeight()) {
+                            //bitmap is larger than page,so set bitmap's size similar to the whole page
+                            image.scaleAbsolute(documentRect.getWidth(), documentRect.getHeight());
+                        } else {
+                            //bitmap is smaller than page, so add bitmap simply.
+                            //[note: if you want to fill page by stretching image,
+                            // you may set size similar to page as above]
+                            image.scaleAbsolute(bmp.getWidth(), bmp.getHeight());
+                        }
+
+                        image.setAbsolutePosition(
+                                (documentRect.getWidth() - image.getScaledWidth()) / 2,
+                                (documentRect.getHeight() - image.getScaledHeight()) / 2);
+                        image.setBorder(Image.BOX);
+                        image.setBorderWidth(15);
+                        document.add(image);
+                        document.newPage();
                     }
 
-                    image.setAbsolutePosition(
-                            (documentRect.getWidth() - image.getScaledWidth()) / 2,
-                            (documentRect.getHeight() - image.getScaledHeight()) / 2);
-                    image.setBorder(Image.BOX);
-                    image.setBorderWidth(15);
-                    document.add(image);
-                    document.newPage();
+                    document.close();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }else if(saveOrOpen.equalsIgnoreCase("Open")){
+                try {
+                    File filedir = new File("Vacmet");
+                    if(!filedir.exists()){
+                        filedir.mkdirs();
+                    }
+                    if(TextUtils.isEmpty(invoiceNo)){
+                        invoiceNo = "blank";
+                    }
+                    fileToSave = new File(filedir,invoiceNo+".pdf");
+                    if(fileToSave.exists()) {
+                        fileToSave.delete();
+                    }
+                    fileToSave.createNewFile();
+                    PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileToSave));
+                    document.open();
+                    document.add(new Paragraph(new String(bytes, "UTF-8")));
+
+                } catch (DocumentException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-                document.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-
             document.close();
             croppedImagesUri.clear();
             cameraSelectedImagesUris.clear();
             mImageCounter = 0;
 
-            byte[] pdfBytes = byteArrayOutputStream.toByteArray();
-            return pdfBytes;
+            pdfBytes = byteArrayOutputStream.toByteArray();
+            return saveOrOpen;
         }
 
         @Override
-        protected void onPostExecute(byte[] bytes) {
-            super.onPostExecute(bytes);
-            if(bytes!=null && bytes.length>0){
-                if(!TextUtils.isEmpty(filename)){
-                    /**
-                     * HIT Service
-                     */
+        protected void onPostExecute(String saveOrOpen) {
+            super.onPostExecute(saveOrOpen);
+            dialog.dismiss();
+            if(saveOrOpen.equalsIgnoreCase("Save")) {
+                if (pdfBytes != null && pdfBytes.length > 0) {
+                    if (!TextUtils.isEmpty(filenameToSaveInDb)) {
+                        /**
+                         * HIT Service
+                         */
+                        prepareObjectAndHitService("Save",pdfBytes,filenameToSaveInDb);
+                    }
                 }
+            }else if(saveOrOpen.equalsIgnoreCase("Open")){
+                /**
+                 * Open Pdf
+                 */
+                openPdf();
             }
 
         }
     }
 
+    private void prepareObjectAndHitService(String saveOrOpen, byte[] pdfBytes, String filenameToSaveInDb) {
+        InvoiceTo invoiceTo = new InvoiceTo();
+        invoiceTo.setInvoice(pdfBytes);
+        invoiceTo.setInvoiceNo(filenameToSaveInDb);
+        Gson gson = new Gson();
+        String jsonReq = gson.toJson(invoiceTo);
+        new CustomServiceAsync().execute(saveOrOpen,jsonReq,null);
+    }
+
+    private void openPdf() {
+        Intent target = new Intent(Intent.ACTION_VIEW);
+        target.setDataAndType(Uri.fromFile(fileToSave),"application/pdf");
+        target.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+        Intent intent = Intent.createChooser(target,"Open Invoice");
+        startActivity(intent);
+    }
+
+    public class CustomServiceAsync extends AsyncTask<String,String,String>{
+
+        // Progress dialog
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(OrderStatus.this)
+                .title(R.string.please_wait)
+                .content(R.string.securely_connecting_to_db)
+                .cancelable(false)
+                .progress(true, 0);
+        MaterialDialog dialog = builder.build();
+        private String responseStr = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.show();
+        }
 
 
+        @Override
+        protected String doInBackground(String... params) {
+            responseStr = params[0];
+            String invoice = params[2];
+            if(params[0].equalsIgnoreCase("Save")) {
+                String response = null;
+
+                    if (TextUtils.isEmpty(params[1])) {
+                        return "-1";
+                    } else {
+                      try {
+                        URL url = new URL(SERVER_IP + URL_SAVE_INVOICE);
+                        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                        httpURLConnection.setRequestMethod("POST");
+                        httpURLConnection.setRequestProperty("Content-Type", "application/json");
+                        httpURLConnection.setDoInput(true);
+                        httpURLConnection.setDoOutput(true);
+                        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream(), "UTF-8"));
+                        bufferedWriter.write(params[1]);
+                        bufferedWriter.close();
+                        if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                            response = "Success";
+                        }
+                    } catch(MalformedURLException e){
+                        e.printStackTrace();
+                        Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+                    } catch(IOException e){
+                        e.printStackTrace();
+                        Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+                    }
+
+                    return response;
+                }
+            }else if(params[0].equalsIgnoreCase("Open")){
+
+                if(TextUtils.isEmpty(invoice)){
+                    return "-1";
+                }else{
+                    /**
+                     * Hit Service using invoice and fetch model
+                     */
+                }
+            }
+            return "-1";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            dialog.dismiss();
+            if(!s.equalsIgnoreCase("-1")) {
+                if(responseStr.equalsIgnoreCase("Save")) {
+                    if (!TextUtils.isEmpty(s)) {
+                        Toast.makeText(activity, "Invoice saved successfully in database", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(activity, "Invoice can't be saved, try again later!", Toast.LENGTH_SHORT).show();
+                    }
+                }else if(responseStr.equalsIgnoreCase("Open")){
+                    /**
+                     * After successfully fetching model from Db, open it
+                     */
+                  //  new CreatingPdf().execute("Open",bytes,invoiceNo);
+                }
+            }
+        }
+    }
 
 }

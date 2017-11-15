@@ -99,4 +99,6 @@
     <string name="toast_name_not_blank">Filename cannot be left blank</string>
     <string name="please_wait">Please Wait...</string>
     <string name="preparing_pdf">Preparing PDF!</string>
+    <string name="saving_invoice_in_db">Saving Invoice in databse</string>
+    <string name="securely_connecting_to_db">Securely connecting to database.</string>
 </resources>

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "com.example.anubhav.vacmet"
         minSdkVersion 16
@@ -48,7 +48,7 @@ dependencies {
     compile 'com.theartofdev.edmodo:android-image-cropper:2.5.+'
     compile 'com.itextpdf:itextg:5.5.9'
     compile 'com.balysv:material-ripple:1.0.2'
-    compile 'com.github.dmytrodanylyk:android-morphing-button:98a4986e56'
+    compile 'com.google.code.gson:gson:2.8.1'
     compile 'com.github.ParkSangGwon:TedPicker:v1.0.10'
     compile('com.github.afollestad.material-dialogs:core:0.8.0.0@aar') {
         transitive = true

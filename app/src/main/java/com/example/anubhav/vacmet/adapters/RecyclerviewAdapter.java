@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -30,13 +31,16 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private ItemClickListener itemClickListener;
     private DecimalFormat decimalFormat;
     private boolean isDispatched;
-    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched) {
+    private OpenPdfClicked openPdfClicked;
+
+    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
         this.itemClickListener = itemClickListener;
         decimalFormat = new DecimalFormat("#.##");
         this.isDispatched = isDispatched;
+        this.openPdfClicked = openPdf;
     }
 
     @Override
@@ -91,6 +95,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.txtInvoice.setText(list.get(position).getInvoiceNo());
                     holder.llOrderNo.setVisibility(View.GONE);
                     holder.deliveryDate.setText(list.get(position).getInvoiceDate());
+                    holder.openPdf.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            openPdfClicked.onPdfClick(position);
+                        }
+                    });
                 }else{
                     holder.llInvoice.setVisibility(View.GONE);
                     holder.llOrderNo.setVisibility(View.VISIBLE);
@@ -123,6 +133,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         LinearLayout llInvoice;
         LinearLayout llOrderNo;
         TextView txtInvoice;
+        ImageView openPdf;
         public Viewholder(View itemView, int viewType) {
             super(itemView);
             switch (viewType){
@@ -137,6 +148,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llInvoice = (LinearLayout) itemView.findViewById(R.id.ll_invoiceNo);
                     llOrderNo = (LinearLayout) itemView.findViewById(R.id.ll_OrderNo);
                     txtInvoice = (TextView) itemView.findViewById(R.id.tvInvoiceNo);
+                    openPdf = (ImageView) itemView.findViewById(R.id.open_invoice_pdf);
                     itemView.setOnClickListener(this);
                     break;
                 case 1:
@@ -150,5 +162,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         public void onClick(View view) {
 //            itemClickListener.onClick(view,getAdapterPosition());
         }
+    }
+
+    public interface OpenPdfClicked{
+        void onPdfClick(int pos);
     }
 }
