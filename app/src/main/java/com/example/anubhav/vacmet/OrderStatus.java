@@ -274,7 +274,6 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
-        //Todo: Back functionality only via hardware button
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -369,7 +368,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void hitOrdersService(String client, String id, String orderType) {
-        //Todo: Pass SAP No., here to fetch total orders for corresponding SAP id.
+
         new CustomAsyncTaskForRestOrderService().execute(client, id, orderType);
     }
 
@@ -428,8 +427,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     }*/
-                    toolbar.setTitle(getResources().getString(R.string.order_status));
-                    getSupportActionBar().setTitle(getResources().getString(R.string.order_status));
+                    setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
@@ -477,9 +475,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         noSearchResultFound.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     }*/
-                    toolbar.setTitle(getResources().getString(R.string.delivery_status));
-                    setTitle(getResources().getString(R.string.delivery_status));
-                    getSupportActionBar().setTitle(getResources().getString(R.string.delivery_status));
+                    setCollapsingToolbarTitle(getResources().getString(R.string.delivery_status));
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_dispatch");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
@@ -567,7 +563,6 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
-        /**Todo : Problem for MODE_WORLD_READABLE LOOK==============================================**/
         sharedPreferences = getSharedPreferences("GooglePic", MODE_APPEND);
         if (sharedPreferences.getString("PhotoUrl", null) != null) {
             Glide.with(this).load(sharedPreferences.getString("PhotoUrl", null))
@@ -668,10 +663,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     protected void onResume() {
         super.onResume();
 //        handleSearch(getIntent());
-        collapsingToolbar.setCollapsedTitleTextColor(Color.WHITE);
-        collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
-        collapsingToolbar.setExpandedTitleColor(getResources().getColor(android.R.color.white));
+        setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
 
+    }
+
+    private void setCollapsingToolbarTitle(String s) {
+        collapsingToolbar.setCollapsedTitleTextColor(Color.WHITE);
+        collapsingToolbar.setTitle(s);
+        collapsingToolbar.setExpandedTitleColor(getResources().getColor(android.R.color.white));
     }
 
     @Override
@@ -1055,7 +1054,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         String invoiveNo = orderModelList.get(pos)!=null? orderModelList.get(pos).getInvoiceNo():null;
         /**
          * HIT Service only if we dont have that file in cache.
-         *///Todo:
+         */
         if(fileFromDb!=null && invoiveNo.equalsIgnoreCase(fileFromDb.getName())){
             //Cache File
             openPdf();
