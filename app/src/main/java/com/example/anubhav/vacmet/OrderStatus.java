@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -37,12 +38,14 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.transition.ChangeBounds;
 import android.transition.ChangeImageTransform;
 import android.transition.ChangeTransform;
 import android.transition.Fade;
 import android.transition.TransitionSet;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
 import android.view.Gravity;
@@ -61,6 +64,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.Theme;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
@@ -72,6 +76,14 @@ import com.example.anubhav.vacmet.model.OrderModel;
 import com.example.anubhav.vacmet.services.VacmetOverlayService;
 import com.example.anubhav.vacmet.utils.CircleTransform;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.gun0912.tedpicker.ImagePickerActivity;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -93,16 +105,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by anubhav on 23/1/17.
@@ -115,7 +139,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 9092;
     private static final int INTENT_REQUEST_GET_IMAGES = 13;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT = 1;
-    private static final String SERVER_IP = "localhost:8080";
+    private static final String SERVER_IP = "http://192.168.0.149:8080";
     private static final String URL_SAVE_INVOICE = "/Springs_Chat/chatServlet/saveInvoice";
     private static final String URL_GET_INVOICE = "/Springs_Chat/chatServlet/getInvoice/";
     private static int mImageCounter = 0;
@@ -398,6 +422,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
                     toolbar.setTitle(getResources().getString(R.string.order_status));
+                    getSupportActionBar().setTitle(getResources().getString(R.string.order_status));
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
@@ -446,6 +471,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
                     toolbar.setTitle(getResources().getString(R.string.delivery_status));
+                    setTitle(getResources().getString(R.string.delivery_status));
+                    getSupportActionBar().setTitle(getResources().getString(R.string.delivery_status));
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_dispatch");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
@@ -460,7 +487,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         radioServer = (RadioButton) findViewById(R.id.radioNo);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_order_status);
         uploadInvoices = (Button) findViewById(R.id.btn_uploadInvoices);
-
+        uploadInvoices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startAddingImages();
+            }
+        });
         mainDrawerView = (LinearLayout) findViewById(R.id.mainDrawerView);
         etSapId = (EditText) findViewById(R.id.et_sap_id);
         etSapId.setOnClickListener(new View.OnClickListener() {
@@ -1368,7 +1400,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false,(RecyclerviewAdapter.OpenPdfClicked) this);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);
@@ -1456,8 +1488,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         }
         new MaterialDialog.Builder(this)
-                .title(R.string.creating_pdf)
-                .content(R.string.enter_file_name)
+                .title(R.string.creating_pdf).inputType(InputType.TYPE_CLASS_NUMBER)
+                .content(R.string.enter_file_name).itemsColor(getResources().getColor(R.color.black)).theme(Theme.LIGHT)
                 .input(getString(R.string.example), null, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(MaterialDialog dialog, CharSequence input) {
@@ -1481,8 +1513,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         MaterialDialog.Builder builder = new MaterialDialog.Builder(OrderStatus.this)
                 .title(R.string.please_wait)
                 .content(R.string.preparing_pdf)
-                .cancelable(false)
-                .progress(true, 0);
+                .cancelable(false).theme(Theme.LIGHT)
+                .progress(true, 0).itemsColor(getResources().getColor(R.color.black));
         MaterialDialog dialog = builder.build();
         private Image image;
         private byte[] pdfBytes;
@@ -1628,10 +1660,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         // Progress dialog
         MaterialDialog.Builder builder = new MaterialDialog.Builder(OrderStatus.this)
-                .title(R.string.please_wait)
+                .title(R.string.please_wait).theme(Theme.LIGHT)
                 .content(R.string.securely_connecting_to_db)
                 .cancelable(false)
-                .progress(true, 0);
+                .progress(true, 0).itemsColor(getResources().getColor(R.color.black));
         MaterialDialog dialog = builder.build();
         private String responseStr = null;
 
@@ -1644,6 +1676,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         @Override
         protected String doInBackground(String... params) {
+            Handler handler = new Handler(activity.getMainLooper());
+
             responseStr = params[0];
             String invoice = params[2];
             if(params[0].equalsIgnoreCase("Save")) {
@@ -1659,21 +1693,62 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         httpURLConnection.setRequestProperty("Content-Type", "application/json");
                         httpURLConnection.setDoInput(true);
                         httpURLConnection.setDoOutput(true);
+                          disableSSLCertificateChecking();
+                        /*  final TrustManager[] trustAllCerts = new TrustManager[]{
+                                  new X509TrustManager() {
+                                      @Override
+                                      public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                                      }
+
+                                      @Override
+                                      public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                                      }
+
+                                      @Override
+                                      public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                          return null;
+                                      }
+                                  }
+                          };
+
+                          // Install the all-trusting trust manager
+                          final SSLContext sslContext = SSLContext.getInstance("SSL");
+                          sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                          // Create an ssl socket factory with our all-trusting manager
+                          final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+                          httpURLConnection.se*/
+
+
+                          /*OutputStream os = httpURLConnection.getOutputStream();
+                          os.write(params[1].getBytes());
+                          os.flush();*/
                         BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream(), "UTF-8"));
                         bufferedWriter.write(params[1]);
                         bufferedWriter.close();
                         if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                             response = "Success";
                         }
-                    } catch(MalformedURLException e){
-                        e.printStackTrace();
-                        Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+                      } catch(MalformedURLException e){
+                          e.printStackTrace();
+                          handler.post(new Runnable() {
+                              @Override
+                              public void run() {
+                                  Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+
+                              }
+                          });
                     } catch(IOException e){
                         e.printStackTrace();
-                        Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+                          handler.post(new Runnable() {
+                              @Override
+                              public void run() {
+                                  Toast.makeText(activity, "Error! while saving Invoice", Toast.LENGTH_SHORT).show();
+
+                              }
+                          });
                     }
 
-                    return response;
+                        return response;
                 }
             }else if(params[0].equalsIgnoreCase("Open")){
 
@@ -1685,9 +1760,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         URL url = new URL(SERVER_IP + URL_GET_INVOICE + invoice );
                         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                         httpURLConnection.setRequestMethod("GET");
-                        httpURLConnection.setRequestProperty("Content-Type", "application/json");
-                        httpURLConnection.setDoInput(true);
-                        httpURLConnection.setDoOutput(true);
+                        //httpURLConnection.setRequestProperty("Content-Type", "application/json");
+//                        httpURLConnection.setDoInput(true);
+//                        httpURLConnection.setDoOutput(true);
+                        disableSSLCertificateChecking();
                         if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(),"UTF-8"));
                             String response = "";
@@ -1723,6 +1799,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }else if(responseStr.equalsIgnoreCase("Open")){
                     if(!TextUtils.isEmpty(s)){
                         Gson gson = new Gson();
+                   /*     Gson customGson = new GsonBuilder().registerTypeHierarchyAdapter(byte[].class,
+                                new ByteArrayToBase64TypeAdapter()).create();*/
+
+
                         InvoiceTo invoiceTo = gson.fromJson(s,InvoiceTo.class);
                         try {
                             new CreatingPdf().execute("Open",new String(invoiceTo.getInvoice(),"UTF-8"),invoiceTo.getInvoiceNo());
@@ -1733,6 +1813,45 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
                 }
+            }
+        }
+
+        private void disableSSLCertificateChecking() {
+            TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                    // Not implemented
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                    // Not implemented
+                }
+            } };
+
+            try {
+                SSLContext sc = SSLContext.getInstance("TLS");
+
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+
+                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        }
+        class ByteArrayToBase64TypeAdapter implements JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
+            public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                return Base64.decode(json.getAsString(), Base64.NO_WRAP);
+            }
+
+            public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
+                return new JsonPrimitive(Base64.encodeToString(src, Base64.NO_WRAP));
             }
         }
     }
