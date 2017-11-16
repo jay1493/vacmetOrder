@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -15,12 +16,18 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.fingerprint.FingerprintManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
+import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -46,6 +53,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.example.anubhav.vacmet.emailSending.GmailSender;
 import com.example.anubhav.vacmet.model.UserModel;
+import com.example.anubhav.vacmet.utils.FingerprintHandler;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -62,14 +70,29 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
     private static final int GOOGLE_SIGN_IN = 9090;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE = 9099;
-    private ImageView gifImageView,googleSignIn;
+    private static final int MY_PERMISSIONS_REQUEST_FINGERPRINT = 90192;
+    private ImageView gifImageView, googleSignIn;
     private FrameLayout frameLayout;
     private LayoutInflater inflater;
     private Button btnSignIn;
@@ -80,8 +103,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Activity activity;
     private LinearLayout login_btns;
     private GoogleApiClient googleApiClient;
-    private EditText etUserName_signIn,etPassword_signIn,etFirstName_signUp,
-    etLastName_signUp,etEmail_signUp,etPassword_signUp,etReEnterPass_signUp,etContact_signUp;
+    private EditText etUserName_signIn, etPassword_signIn, etFirstName_signUp,
+            etLastName_signUp, etEmail_signUp, etPassword_signUp, etReEnterPass_signUp, etContact_signUp;
     private Dialog dialog;
     private AnimationDrawable gmailAnimationDrawable;
     private Button btn_signUser;
@@ -97,7 +120,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private LinearLayout llOtpLayout;
     private RelativeLayout rlLoaderLayout;
     private LinearLayout orRegisterVia;
-    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =0 ;
+    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
     public static String url;
     private String strUrl;
     private DatabaseReference mDatabase;
@@ -107,7 +130,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String userEmail;
     private String userPassword;
     private String userContact;
-    private String behaviour ="";
+    private String behaviour = "";
     private String userSignIn;
     private String passSignIn;
     private ImageView loaderSignIn;
@@ -121,10 +144,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
     private EditText etSapId;
-    private RadioButton radioClient,radioSales;
+    private RadioButton radioClient, radioSales;
     private SharedPreferences orderIdPrefs;
-    private String userSapId,userClientOrServer;
+    private String userSapId, userClientOrServer;
     private ProgressDialog progressDialog;
+    private KeyguardManager keyguardManager;
+    private FingerprintManager fingerprintManager;
+    private TextView et_fingerPrintError;
+    private KeyStore keyStore;
+    private Cipher cipher;
+    private static final String KEY_NAME = "PerfectSoftware";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,8 +172,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
          */
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
         Glide.with(this).load(R.raw.gif2).into(imageViewTarget);
-        sharedprefs = getSharedPreferences(LoginPrefs,MODE_APPEND);
-        orderIdPrefs = getSharedPreferences(OrderIdPrefs,MODE_PRIVATE);
+        sharedprefs = getSharedPreferences(LoginPrefs, MODE_APPEND);
+        orderIdPrefs = getSharedPreferences(OrderIdPrefs, MODE_PRIVATE);
         intentFilter = new IntentFilter();
         intentFilter.addAction(RECEIVE_ACTION);
         smsDeliverBroadcast = new SmsBroadcast();
@@ -155,43 +184,43 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail().build();
 
-        googleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this,this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API,googleSignInOptions).build();
+        googleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions).build();
 
 
     }
 
     private void initializeFirebaseAuth() {
-        firebaseAuth =  FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if(user!=null){
+                if (user != null) {
                     //SignedIn
-                }else{
+                } else {
                     //SignedOut
                 }
-                updateUI(user,false);
+                updateUI(user, false);
             }
         };
     }
 
     private void updateUI(FirebaseUser user, final boolean isAuthRequired) {
-        boolean isAuthSuccess = (user!=null);
-        if(isAuthSuccess){
+        boolean isAuthSuccess = (user != null);
+        if (isAuthSuccess) {
             //Anonymous User SignedIn to Firebase., Now access Database...
             mDatabase = FirebaseDatabase.getInstance().getReference("users");
-            if(behaviour.equalsIgnoreCase("SignUp")) {
+            if (behaviour.equalsIgnoreCase("SignUp")) {
 
 //                String primaryKey = mDatabase.push().getKey();
-                final UserModel userModel = new UserModel(userName,userEmail,userPassword,userContact,false,new ArrayList<String>(),userSapId,userClientOrServer);
+                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer);
 
-                mDatabase.child(userEmail.replace(".",getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
+                mDatabase.child(userEmail.replace(".", getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.exists()){
-                            if(progressDialog!=null && progressDialog.isShowing()){
+                        if (dataSnapshot.exists()) {
+                            if (progressDialog != null && progressDialog.isShowing()) {
                                 progressDialog.dismiss();
                             }
                             Toast.makeText(activity, "User already exists! Please try a different user or SignIn", Toast.LENGTH_SHORT).show();
@@ -202,8 +231,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             login_btns.setVisibility(View.VISIBLE);
                             btnSignIn.setVisibility(View.VISIBLE);
                             btnSignUp.setVisibility(View.VISIBLE);
-                        }else{
-                            mDatabase.child(userEmail.replace(".",getString(R.string.replacing_dot_in_firebase_db))).setValue(userModel);
+                        } else {
+                            mDatabase.child(userEmail.replace(".", getString(R.string.replacing_dot_in_firebase_db))).setValue(userModel);
                         }
                     }
 
@@ -217,9 +246,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 mDatabase.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(!dataSnapshot.exists()) {
-                            if(isAuthRequired){
-                                if(progressDialog!=null && progressDialog.isShowing()){
+                        if (!dataSnapshot.exists()) {
+                            if (isAuthRequired) {
+                                if (progressDialog != null && progressDialog.isShowing()) {
                                     progressDialog.dismiss();
                                 }
                                 Toast.makeText(activity, "Please wait for Admins to Approve...", Toast.LENGTH_SHORT).show();
@@ -230,7 +259,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 login_btns.setVisibility(View.VISIBLE);
                                 btnSignIn.setVisibility(View.VISIBLE);
                                 btnSignUp.setVisibility(View.VISIBLE);
-                            }else {
+                            } else {
                                 passUser();
                             }
                         }
@@ -242,12 +271,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     }
                 });
-            }else if(behaviour.equalsIgnoreCase("Login")){
+            } else if (behaviour.equalsIgnoreCase("Login")) {
                 //Search Database, to match with fields
                 mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        collectData((Map<String,Object>)dataSnapshot.getValue());
+                        collectData((Map<String, Object>) dataSnapshot.getValue());
                     }
 
                     @Override
@@ -258,12 +287,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             }
 
-        }else{
+        } else {
             //Not SignedIn
             Toast.makeText(activity, "User not connected to server...", Toast.LENGTH_SHORT).show();
         }
-        if(isAuthRequired){
-            if(progressDialog!=null && progressDialog.isShowing()){
+        if (isAuthRequired) {
+            if (progressDialog != null && progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
             Toast.makeText(activity, "Please wait for Admins to Approve...", Toast.LENGTH_SHORT).show();
@@ -279,17 +308,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private void passUser() {
         SharedPreferences.Editor edit = sharedprefs.edit();
-        edit.putString(LoggedInUser,userEmail);
-        edit.putString(LoggedInUserName,userName);
-        edit.putString(LoggedInUserPassword,userPassword);
+        edit.putString(LoggedInUser, userEmail);
+        edit.putString(LoggedInUserName, userName);
+        edit.putString(LoggedInUserPassword, userPassword);
         edit.apply();
         SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
-        orderIdPrefsEdit.putString(SapId,userSapId);
-        orderIdPrefsEdit.putString(ClientorServer,userClientOrServer);
+        orderIdPrefsEdit.putString(SapId, userSapId);
+        orderIdPrefsEdit.putString(ClientorServer, userClientOrServer);
         orderIdPrefsEdit.apply();
         url = strUrl;
         frameLayout.removeAllViewsInLayout();
-        View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
+        View view_otp = inflater.inflate(R.layout.activity_otp, null, false);
         view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
         view_otp.findViewById(R.id.otp_layout).setVisibility(View.GONE);
         view_otp.findViewById(R.id.loader_layout).setVisibility(View.VISIBLE);
@@ -298,8 +327,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         bottomSheetBehavior.setBottomSheetCallback(null);
         bottomSheetBehavior.setSkipCollapsed(false);
         bottomSheetBehavior.setPeekHeight(500);
-        ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
-        final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
+        ((ImageView) findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
+        final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView) findViewById(R.id.loader)).getBackground();
         animationDrawable.start();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -309,60 +338,60 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 findViewById(R.id.loader_layout).setVisibility(View.GONE);
                 findViewById(R.id.approved_user_layout).setVisibility(View.VISIBLE);
             }
-        },2000);
+        }, 2000);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
+                Intent intent = new Intent(LoginActivity.this, OrderStatus.class);
                 startActivity(intent);
                 finish();
             }
-        },5000);
+        }, 5000);
     }
 
     private void collectData(Map<String, Object> value) {
-        boolean foundUser  = false;
-        String name ="";
+        boolean foundUser = false;
+        String name = "";
         boolean isAuthorized = false;
-        for(Map.Entry<String, Object> entrySet : value.entrySet()){
-              Map<String,Object> user = (Map<String, Object>) entrySet.getValue();
-              if(((String)user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String)user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
-                  //Successfully Matched Records....
-                  foundUser = true;
-                  if(((boolean)user.get("approved"))){
-                      isAuthorized = true;
-                  }
+        for (Map.Entry<String, Object> entrySet : value.entrySet()) {
+            Map<String, Object> user = (Map<String, Object>) entrySet.getValue();
+            if (((String) user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String) user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())) {
+                //Successfully Matched Records....
+                foundUser = true;
+                if (((boolean) user.get("approved"))) {
+                    isAuthorized = true;
+                }
 
-                  name = ((String)user.get("userName"));
-                  userSapId = ((String)user.get("sapId"));
-                  userClientOrServer = ((String)user.get("clientOrServer"));
-              }
+                name = ((String) user.get("userName"));
+                userSapId = ((String) user.get("sapId"));
+                userClientOrServer = ((String) user.get("clientOrServer"));
+            }
         }
-        if(foundUser && isAuthorized){
+        if (foundUser && isAuthorized) {
             //User Found
             SharedPreferences.Editor edit = sharedprefs.edit();
-            edit.putString(LoggedInUser,etUserName_signIn.getText().toString().trim());
-            edit.putString(LoggedInUserName,name);
-            edit.putString(LoggedInUserPassword,etPassword_signIn.getText().toString().trim());
+            edit.putString(LoggedInUser, etUserName_signIn.getText().toString().trim());
+            edit.putString(LoggedInUserName, name);
+            edit.putString(LoggedInUserPassword, etPassword_signIn.getText().toString().trim());
             edit.apply();
 
             SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
-            orderIdPrefsEdit.putString(SapId,userSapId);
-            orderIdPrefsEdit.putString(ClientorServer,userClientOrServer);
+            orderIdPrefsEdit.putString(SapId, userSapId);
+            orderIdPrefsEdit.putString(ClientorServer, userClientOrServer);
             orderIdPrefsEdit.apply();
 //            Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
+            Intent intent = new Intent(LoginActivity.this, OrderStatus.class);
             startActivity(intent);
             finish();
-        }else{
+        } else {
             //User Not Found....
-            if(foundUser && !isAuthorized){
-             //Not Authorized
+            if (foundUser && !isAuthorized) {
+                //Not Authorized
                 loaderSignIn.setVisibility(View.GONE);
                 btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in));
                 textSignIn.setVisibility(View.VISIBLE);
                 Toast.makeText(activity, "Oops, User has not been authorized yet, contact Admin, or Try again later!", Toast.LENGTH_SHORT).show();
-            }else {
+            } else {
                 //User not found
                 etUserName_signIn.requestFocus();
                 etUserName_signIn.setError(getResources().getString(R.string.username_not_correct), getResources().getDrawable(R.drawable.error_24dp));
@@ -382,62 +411,202 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         btnSignUp = (Button) findViewById(R.id.btn_signUp);
         mainLayout = (RelativeLayout) findViewById(R.id.activity_login);
         login_btns = (LinearLayout) findViewById(R.id.login_btn_layout);
+        keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+        fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(sharedprefs.getString(LoggedInUser,null)!=null && sharedprefs.getString(LoggedInUserPassword,null)!=null){
+        if (sharedprefs.getString(LoggedInUser, null) != null && sharedprefs.getString(LoggedInUserPassword, null) != null) {
             /**
-             * Some user is logged in...
+             * Some user is logged in...and we have sharedPrefs Data
+             * 1.)If have fingerprint, then on successful scan, follow the same code as below, i.e
+             *    paste the saved userCreds, and hit firebase
+             * 2.)Else, just paste user id in field and wait for user to enter password, after which
+             *    hit firebase .
              */
-            frameLayout.removeAllViewsInLayout();
-            View signIn_View = inflater.inflate(R.layout.activity_sign_in,null,false);
 
-            etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
-            etUserName_signIn.setText(sharedprefs.getString(LoggedInUser,null));
-            etUserName_signIn.setEnabled(false);
-            etUserName_signIn.setFocusable(false);
-            etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
-            etPassword_signIn.setText(sharedprefs.getString(LoggedInUserPassword,null));
-            etPassword_signIn.setEnabled(false);
-            etPassword_signIn.setFocusable(false);
-            loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
-            textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
-            btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
-            behaviour = "Login";
-            userSignIn = etUserName_signIn.getText().toString().trim();
-            passSignIn = etPassword_signIn.getText().toString().trim();
-            if(userSignIn.equalsIgnoreCase("")){
-                etUserName_signIn.requestFocus();
-                etUserName_signIn.setError(getResources().getString(R.string.username_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
-                return;
-            }else if(passSignIn.equalsIgnoreCase("")){
-                etPassword_signIn.requestFocus();
-                etPassword_signIn.setError(getResources().getString(R.string.password_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
-                return;
-            }else{
-                btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
-                textSignIn.setVisibility(View.GONE);
-                loaderSignIn.setVisibility(View.VISIBLE);
-                GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
-                Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
-                signAnonymousFirebaseUser(false);
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(new String[]{Manifest.permission.USE_FINGERPRINT},
+                            MY_PERMISSIONS_REQUEST_FINGERPRINT);
+                } else {
+                    checkForFingerPrintOnResume();
+                }
+            } else {
+                checkForFingerPrintOnResume();
             }
-            /*btnLogin.performClick();*/
-            int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
-            signIn_View.measure(width,View.MeasureSpec.UNSPECIFIED);
-            int height = signIn_View.getMeasuredHeight();
-            btnLogin.setOnClickListener(this);
-            frameLayout.addView(signIn_View);
-            bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
-            bottomSheetBehavior.setPeekHeight(height);
-            bottomSheetBehavior.setHideable(false);
-            bottomSheetBehavior.setBottomSheetCallback(null);
-            bottomSheetBehavior.setSkipCollapsed(false);
-        }
-        registerReceiver(smsDeliverBroadcast,intentFilter);
 
+
+        }
+        registerReceiver(smsDeliverBroadcast, intentFilter);
+
+    }
+
+    private void checkForFingerPrintOnResume() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                if (fingerprintManager.isHardwareDetected()) {
+                    //FingerPrintCode
+                    frameLayout.removeAllViewsInLayout();
+                    View signIn_View = inflater.inflate(R.layout.activity_fingerprint, null, false);
+                    et_fingerPrintError = (TextView) signIn_View.findViewById(R.id.errorText);
+                    if (!fingerprintManager.hasEnrolledFingerprints()) {
+                        et_fingerPrintError.setText("Register at least one fingerprint in Settings");
+                    }else{
+                        // Checks whether lock screen security is enabled or not
+                        if (!keyguardManager.isKeyguardSecure()) {
+                            et_fingerPrintError.setText("Lock screen security not enabled in Settings");
+                        }else{
+                            generateKey();
+
+
+                            if (cipherInit()) {
+                                FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
+                                FingerprintHandler helper = new FingerprintHandler(this);
+                                helper.startAuth(fingerprintManager, cryptoObject);
+                            }
+                        }
+                    }
+                    int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
+                    signIn_View.measure(width, View.MeasureSpec.UNSPECIFIED);
+                    int height = signIn_View.getMeasuredHeight();
+                    frameLayout.addView(signIn_View);
+                    bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
+                    bottomSheetBehavior.setPeekHeight(height);
+                    bottomSheetBehavior.setHideable(false);
+                    bottomSheetBehavior.setBottomSheetCallback(null);
+                    bottomSheetBehavior.setSkipCollapsed(false);
+                    btnLogin.setOnClickListener(this);
+                }
+              }
+            } else {
+            inflatePasswordAutomaticSignIn();
+            }
+        }
+
+    private void inflatePasswordAutomaticSignIn() {
+        frameLayout.removeAllViewsInLayout();
+        View signIn_View = inflater.inflate(R.layout.activity_sign_in, null, false);
+
+        etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
+        etUserName_signIn.setText(sharedprefs.getString(LoggedInUser, null));
+        etUserName_signIn.setEnabled(false);
+        etUserName_signIn.setFocusable(false);
+               /* etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
+                etPassword_signIn.setText(sharedprefs.getString(LoggedInUserPassword,null));
+                etPassword_signIn.setEnabled(false);
+                etPassword_signIn.setFocusable(false);
+                loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
+                textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
+                btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
+                behaviour = "Login";
+                userSignIn = etUserName_signIn.getText().toString().trim();
+                passSignIn = etPassword_signIn.getText().toString().trim();
+                if(userSignIn.equalsIgnoreCase("")){
+                    etUserName_signIn.requestFocus();
+                    etUserName_signIn.setError(getResources().getString(R.string.username_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
+                    return;
+                }else if(passSignIn.equalsIgnoreCase("")){
+                    etPassword_signIn.requestFocus();
+                    etPassword_signIn.setError(getResources().getString(R.string.password_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
+                    return;
+                }else{
+                    btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                    textSignIn.setVisibility(View.GONE);
+                    loaderSignIn.setVisibility(View.VISIBLE);
+                    GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                    Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                    signAnonymousFirebaseUser(false);
+                }*/
+    /*btnLogin.performClick();*/
+        int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        signIn_View.measure(width, View.MeasureSpec.UNSPECIFIED);
+        int height = signIn_View.getMeasuredHeight();
+        frameLayout.addView(signIn_View);
+        bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
+        bottomSheetBehavior.setPeekHeight(height);
+        bottomSheetBehavior.setHideable(false);
+        bottomSheetBehavior.setBottomSheetCallback(null);
+        bottomSheetBehavior.setSkipCollapsed(false);
+        btnLogin.setOnClickListener(this);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    protected void generateKey() {
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        KeyGenerator keyGenerator;
+        try {
+            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException("Failed to get KeyGenerator instance", e);
+        }
+
+
+        try {
+            keyStore.load(null);
+            keyGenerator.init(new
+                    KeyGenParameterSpec.Builder(KEY_NAME,
+                    KeyProperties.PURPOSE_ENCRYPT |
+                            KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setUserAuthenticationRequired(true)
+                    .setEncryptionPaddings(
+                            KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    .build());
+            keyGenerator.generateKey();
+        } catch (NoSuchAlgorithmException |
+                InvalidAlgorithmParameterException
+                | CertificateException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.M)
+    public boolean cipherInit() {
+        try {
+            cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/" + KeyProperties.BLOCK_MODE_CBC + "/" + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("Failed to get Cipher", e);
+        }
+
+
+        try {
+            keyStore.load(null);
+            SecretKey key = (SecretKey) keyStore.getKey(KEY_NAME,
+                    null);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return true;
+        } catch (KeyPermanentlyInvalidatedException e) {
+            return false;
+        } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException("Failed to init Cipher", e);
+        }
     }
 
     @Override
@@ -899,6 +1068,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 } else {
                     requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
                             MY_PERMISSIONS_REQUEST_SEND_SMS);
+                }
+            }
+            break;
+            case MY_PERMISSIONS_REQUEST_FINGERPRINT: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    checkForFingerPrintOnResume();
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.USE_FINGERPRINT},
+                            MY_PERMISSIONS_REQUEST_FINGERPRINT);
                 }
             }
             break;
