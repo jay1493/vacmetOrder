@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -101,6 +102,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -224,6 +227,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private String filenameToSaveInDb;
     private Context activity;
     private File fileToSave;
+    private Gson customGson;
+    private File fileFromDb;
 
 
     @Override
@@ -369,6 +374,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void init() {
+        customGson = new GsonBuilder().registerTypeHierarchyAdapter(byte[].class,
+                                new ByteArrayToBase64TypeAdapter()).create();
         activity = this;
         cameraSelectedImagesUris = new ArrayList<>();
         croppedImagesUri = new ArrayList<>();
@@ -1048,8 +1055,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         String invoiveNo = orderModelList.get(pos)!=null? orderModelList.get(pos).getInvoiceNo():null;
         /**
          * HIT Service only if we dont have that file in cache.
-         */
-        if(fileToSave!=null && invoiveNo.equalsIgnoreCase(fileToSave.getName())){
+         *///Todo:
+        if(fileFromDb!=null && invoiveNo.equalsIgnoreCase(fileFromDb.getName())){
             //Cache File
             openPdf();
         }else{
@@ -1531,7 +1538,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             String saveOrOpen = params[0];
             byte[] bytes = new byte[0];
             if(params[1]!=null) {
-                bytes = params[1].getBytes();
+                bytes = Base64.decode(params[1],Base64.DEFAULT);
             }
             String invoiceNo = null;
             if(params[2]!=null){
@@ -1542,7 +1549,25 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             Rectangle documentRect = document.getPageSize();
             if(saveOrOpen.equalsIgnoreCase("Save")) {
                 try {
-                    PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
+                    File sdcard = Environment.getExternalStorageDirectory();
+                    File filedir = new File(Environment.getExternalStorageDirectory()+File.separator+ "Vacmet");
+//                    File filedir = getDir("Vacmet",MODE_PRIVATE);
+                    if(!filedir.exists() || !filedir.isDirectory()){
+                        filedir.mkdirs();
+                    }
+                    if(TextUtils.isEmpty(filenameToSaveInDb)){
+                        invoiceNo = "blank";
+                    }
+                    fileToSave = new File(filedir,"Blank"+".pdf");
+                    if(!fileToSave.getParentFile().exists()){
+                        fileToSave.getParentFile().mkdirs();
+                    }
+                    if(fileToSave.exists()) {
+                        fileToSave.delete();
+                    }
+
+                    fileToSave.createNewFile();
+                    PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileToSave));
                     document.open();
                     for (int i = 0; i < croppedImagesUri.size(); i++) {
 
@@ -1552,6 +1577,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         bmp.compress(Bitmap.CompressFormat.PNG, 70, stream);
 
                         image = Image.getInstance(croppedImagesUri.get(i));
+
 
 
                         if (bmp.getWidth() > documentRect.getWidth()
@@ -1575,44 +1601,68 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
                     document.close();
+                    convertPdfToBytes(byteArrayOutputStream);
 
+                    croppedImagesUri.clear();
+                    cameraSelectedImagesUris.clear();
+                    mImageCounter = 0;
+
+                    pdfBytes = byteArrayOutputStream.toByteArray();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    saveOrOpen = "-1";
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(activity, "Error! while encoding Pdf", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    document.close();
                 }
             }else if(saveOrOpen.equalsIgnoreCase("Open")){
-                try {
-                    File filedir = new File("Vacmet");
-                    if(!filedir.exists()){
-                        filedir.mkdirs();
-                    }
-                    if(TextUtils.isEmpty(invoiceNo)){
-                        invoiceNo = "blank";
-                    }
-                    fileToSave = new File(filedir,invoiceNo+".pdf");
-                    if(fileToSave.exists()) {
-                        fileToSave.delete();
-                    }
-                    fileToSave.createNewFile();
-                    PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileToSave));
-                    document.open();
-                    document.add(new Paragraph(new String(bytes, "UTF-8")));
+                File sdcard = Environment.getExternalStorageDirectory();
+                File filedir = new File(Environment.getExternalStorageDirectory()+File.separator+ "Vacmet");
+//                    File filedir = getDir("Vacmet",MODE_PRIVATE);
+                if(!filedir.exists() || !filedir.isDirectory()){
 
-                } catch (DocumentException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    filedir.mkdirs();
+                }
+                for(File fileToDelete : filedir.listFiles()){
+                    if(!fileToDelete.isDirectory()){
+                        fileToDelete.delete();
+                    }
+                }
+                if(TextUtils.isEmpty(invoiceNo)){
+                    invoiceNo = "blank";
+                }
+                fileFromDb = new File(filedir,invoiceNo+".pdf");
+
+                if(!fileFromDb.getParentFile().exists()){
+                    fileFromDb.getParentFile().mkdirs();
+                }
+                if(fileFromDb.exists()) {
+                    fileFromDb.delete();
+                }
+
+                try {
+                    fileFromDb.createNewFile();
+                    FileOutputStream fileOutputStream = new FileOutputStream(fileFromDb);
+                    fileOutputStream.write(bytes);
+                    fileOutputStream.close();
+                    fileOutputStream.flush();
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    saveOrOpen = "-1";
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(activity, "Error! while encoding Pdf", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
-
             }
-            document.close();
-            croppedImagesUri.clear();
-            cameraSelectedImagesUris.clear();
-            mImageCounter = 0;
 
-            pdfBytes = byteArrayOutputStream.toByteArray();
             return saveOrOpen;
         }
 
@@ -1634,8 +1684,26 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                  * Open Pdf
                  */
                 openPdf();
+            }else{
+                Toast.makeText(activity, "Problem occurred with Pdf!!", Toast.LENGTH_SHORT).show();
             }
 
+        }
+    }
+
+    private void convertPdfToBytes(ByteArrayOutputStream byteArrayOutputStream) {
+        if(fileToSave!=null){
+            try {
+                FileInputStream fileInputStream = new FileInputStream(fileToSave);
+                byte[] buf = new byte[1024];
+                for (int readNum; (readNum = fileInputStream.read(buf)) != -1;) {
+                    byteArrayOutputStream.write(buf, 0, readNum);
+                }
+                } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1650,7 +1718,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private void openPdf() {
         Intent target = new Intent(Intent.ACTION_VIEW);
-        target.setDataAndType(Uri.fromFile(fileToSave),"application/pdf");
+        target.setDataAndType(Uri.fromFile(fileFromDb),"application/pdf");
         target.setFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
         Intent intent = Intent.createChooser(target,"Open Invoice");
         startActivity(intent);
@@ -1722,7 +1790,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                           /*OutputStream os = httpURLConnection.getOutputStream();
                           os.write(params[1].getBytes());
                           os.flush();*/
-                        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream(), "UTF-8"));
+                        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(httpURLConnection.getOutputStream()));
                         bufferedWriter.write(params[1]);
                         bufferedWriter.close();
                         if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -1765,7 +1833,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 //                        httpURLConnection.setDoOutput(true);
                         disableSSLCertificateChecking();
                         if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(),"UTF-8"));
+                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
                             String response = "";
                             String line ="";
                             while((line = bufferedReader.readLine())!=null){
@@ -1798,15 +1866,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
                 }else if(responseStr.equalsIgnoreCase("Open")){
                     if(!TextUtils.isEmpty(s)){
-                        Gson gson = new Gson();
-                   /*     Gson customGson = new GsonBuilder().registerTypeHierarchyAdapter(byte[].class,
-                                new ByteArrayToBase64TypeAdapter()).create();*/
+//                        Gson gson = new Gson();
 
 
-                        InvoiceTo invoiceTo = gson.fromJson(s,InvoiceTo.class);
+
+                        InvoiceTo invoiceTo = customGson.fromJson(s,InvoiceTo.class);
                         try {
-                            new CreatingPdf().execute("Open",new String(invoiceTo.getInvoice(),"UTF-8"),invoiceTo.getInvoiceNo());
-                        } catch (UnsupportedEncodingException e) {
+
+                            new CreatingPdf().execute("Open",Base64.encodeToString(invoiceTo.getInvoice(),Base64.DEFAULT),invoiceTo.getInvoiceNo());
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(activity, "Encoding exception occurred! Contact admin", Toast.LENGTH_SHORT).show();
                         }
@@ -1845,14 +1913,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 e.printStackTrace();
             }
         }
-        class ByteArrayToBase64TypeAdapter implements JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
-            public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                return Base64.decode(json.getAsString(), Base64.NO_WRAP);
-            }
 
-            public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
-                return new JsonPrimitive(Base64.encodeToString(src, Base64.NO_WRAP));
-            }
+    }
+
+    class ByteArrayToBase64TypeAdapter implements JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
+        public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return Base64.decode(json.getAsString(), Base64.NO_WRAP);
+        }
+
+        public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(Base64.encodeToString(src, Base64.NO_WRAP));
         }
     }
 
