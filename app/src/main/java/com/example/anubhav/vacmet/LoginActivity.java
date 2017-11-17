@@ -88,7 +88,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener, FingerprintHandler.FingerPrintCallback {
     private static final int GOOGLE_SIGN_IN = 9090;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE = 9099;
     private static final int MY_PERMISSIONS_REQUEST_FINGERPRINT = 90192;
@@ -154,6 +154,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private KeyStore keyStore;
     private Cipher cipher;
     private static final String KEY_NAME = "PerfectSoftware";
+    private TextView tv_switch_password_mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -428,25 +429,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
              *    hit firebase .
              */
 
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(new String[]{Manifest.permission.USE_FINGERPRINT},
-                            MY_PERMISSIONS_REQUEST_FINGERPRINT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(new String[]{Manifest.permission.USE_FINGERPRINT},
+                                MY_PERMISSIONS_REQUEST_FINGERPRINT);
+                    } else {
+                        checkForFingerPrintOnResume();
+                    }
                 } else {
                     checkForFingerPrintOnResume();
                 }
-            } else {
-                checkForFingerPrintOnResume();
+            }else{
+                inflatePasswordAutomaticSignIn(false);
             }
-
 
         }
         registerReceiver(smsDeliverBroadcast, intentFilter);
@@ -468,6 +471,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     //FingerPrintCode
                     frameLayout.removeAllViewsInLayout();
                     View signIn_View = inflater.inflate(R.layout.activity_fingerprint, null, false);
+                    tv_switch_password_mode = (TextView) signIn_View.findViewById(R.id.switchViewFingerPrint);
+                    tv_switch_password_mode.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            inflatePasswordAutomaticSignIn(false);
+                        }
+                    });
                     et_fingerPrintError = (TextView) signIn_View.findViewById(R.id.errorText);
                     if (!fingerprintManager.hasEnrolledFingerprints()) {
                         et_fingerPrintError.setText("Register at least one fingerprint in Settings");
@@ -481,7 +491,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                             if (cipherInit()) {
                                 FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
-                                FingerprintHandler helper = new FingerprintHandler(this);
+                                FingerprintHandler helper = new FingerprintHandler(this,this);
                                 helper.startAuth(fingerprintManager, cryptoObject);
                             }
                         }
@@ -495,29 +505,33 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     bottomSheetBehavior.setHideable(false);
                     bottomSheetBehavior.setBottomSheetCallback(null);
                     bottomSheetBehavior.setSkipCollapsed(false);
-                    btnLogin.setOnClickListener(this);
+
                 }
               }
             } else {
-            inflatePasswordAutomaticSignIn();
+            inflatePasswordAutomaticSignIn(false);
             }
         }
 
-    private void inflatePasswordAutomaticSignIn() {
+    private void inflatePasswordAutomaticSignIn(boolean isFullSignInRequired) {
         frameLayout.removeAllViewsInLayout();
         View signIn_View = inflater.inflate(R.layout.activity_sign_in, null, false);
 
         etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
+        etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
+        btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
+        loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
+        textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
         etUserName_signIn.setText(sharedprefs.getString(LoggedInUser, null));
         etUserName_signIn.setEnabled(false);
         etUserName_signIn.setFocusable(false);
-               /* etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
+        btnLogin.setOnClickListener(this);
+        if(isFullSignInRequired) {
+
                 etPassword_signIn.setText(sharedprefs.getString(LoggedInUserPassword,null));
                 etPassword_signIn.setEnabled(false);
                 etPassword_signIn.setFocusable(false);
-                loaderSignIn = (ImageView) signIn_View.findViewById(R.id.loaderSignIn);
-                textSignIn = (TextView) signIn_View.findViewById(R.id.tvSignIn);
-                btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
+
                 behaviour = "Login";
                 userSignIn = etUserName_signIn.getText().toString().trim();
                 passSignIn = etPassword_signIn.getText().toString().trim();
@@ -536,8 +550,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
                     Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
                     signAnonymousFirebaseUser(false);
-                }*/
-    /*btnLogin.performClick();*/
+                }
+                btnLogin.performClick();
+        }
         int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
         signIn_View.measure(width, View.MeasureSpec.UNSPECIFIED);
         int height = signIn_View.getMeasuredHeight();
@@ -547,7 +562,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         bottomSheetBehavior.setHideable(false);
         bottomSheetBehavior.setBottomSheetCallback(null);
         bottomSheetBehavior.setSkipCollapsed(false);
-        btnLogin.setOnClickListener(this);
+
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -1227,6 +1242,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onFingerPrintSuccess() {
+        inflatePasswordAutomaticSignIn(true);
     }
 
     private class SmsBroadcast extends BroadcastReceiver{

@@ -23,11 +23,13 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
 
     private Context context;
+    private FingerPrintCallback fingerPrintCallback;
 
 
     // Constructor
-    public FingerprintHandler(Context mContext) {
+    public FingerprintHandler(Context mContext, FingerPrintCallback fingerPrintCallback) {
         context = mContext;
+        this.fingerPrintCallback = fingerPrintCallback;
     }
 
 
@@ -61,6 +63,7 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     @Override
     public void onAuthenticationSucceeded(FingerprintManager.AuthenticationResult result) {
         this.update("Fingerprint Authentication succeeded.", true);
+        fingerPrintCallback.onFingerPrintSuccess();
     }
 
 
@@ -70,5 +73,9 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
         if(success){
             textView.setTextColor(ContextCompat.getColor(context,R.color.white_alpha));
         }
+    }
+
+    public interface FingerPrintCallback{
+        void onFingerPrintSuccess();
     }
 }
