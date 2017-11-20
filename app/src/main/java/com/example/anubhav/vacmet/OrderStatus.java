@@ -142,7 +142,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 9092;
     private static final int INTENT_REQUEST_GET_IMAGES = 13;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE_RESULT = 1;
-    private static final String SERVER_IP = "http://192.168.0.149:8080";
+    private static final String SERVER_IP = "http://192.168.0.23:8080";
     private static final String URL_SAVE_INVOICE = "/Springs_Chat/chatServlet/saveInvoice";
     private static final String URL_GET_INVOICE = "/Springs_Chat/chatServlet/getInvoice/";
     private static int mImageCounter = 0;
@@ -1877,6 +1877,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             e.printStackTrace();
                             Toast.makeText(activity, "Encoding exception occurred! Contact admin", Toast.LENGTH_SHORT).show();
                         }
+                    }else{
+                        Toast.makeText(activity, "Invoice not found in the database.Please Upload first!!", Toast.LENGTH_SHORT).show();
+
                     }
 
                 }

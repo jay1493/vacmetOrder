@@ -95,6 +95,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.txtInvoice.setText(list.get(position).getInvoiceNo());
                     holder.llOrderNo.setVisibility(View.GONE);
                     holder.deliveryDate.setText(list.get(position).getInvoiceDate());
+                    holder.llOrderDate.setVisibility(View.GONE);
                     holder.openPdf.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -106,6 +107,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.llOrderNo.setVisibility(View.VISIBLE);
                     holder.orderNo.setText(list.get(position).getOrderNo());
                     holder.deliveryDate.setText(list.get(position).getDeliveryDate());
+                    holder.llOrderDate.setVisibility(View.VISIBLE);
                 }
                 break;
             case 1:
@@ -122,6 +124,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
 
 
     public class Viewholder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        LinearLayout llOrderDate;
         LinearLayout llMain;
         TextView partyName ;
         TextView orderNo;
@@ -142,6 +145,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     partyName = (TextView) itemView.findViewById(R.id.partyName);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
+                    llOrderDate = (LinearLayout) itemView.findViewById(R.id.ll_OrderDate);
                     orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
                     despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
                     deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);
