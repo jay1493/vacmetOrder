@@ -737,9 +737,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if (!query.equalsIgnoreCase("")) {
             orderModelList.clear();
             for (int i = 0; i < searchList.size(); i++) {
-                if (searchList.get(i).getPartyName().contains(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)) {
-                    orderModelList.add(searchList.get(i));
-                    foundResult = true;
+                if(openOrdersRadio.isChecked()) {
+                    if (searchList.get(i).getPartyName().contains(query) || searchList.get(i).getOrderNo().equalsIgnoreCase(query)) {
+                        orderModelList.add(searchList.get(i));
+                        foundResult = true;
+                    }
+                }else if(closedOrdersRadio.isChecked()){
+                    if (searchList.get(i).getPartyName().contains(query) || searchList.get(i).getInvoiceNo().equalsIgnoreCase(query)) {
+                        orderModelList.add(searchList.get(i));
+                        foundResult = true;
+                    }
                 }
             }
             if (!foundResult) {
@@ -805,7 +812,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if (!searchView.isIconified()) {
             collapsingToolbar.setTitle("");
         } else {
-            collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
+            if(openOrdersRadio.isChecked()) {
+                collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
+            }else if(closedOrdersRadio.isChecked()){
+                collapsingToolbar.setTitle(getResources().getString(R.string.delivery_status));
+            }
         }
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(new ComponentName(getApplicationContext(), OrderStatus.class)));
@@ -825,7 +836,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                collapsingToolbar.setTitle(getResources().getString(R.string.order_status) + " " + query);
+                if(openOrdersRadio.isChecked()) {
+                    collapsingToolbar.setTitle(getResources().getString(R.string.order_status) + " " + query);
+                }else if(closedOrdersRadio.isChecked()){
+                    collapsingToolbar.setTitle(getResources().getString(R.string.delivery_status) + " " + query);
+                }
                 handleSearch(query);
                 return true;
             }
@@ -833,7 +848,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (newText.equalsIgnoreCase("")) {
-                    collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
+                    if(openOrdersRadio.isChecked()) {
+                        collapsingToolbar.setTitle(getResources().getString(R.string.order_status));
+                    }else if(closedOrdersRadio.isChecked()){
+                        collapsingToolbar.setTitle(getResources().getString(R.string.delivery_status));
+                    }
                     orderModelList.clear();
                     for (int i = 0; i < searchList.size(); i++) {
                         orderModelList.add(searchList.get(i));
