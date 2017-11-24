@@ -663,7 +663,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     protected void onResume() {
         super.onResume();
 //        handleSearch(getIntent());
-        setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
+//        setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
         if(openOrdersRadio.isChecked()){
             setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
         }else if(closedOrdersRadio.isChecked()){
