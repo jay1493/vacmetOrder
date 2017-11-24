@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,7 +80,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         switch (holder.getItemViewType()){
             case 0:
                 holder.partyName.setText(list.get(position).getPartyName());
-                holder.orderDate.setText(list.get(position).getOrderDate());
+
                 holder.orderQty.setText(list.get(position).getOrderQty());
                 holder.despQty.setText(list.get(position).getDespQty());
 
@@ -94,8 +95,10 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.llInvoice.setVisibility(View.VISIBLE);
                     holder.txtInvoice.setText(list.get(position).getInvoiceNo());
                     holder.llOrderNo.setVisibility(View.GONE);
-                    holder.deliveryDate.setText(list.get(position).getInvoiceDate());
-                    holder.llOrderDate.setVisibility(View.GONE);
+                    holder.orderDate.setText(list.get(position).getInvoiceDate());
+                    holder.txtOrderDateHeading.setText(context.getResources().getString(R.string.invoice_date));
+                    holder.deliveryDate.setVisibility(View.GONE);
+
                     holder.openPdf.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -105,9 +108,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                 }else{
                     holder.llInvoice.setVisibility(View.GONE);
                     holder.llOrderNo.setVisibility(View.VISIBLE);
+                    holder.orderDate.setText(list.get(position).getOrderDate());
+                    holder.txtOrderDateHeading.setText(context.getResources().getString(R.string.Order_Date));
                     holder.orderNo.setText(list.get(position).getOrderNo());
                     holder.deliveryDate.setText(list.get(position).getDeliveryDate());
-                    holder.llOrderDate.setVisibility(View.VISIBLE);
+                    holder.deliveryDate.setVisibility(View.VISIBLE);
+
                 }
                 break;
             case 1:
@@ -132,6 +138,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         TextView orderQty;
         TextView despQty;
         TextView deliveryDate;
+        TextView txtOrderDateHeading;
         TextView noRecords;
         LinearLayout llInvoice;
         LinearLayout llOrderNo;
@@ -143,6 +150,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                 case 0:
                     llMain = (LinearLayout) itemView.findViewById(R.id.ll_orderStatus);
                     partyName = (TextView) itemView.findViewById(R.id.partyName);
+                    txtOrderDateHeading = (TextView) itemView.findViewById(R.id.tvOrderDateHeading);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
                     llOrderDate = (LinearLayout) itemView.findViewById(R.id.ll_OrderDate);

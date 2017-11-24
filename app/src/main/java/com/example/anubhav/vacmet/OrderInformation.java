@@ -89,6 +89,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     private TextView txtLabelInvoiceOrOrder,txtLabelDispatchOrInvoice;
     private LinearLayout llInProdQty;
     private LinearLayout llStockQty;
+    private LinearLayout llOrderDate;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -110,6 +111,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
 
             partyName.setText(orderModel.getPartyName());
             if(isDispatch){
+                llOrderDate.setVisibility(View.GONE);
                 txtLabelInvoiceOrOrder.setText(getResources().getString(R.string.invoice_no));
                 txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.invoice_date));
                 orderNo.setText(orderModel.getInvoiceNo());
@@ -117,6 +119,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
                 llInProdQty.setVisibility(View.GONE);
                 llStockQty.setVisibility(View.GONE);
             }else {
+                llOrderDate.setVisibility(View.VISIBLE);
+                orderDate.setText(orderModel.getOrderDate());
                 txtLabelInvoiceOrOrder.setText(getResources().getString(R.string.Order_No));
                 txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.Request_dispatch_date));
                 orderNo.setText(orderModel.getOrderNo());
@@ -124,7 +128,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
                 llInProdQty.setVisibility(View.VISIBLE);
                 llStockQty.setVisibility(View.VISIBLE);
             }
-                orderDate.setText(orderModel.getOrderDate());
+
             DecimalFormat decimalFormat = new DecimalFormat("#.##");
             orderQty.setText(orderModel.getOrderQty());
             stockQty.setText(orderModel.getStockQty());
@@ -187,6 +191,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
 
     private void init() {
         llInProdQty = (LinearLayout) findViewById(R.id.llOrderInfo_prodQty);
+        llOrderDate = (LinearLayout) findViewById(R.id.llOrderInfo_orderDate);
         llStockQty = (LinearLayout) findViewById(R.id.llOrderInfo_stockQty);
         txtLabelInvoiceOrOrder = (TextView) findViewById(R.id.labelOrderOrInvoice);
         txtLabelDispatchOrInvoice = (TextView) findViewById(R.id.labelDispatchOrInvoice);
