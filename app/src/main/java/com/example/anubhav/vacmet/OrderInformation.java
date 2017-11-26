@@ -90,6 +90,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     private LinearLayout llInProdQty;
     private LinearLayout llStockQty;
     private LinearLayout llOrderDate;
+    private LinearLayout llRequestDispatchDate;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,7 +127,9 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
                 orderNo.setText(orderModel.getOrderNo());
                 requestDispatchDate.setText(orderModel.getDeliveryDate());
                 llInProdQty.setVisibility(View.VISIBLE);
-                llStockQty.setVisibility(View.VISIBLE);
+                //Todo Visibility -Also DeliveryDate and Stock are hidden from layouts of ListOrderClass
+                llStockQty.setVisibility(View.GONE);
+                llRequestDispatchDate.setVisibility(View.GONE);
             }
 
             DecimalFormat decimalFormat = new DecimalFormat("#.##");
@@ -135,7 +138,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
             despQty.setText(orderModel.getDespQty());
             prodQty.setText(orderModel.getInProdQty());
 //            itemList = orderModel.getItemModelArrayList();
-            getSupportActionBar().setWindowTitle(orderModel.getPartyName());
+//            getSupportActionBar().setWindowTitle(orderModel.getPartyName());
             getSupportActionBar().setTitle(orderModel.getPartyName());
             toolbar.setTitle(orderModel.getPartyName());
             hitSOAPItemService(orderModel);
@@ -193,6 +196,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
         llInProdQty = (LinearLayout) findViewById(R.id.llOrderInfo_prodQty);
         llOrderDate = (LinearLayout) findViewById(R.id.llOrderInfo_orderDate);
         llStockQty = (LinearLayout) findViewById(R.id.llOrderInfo_stockQty);
+        llRequestDispatchDate = (LinearLayout) findViewById(R.id.llOrderInfo_rdd);
         txtLabelInvoiceOrOrder = (TextView) findViewById(R.id.labelOrderOrInvoice);
         txtLabelDispatchOrInvoice = (TextView) findViewById(R.id.labelDispatchOrInvoice);
         llParent = (LinearLayout) findViewById(R.id.ll_orderDetailsParent);

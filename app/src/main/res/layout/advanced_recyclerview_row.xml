@@ -170,7 +170,8 @@
                         android:layout_weight="4"
                         android:gravity="end"
                         android:padding="@dimen/d5"
-                        android:id="@+id/ll_destDate">
+                        android:id="@+id/ll_destDate"
+                        android:visibility="gone">
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

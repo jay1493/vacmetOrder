@@ -82,7 +82,8 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textColor="@color/red"
-        android:gravity="left"/>
+        android:gravity="left"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/txt_item_delivery_date"
@@ -94,7 +95,8 @@
         android:layout_height="wrap_content"
         android:text=""
         android:gravity="left"
-        android:textColor="@color/red" />
+        android:textColor="@color/red"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/txt_sales_order"

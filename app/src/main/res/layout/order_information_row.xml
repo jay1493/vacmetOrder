@@ -170,7 +170,8 @@
                     android:paddingRight="@dimen/d10"
                     android:layout_height="wrap_content"
                     android:text="@string/stock_qty"
-                    android:textColor="#003C71" />
+                    android:textColor="#003C71"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -180,7 +181,8 @@
                     android:paddingRight="@dimen/d10"
                     android:layout_height="wrap_content"
                     android:text="@string/Delivery_Date"
-                    android:textColor="#003C71" />
+                    android:textColor="#003C71"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/label_sales_order_no"
