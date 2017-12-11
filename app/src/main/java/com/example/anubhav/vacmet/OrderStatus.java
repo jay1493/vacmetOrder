@@ -271,7 +271,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             editor.apply();
         }
 
-        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
+        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
@@ -428,7 +428,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
                     setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
@@ -543,11 +543,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
                 String orderType = "";
                 if (openOrdersRadio.isChecked()) {
-                    orderType = "get_pending";
+                    orderType = "get_pendingord";
                 } else if (closedOrdersRadio.isChecked()) {
                     orderType = "get_dispatch";
                 } else {
-                    orderType = "get_pending";
+                    orderType = "get_pendingord";
                 }
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
                 editor.putString(SapId, etSapId.getText().toString().trim());
