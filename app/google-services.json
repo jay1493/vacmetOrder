@@ -1,35 +1,35 @@
 {
   "project_info": {
-    "project_number": "381962572239",
-    "firebase_url": "https://feisty-rigging-129507.firebaseio.com",
-    "project_id": "feisty-rigging-129507",
-    "storage_bucket": "feisty-rigging-129507.appspot.com"
+    "project_number": "459049126615",
+    "firebase_url": "https://vacmet-44d24.firebaseio.com",
+    "project_id": "vacmet-44d24",
+    "storage_bucket": "vacmet-44d24.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:381962572239:android:72e88f5929f1a6a5",
+        "mobilesdk_app_id": "1:459049126615:android:1406f49e311bae72",
         "android_client_info": {
-          "package_name": "com.example.anubhav.vacmet"
+          "package_name": "com.imagesoftware.anubhav.vacmet"
         }
       },
       "oauth_client": [
         {
-          "client_id": "381962572239-mgddhat8qn6gu1f5htam209vo94eqi31.apps.googleusercontent.com",
+          "client_id": "459049126615-v5s83s9dvdrke23nkdqc5mbqueupjqap.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.anubhav.vacmet",
-            "certificate_hash": "9c64a2ba41ea27b7fbf4df21bff9b88d13e878c8"
+            "package_name": "com.imagesoftware.anubhav.vacmet",
+            "certificate_hash": "2e762601bc8e75004469bb33571cfb1a4889776a"
           }
         },
         {
-          "client_id": "381962572239-vpk2bqj7hvdgn806cis8jiqj3hbrcs7l.apps.googleusercontent.com",
+          "client_id": "459049126615-3n41dabk25dtvacsrfrkr5bg3ou7i0gi.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC8gHY4pqu3XiIUCcpF8eOn5ubBTzXfL44"
+          "current_key": "AIzaSyBU0WTuRUGNf6I4q2WQPFTO5dROJx3urgk"
         }
       ],
       "services": {
@@ -40,7 +40,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "381962572239-vpk2bqj7hvdgn806cis8jiqj3hbrcs7l.apps.googleusercontent.com",
+              "client_id": "459049126615-3n41dabk25dtvacsrfrkr5bg3ou7i0gi.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
