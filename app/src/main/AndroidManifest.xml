@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.anubhav.vacmet">
+    package="com.imagesoftware.anubhav.vacmet">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
@@ -30,7 +30,7 @@
         <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.example.anubhav.vacmet.LoginActivity"
+        <activity android:name="com.imagesoftware.anubhav.vacmet.LoginActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustPan">
             <intent-filter>
@@ -39,7 +39,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.anubhav.vacmet.OrderStatus"
+        <activity android:name="com.imagesoftware.anubhav.vacmet.OrderStatus"
             android:label="@string/order_status"
             android:screenOrientation="portrait"
             android:launchMode="singleInstance">
@@ -56,9 +56,9 @@
             </intent-filter>-->
 
         </activity>
-        <activity android:name="com.example.anubhav.vacmet.OrderInformation"
+        <activity android:name="com.imagesoftware.anubhav.vacmet.OrderInformation"
             android:screenOrientation="portrait"/>
-        <service android:name="com.example.anubhav.vacmet.services.VacmetOverlayService"
+        <service android:name="com.imagesoftware.anubhav.vacmet.services.VacmetOverlayService"
             android:enabled="true"
             android:process=":vacmetBackgroundService"
             android:exported="false"/>

@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
     defaultConfig {
-        applicationId "com.example.anubhav.vacmet"
+        applicationId "com.imagesoftware.anubhav.vacmet"
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
@@ -13,13 +13,17 @@ android {
     }
     buildTypes {
         release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     sourceSets { main { assets.srcDirs = ['src/main/assets', 'src/main/assets/'] } }
 }
-repositories{
+repositories {
     mavenCentral()
     maven { url "http://repo.commonsware.com.s3.amazonaws.com" }
     maven { url "https://jitpack.io" }
