@@ -1,13 +1,13 @@
-package com.example.anubhav.vacmet.database;
+package com.imagesoftware.anubhav.vacmet;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 
-import com.example.anubhav.vacmet.database.converters.ArrayListConverter;
-import com.example.anubhav.vacmet.database.daos.DatabaseRequestsDao;
-import com.example.anubhav.vacmet.model.ItemModel;
-import com.example.anubhav.vacmet.model.OrderModel;
+import com.imagesoftware.anubhav.vacmet.converters.ArrayListConverter;
+import com.imagesoftware.anubhav.vacmet.daos.DatabaseRequestsDao;
+import com.imagesoftware.anubhav.vacmet.model.ItemModel;
+import com.imagesoftware.anubhav.vacmet.model.OrderModel;
 
 /**
  * Created by Anubhav-Singh on 09-01-2018.

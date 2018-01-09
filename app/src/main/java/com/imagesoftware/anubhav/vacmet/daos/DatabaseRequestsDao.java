@@ -1,4 +1,4 @@
-package com.example.anubhav.vacmet.database.daos;
+package com.imagesoftware.anubhav.vacmet.daos;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
@@ -6,8 +6,9 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.example.anubhav.vacmet.model.ItemModel;
-import com.example.anubhav.vacmet.model.OrderModel;
+
+import com.imagesoftware.anubhav.vacmet.model.ItemModel;
+import com.imagesoftware.anubhav.vacmet.model.OrderModel;
 
 import java.util.ArrayList;
 import java.util.List;

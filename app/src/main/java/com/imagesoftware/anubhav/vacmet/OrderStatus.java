@@ -1424,7 +1424,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
             }else{
                 //As soon as network is connected(via Job Scheduler) update orderModelList...
-                orderModelList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),openOrdersRadio.isChecked()?1:0)
+                orderModelList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),openOrdersRadio.isChecked()?1:0);
             }
             return orderModelList;
         }

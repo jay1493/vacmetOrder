@@ -1,4 +1,4 @@
-package com.example.anubhav.vacmet.database.converters;
+package com.imagesoftware.anubhav.vacmet.converters;
 
 import android.arch.persistence.room.TypeConverter;
 import android.text.TextUtils;
