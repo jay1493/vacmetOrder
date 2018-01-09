@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
+import android.arch.persistence.room.Room;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -69,6 +72,8 @@ import com.afollestad.materialdialogs.Theme;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.anubhav.vacmet.adapters.RecyclerviewAdapter;
+import com.example.anubhav.vacmet.database.VacmetDatabase;
+import com.example.anubhav.vacmet.database.daos.DatabaseRequestsDao;
 import com.example.anubhav.vacmet.interfaces.ItemClickListener;
 import com.example.anubhav.vacmet.model.InvoiceTo;
 import com.example.anubhav.vacmet.model.ItemModel;
@@ -229,6 +234,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private File fileToSave;
     private Gson customGson;
     private File fileFromDb;
+    private VacmetDatabase vacmetDatabase;
+    private DatabaseRequestsDao databaseRequestsDao;
 
 
     @Override
@@ -251,7 +258,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status_nav_drawer);
         init();
-        logingSharePrefs = getSharedPreferences(LoginPrefs, MODE_APPEND);
+        logingSharePrefs = getSharedPreferences(LoginPrefs, MODE_WORLD_WRITEABLE);
         orderIdPrefs = getSharedPreferences(OrderIdPrefs, MODE_PRIVATE);
         if (orderIdPrefs.getString(SapId, null) == null) {
             SharedPreferences.Editor editor = orderIdPrefs.edit();
@@ -270,7 +277,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             editor.putString(ClientorServer, "c");
             editor.apply();
         }
-
+        vacmetDatabase =  Room.databaseBuilder(OrderStatus.this,VacmetDatabase.class,"vacmet_db").build();
+       databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pending");
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
@@ -563,7 +571,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
-        sharedPreferences = getSharedPreferences("GooglePic", MODE_APPEND);
+        sharedPreferences = getSharedPreferences("GooglePic", MODE_WORLD_WRITEABLE);
         if (sharedPreferences.getString("PhotoUrl", null) != null) {
             Glide.with(this).load(sharedPreferences.getString("PhotoUrl", null))
                     .crossFade()
@@ -1097,7 +1105,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if (progressDialog != null && progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
-            progressDialog.setMessage(getResources().getString(R.string.fetching_orders));
+            if(connectionIsOnline()) {
+                progressDialog.setMessage(getResources().getString(R.string.fetching_orders));
+            }else{
+                progressDialog.setMessage(getResources().getString(R.string.fetching_orders_locally));
+            }
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.setCancelable(false);
             progressDialog.show();
@@ -1105,6 +1117,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         @Override
         protected List<OrderModel> doInBackground(String... params) {
+
             String appendedParamInUrl = "";
             String id = params[1];
             orderType = params[2];
@@ -1113,237 +1126,246 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             } else if (params[0].equalsIgnoreCase("s")) {
                 appendedParamInUrl = "S=" + id;
             }
-            try {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
-                httpURLConnection.setRequestMethod("GET");
-                httpURLConnection.setRequestProperty("Authorization","Basic QkFQSToxMjM0NTY=");
-                httpURLConnection.setRequestProperty("Content-Type","application/xml");
-                InputStream inputStream = httpURLConnection.getInputStream();
-                String line = "";
-                String response ="";
+            if(connectionIsOnline()) {
+                try {
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
+                    httpURLConnection.setRequestMethod("GET");
+                    httpURLConnection.setRequestProperty("Authorization", "Basic QkFQSToxMjM0NTY=");
+                    httpURLConnection.setRequestProperty("Content-Type", "application/xml");
+                    InputStream inputStream = httpURLConnection.getInputStream();
+                    String line = "";
+                    String response = "";
                /* BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
                 while ((line=br.readLine()) != null) {
                     response+=line;
                 }*/
-                Log.d("", "doInBackground: "+httpURLConnection.getResponseCode());
-                Log.d("", "doInBackground: "+response);
-                XmlPullParser xmlPullParser = Xml.newPullParser();
-                xmlPullParser.setInput(inputStream, null);
-                int eventType = xmlPullParser.getEventType();
-                OrderModel orderModel = null;
-                ItemModel itemModel = null;
-                OrderContainer orderContainer = null;
-                orderModelList = new ArrayList<>();
-                orderContainerList = new ArrayList<>();
-                boolean saveItemInOrder = false;
-                while (eventType != XmlPullParser.END_DOCUMENT) {
-                    switch (eventType) {
-                        case XmlPullParser.START_DOCUMENT:
-                            break;
-                        case XmlPullParser.START_TAG:
-                            switch (xmlPullParser.getName()) {
-                                case Secondary_Table_Xml_Tag:
-                                    saveItemInOrder = true;
-                                    break;
-                                case Secondary_Table_Invoice_Xml_Tag:
-                                    saveItemInOrder = true;
-                                    break;
-                                case MAIN_INVOICE:
-                                    orderModel = new OrderModel();
-                                    break;
-                                case Main_Table_Xml_Tag:
-                                    //Main Tag
-                                    orderModel = new OrderModel();
-                                    break;
-                                case INVOICE_NO:
-                                    String invoiceNo = xmlPullParser.nextText();
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setInvoiceNo(invoiceNo);
-                                    } else {
-                                        for (OrderModel orderModelFromList : orderModelList) {
-                                            if (orderModelFromList.getInvoiceNo().equalsIgnoreCase(invoiceNo)) {
-                                                orderModel = orderModelFromList;
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case INVOICE_DATE:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setInvoiceDate(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setInvoiceDate(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case MATNR:
-                                    itemModel = new ItemModel();
-                                    itemModel.setMaterialNo(xmlPullParser.nextText());
-                                    break;
-                                case MATERIAL_NO:
-                                    itemModel = new ItemModel();
-                                    itemModel.setMaterialNo(xmlPullParser.nextText());
-                                    break;
-                                case VBELN:
-                                    String orderNo = xmlPullParser.nextText();
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setOrderNo(orderNo);
-                                    } else {
-                                        for (OrderModel orderModelFromList : orderModelList) {
-                                            if (orderModelFromList.getOrderNo().equalsIgnoreCase(orderNo)) {
-                                                orderModel = orderModelFromList;
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case SALES_ORDER_NO:
-                                    if(itemModel!=null) {
-                                        itemModel.setContainedOrderNo(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ORDERED_QTY:
-                                    String qty = xmlPullParser.nextText();
-                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty)) {
-                                        orderModel.setOrderQty(qty);
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty)) {
-                                        itemModel.setOrderedQty(qty);
-                                    }
-                                    break;
-                                case STATUS:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setStatus(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setStatus(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case OPEN_QTY:
-                                    String qty1 = xmlPullParser.nextText();
-                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty1)) {
-                                        orderModel.setInProdQty(qty1);
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty1)) {
-                                        itemModel.setInProdQty(qty1);
-                                    }
-                                    break;
-                                case DESP_QTY:
-                                    String qty2 = xmlPullParser.nextText();
-                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty2)) {
-                                        orderModel.setDespQty(qty2);
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty2)) {
-                                        itemModel.setDespQty(qty2);
-                                    }
-                                    break;
-                                case STOCK_QTY:
-                                    String qty3 = xmlPullParser.nextText();
-                                    if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty3)) {
-                                        orderModel.setStockQty(qty3);
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty3)) {
-                                        itemModel.setStockQty(qty3);
-                                    }
-                                    break;
-                                case DOC_DATE:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setDeliveryDate(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setDeliveryDate(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case DEL_DATE:
-                                    if (orderModel != null && !saveItemInOrder) {
-                                        orderModel.setOrderDate(xmlPullParser.nextText());
-                                    } else if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setOrderDate(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case CUST_NM:
-                                    if (orderModel != null) {
-                                        orderModel.setPartyName(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_MATERIAL_NM_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setItemName(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_TOTAL_QTY_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setTotalQty(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_CONTAINER_NO_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setContainerNo(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_BILL_NO_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setBillNo(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_BL_DATE_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setBillDate(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_LENGTH_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setLength(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_WIDTH_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setWidth(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_TREATMENT1_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setTreatment1(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_TREATMENT2_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setTreatment2(xmlPullParser.nextText());
-                                    }
-                                    break;
-                                case ITEM_SHADES_:
-                                    if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                        itemModel.setShades(xmlPullParser.nextText());
-                                    }
-                                    break;
+                    Log.d("", "doInBackground: " + httpURLConnection.getResponseCode());
+                    Log.d("", "doInBackground: " + response);
+                    XmlPullParser xmlPullParser = Xml.newPullParser();
+                    xmlPullParser.setInput(inputStream, null);
+                    int eventType = xmlPullParser.getEventType();
+                    OrderModel orderModel = null;
+                    ItemModel itemModel = null;
+                    OrderContainer orderContainer = null;
+                    orderModelList = new ArrayList<>();
+                    orderContainerList = new ArrayList<>();
+                    boolean saveItemInOrder = false;
+                    while (eventType != XmlPullParser.END_DOCUMENT) {
+                        switch (eventType) {
+                            case XmlPullParser.START_DOCUMENT:
+                                break;
+                            case XmlPullParser.START_TAG:
+                                switch (xmlPullParser.getName()) {
+                                    case Secondary_Table_Xml_Tag:
+                                        saveItemInOrder = true;
+                                        break;
+                                    case Secondary_Table_Invoice_Xml_Tag:
+                                        saveItemInOrder = true;
+                                        break;
+                                    case MAIN_INVOICE:
+                                        orderModel = new OrderModel();
 
-                            }
-                            break;
-                        case XmlPullParser.END_TAG:
-                            switch (xmlPullParser.getName()) {
-                                case Main_Table_Xml_Tag:
-                                    //Main Tag
-                                    if (orderModel != null) {
-                                        if (!orderModelList.contains(orderModel)) {
+                                        break;
+                                    case Main_Table_Xml_Tag:
+                                        //Main Tag
+                                        orderModel = new OrderModel();
+
+                                        break;
+                                    case INVOICE_NO:
+                                        String invoiceNo = xmlPullParser.nextText();
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setInvoiceNo(invoiceNo);
+                                        } else {
+                                            for (OrderModel orderModelFromList : orderModelList) {
+                                                if (orderModelFromList.getInvoiceNo().equalsIgnoreCase(invoiceNo)) {
+                                                    orderModel = orderModelFromList;
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    case INVOICE_DATE:
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setInvoiceDate(xmlPullParser.nextText());
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setInvoiceDate(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case MATNR:
+                                        itemModel = new ItemModel();
+                                        itemModel.setMaterialNo(xmlPullParser.nextText());
+                                        break;
+                                    case MATERIAL_NO:
+                                        itemModel = new ItemModel();
+                                        itemModel.setMaterialNo(xmlPullParser.nextText());
+                                        break;
+                                    case VBELN:
+                                        String orderNo = xmlPullParser.nextText();
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setOrderNo(orderNo);
+                                        } else {
+                                            for (OrderModel orderModelFromList : orderModelList) {
+                                                if (orderModelFromList.getOrderNo().equalsIgnoreCase(orderNo)) {
+                                                    orderModel = orderModelFromList;
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    case SALES_ORDER_NO:
+                                        if (itemModel != null) {
+                                            itemModel.setContainedOrderNo(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ORDERED_QTY:
+                                        String qty = xmlPullParser.nextText();
+                                        if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty)) {
+                                            orderModel.setOrderQty(qty);
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty)) {
+                                            itemModel.setOrderedQty(qty);
+                                        }
+                                        break;
+                                    case STATUS:
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setStatus(xmlPullParser.nextText());
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setStatus(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case OPEN_QTY:
+                                        String qty1 = xmlPullParser.nextText();
+                                        if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty1)) {
+                                            orderModel.setInProdQty(qty1);
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty1)) {
+                                            itemModel.setInProdQty(qty1);
+                                        }
+                                        break;
+                                    case DESP_QTY:
+                                        String qty2 = xmlPullParser.nextText();
+                                        if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty2)) {
+                                            orderModel.setDespQty(qty2);
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty2)) {
+                                            itemModel.setDespQty(qty2);
+                                        }
+                                        break;
+                                    case STOCK_QTY:
+                                        String qty3 = xmlPullParser.nextText();
+                                        if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty3)) {
+                                            orderModel.setStockQty(qty3);
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null && !TextUtils.isEmpty(qty3)) {
+                                            itemModel.setStockQty(qty3);
+                                        }
+                                        break;
+                                    case DOC_DATE:
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setDeliveryDate(xmlPullParser.nextText());
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setDeliveryDate(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case DEL_DATE:
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setOrderDate(xmlPullParser.nextText());
+                                        } else if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setOrderDate(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case CUST_NM:
+                                        if (orderModel != null) {
+                                            orderModel.setPartyName(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_MATERIAL_NM_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setItemName(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_TOTAL_QTY_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setTotalQty(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_CONTAINER_NO_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setContainerNo(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_BILL_NO_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setBillNo(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_BL_DATE_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setBillDate(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_LENGTH_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setLength(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_WIDTH_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setWidth(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_TREATMENT1_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setTreatment1(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_TREATMENT2_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setTreatment2(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case ITEM_SHADES_:
+                                        if (orderModel != null && saveItemInOrder && itemModel != null) {
+                                            itemModel.setShades(xmlPullParser.nextText());
+                                        }
+                                        break;
+
+                                }
+                                break;
+                            case XmlPullParser.END_TAG:
+                                switch (xmlPullParser.getName()) {
+                                    case Main_Table_Xml_Tag:
+                                        //Main Tag
+                                        if (orderModel != null) {
+                                            if (!orderModelList.contains(orderModel)) {
+                                                orderModel.setIsPending(openOrdersRadio.isChecked()?true:false);
+                                                orderModel.setSapId(orderIdPrefs.getString(SapId, null));
+                                                orderModelList.add(orderModel);
+                                            }
+                                        }
+
+                                        break;
+                                    case MAIN_INVOICE:
+                                        if (orderModel != null) {
+                                            orderModel.setIsPending(openOrdersRadio.isChecked()?true:false);
+                                            orderModel.setSapId(orderIdPrefs.getString(SapId, null));
                                             orderModelList.add(orderModel);
                                         }
-                                    }
+                                        break;
+                                    case Secondary_Table_Xml_Tag:
+                                        if (itemModel != null) {
+                                            itemModel.setSelectedOrderNo(orderModel.getOrderNo());
+                                            orderModel.addItemInOrder(itemModel, orderType.equalsIgnoreCase("get_dispatch") ? true : false);
+                                        }
+                                        saveItemInOrder = false;
+                                        break;
+                                    case Secondary_Table_Invoice_Xml_Tag:
+                                        if (itemModel != null) {
+                                            itemModel.setSelectedOrderNo(orderModel.getOrderNo());
+                                            orderModel.addItemInOrder(itemModel, orderType.equalsIgnoreCase("get_dispatch") ? true : false);
+                                        }
+                                        saveItemInOrder = false;
+                                        break;
+                                }
+                                break;
 
-                                    break;
-                                case MAIN_INVOICE:
-                                    if (orderModel != null) {
-                                        orderModelList.add(orderModel);
-                                    }
-                                    break;
-                                case Secondary_Table_Xml_Tag:
-                                    if (itemModel != null) {
-                                        orderModel.addItemInOrder(itemModel,orderType.equalsIgnoreCase("get_dispatch")?true:false);
-                                    }
-                                    saveItemInOrder = false;
-                                    break;
-                                case Secondary_Table_Invoice_Xml_Tag:
-                                    if (itemModel != null) {
-                                        orderModel.addItemInOrder(itemModel,orderType.equalsIgnoreCase("get_dispatch")?true:false);
-                                    }
-                                    saveItemInOrder = false;
-                                    break;
-                            }
-                            break;
-
+                        }
+                        eventType = xmlPullParser.next();
                     }
-                    eventType = xmlPullParser.next();
-                }
 
 
 
@@ -1387,18 +1409,24 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
 
                 }*/
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong, Check Your Connection!!", Toast.LENGTH_SHORT).show();
-                orderModelList.clear();
-            } catch (IOException e) {
-                e.printStackTrace();
-                orderModelList.clear();
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-                Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong...", Toast.LENGTH_SHORT).show();
-                orderModelList.clear();
+                  if(orderModelList!=null && orderModelList.size()>0){
+                      saveInVacmetDatabase(orderModelList);
+                  }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                    Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong, Check Your Connection!!", Toast.LENGTH_SHORT).show();
+                    orderModelList.clear();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    orderModelList.clear();
+                } catch (XmlPullParserException e) {
+                    e.printStackTrace();
+                    Toast.makeText(OrderStatus.this, "Oops!! Something Went Wrong...", Toast.LENGTH_SHORT).show();
+                    orderModelList.clear();
+                }
+            }else{
+                //As soon as network is connected(via Job Scheduler) update orderModelList...
+                orderModelList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),openOrdersRadio.isChecked()?1:0)
             }
             return orderModelList;
         }
@@ -1419,6 +1447,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this, orderModelList, new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, View clickedView) {
+                        if(!connectionIsOnline()){
+                            //Fill Items for order at pos, in background
+                            fillOfflineItemsForOrder(position);
+                        }
                         Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
                         intent.putExtra("OrderInfo", orderModelList.get(position));
                         intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
@@ -1426,6 +1458,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                     ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                     ActivityCompat.startActivity(OrderStatus.this,intent,activityOptionsCompat.toBundle());*/
+
                         startActivity(intent);
                     }
 
@@ -1441,7 +1474,64 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         }
     }
-        private void sortList(ArrayList<OrderModel> orderModelList, final boolean isDispatched) {
+
+    private void fillOfflineItemsForOrder(int position) {
+
+        new ItemAsynTask().execute(position);
+    }
+
+    class ItemAsynTask extends AsyncTask<Integer,Void,List<ItemModel>>{
+
+        int selectedPos = 0;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            progressDialog.setMessage(getResources().getString(R.string.fetching_items_in_order));
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
+        protected List<ItemModel> doInBackground(Integer... strings) {
+            selectedPos = strings[0];
+            return databaseRequestsDao.getItemsForOrderId(orderModelList.get(selectedPos).getOrderNo());
+        }
+
+        @Override
+        protected void onPostExecute(List<ItemModel> itemModels) {
+            super.onPostExecute(itemModels);
+            progressDialog.dismiss();
+            orderModelList.get(selectedPos).setItemList(new ArrayList<ItemModel>(itemModels));
+        }
+    }
+
+    private boolean connectionIsOnline() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo!=null && networkInfo.isConnected()){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
+    private void saveInVacmetDatabase(ArrayList<OrderModel> orderModelList) {
+
+         databaseRequestsDao.insertOrders(orderModelList);
+         for(OrderModel orderModel : orderModelList){
+             if(orderModel.getItemList()!=null && orderModel.getItemList().size()>0) {
+                 databaseRequestsDao.insertItems(orderModel.getItemList());
+             }
+         }
+
+    }
+
+    private void sortList(ArrayList<OrderModel> orderModelList, final boolean isDispatched) {
             Collections.sort(orderModelList, new Comparator<OrderModel>() {
                 @Override
                 public int compare(OrderModel o1, OrderModel o2) {

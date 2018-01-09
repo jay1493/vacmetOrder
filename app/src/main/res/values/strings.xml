@@ -42,7 +42,8 @@
     <string name="despQty_OrderQty">Desp Qty/Order Qty</string>
     <string name="username_cannot_be_left_blank">Username cannot be left blank</string>
     <string name="password_cannot_be_left_blank">Password cannot be left blank</string>
-    <string name="fetching_orders">Fetching orders...Please Wait!!</string>
+    <string name="fetching_orders">Fetching orders from server...Please Wait!!</string>
+    <string name="fetching_orders_locally">You are offline, fetching orders locally...Please Wait!!</string>
     <string name="fetching_items_in_order">Fetching Items in Order...Please Wait!!!</string>
     <string name="replacing_dot_in_firebase_db">(dot)</string>
     <string name="closed">closed</string>

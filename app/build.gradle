@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "25.0.0"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.example.anubhav.vacmet"
         minSdkVersion 16
@@ -50,6 +50,11 @@ dependencies {
     compile 'com.balysv:material-ripple:1.0.2'
     compile 'com.google.code.gson:gson:2.8.1'
     compile 'com.github.ParkSangGwon:TedPicker:v1.0.10'
+    // Room
+    implementation "android.arch.persistence.room:runtime:1.0.0"
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+    // Java8 support for Lifecycles
+    implementation "android.arch.lifecycle:common-java8:1.0.0"
     compile('com.github.afollestad.material-dialogs:core:0.8.0.0@aar') {
         transitive = true
     }

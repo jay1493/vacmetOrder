@@ -173,7 +173,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
          */
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
         Glide.with(this).load(R.raw.gif2).into(imageViewTarget);
-        sharedprefs = getSharedPreferences(LoginPrefs, MODE_APPEND);
+        sharedprefs = getSharedPreferences(LoginPrefs, MODE_WORLD_WRITEABLE);
         orderIdPrefs = getSharedPreferences(OrderIdPrefs, MODE_PRIVATE);
         intentFilter = new IntentFilter();
         intentFilter.addAction(RECEIVE_ACTION);

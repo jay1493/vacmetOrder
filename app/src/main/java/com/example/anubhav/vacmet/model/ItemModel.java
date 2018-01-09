@@ -1,5 +1,9 @@
 package com.example.anubhav.vacmet.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Index;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -12,7 +16,10 @@ import java.util.Objects;
  * Created by anubhav on 27/1/17.
  */
 
+@Entity(tableName = "vacmet_item_for_orders",indices = {@Index(value = "selectedOrderNo")})
 public class ItemModel implements Serializable {
+    @ForeignKey(entity = OrderModel.class,parentColumns = "orderNo",childColumns = "selectedOrderNo", onDelete = ForeignKey.CASCADE, onUpdate = ForeignKey.CASCADE)
+    private String selectedOrderNo;
     private String itemName;
     private String materialNo;
     private String status;
@@ -34,18 +41,18 @@ public class ItemModel implements Serializable {
     private String deliveryDate;
     private String invoiceDate;
     private String invoiceNo;
-    private List<String> lengthList;
-    private List<String> widthList;
-    private List<Double> totalDespQty;
-    private List<Double> totalInprodQty;
-    private List<Double> totalOrderedQty;
-    private List<String> treatment1List;
-    private List<String> treatment2List;
-    private List<String> itemDeliveryDatesList;
-    private List<String> shadesList;
-    private List<String> containerNoList;
-    private List<String> stockQtyList;
-    private List<String> containedOrderNoList;
+    private ArrayList<String> lengthList;
+    private ArrayList<String> widthList;
+    private ArrayList<Double> totalDespQty;
+    private ArrayList<Double> totalInprodQty;
+    private ArrayList<Double> totalOrderedQty;
+    private ArrayList<String> treatment1List;
+    private ArrayList<String> treatment2List;
+    private ArrayList<String> itemDeliveryDatesList;
+    private ArrayList<String> shadesList;
+    private ArrayList<String> containerNoList;
+    private ArrayList<String> stockQtyList;
+    private ArrayList<String> containedOrderNoList;
 
     public ItemModel() {
         lengthList = new ArrayList<>();
@@ -373,6 +380,14 @@ public class ItemModel implements Serializable {
     public ItemModel setInvoiceNo(String invoiceNo) {
         this.invoiceNo = invoiceNo;
         return this;
+    }
+
+    public String getSelectedOrderNo() {
+        return selectedOrderNo;
+    }
+
+    public void setSelectedOrderNo(String selectedOrderNo) {
+        this.selectedOrderNo = selectedOrderNo;
     }
 
     @Override

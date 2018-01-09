@@ -1,5 +1,9 @@
 package com.example.anubhav.vacmet.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.Index;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Build;
 
 import java.io.Serializable;
@@ -12,19 +16,24 @@ import java.util.Objects;
  * Created by anubhav on 23/1/17.
  */
 
+@Entity(tableName = "vacmet_orders",indices = {@Index(value = "orderNo")})
 public class OrderModel implements Serializable {
 
     private String partyName;
+    @PrimaryKey
     private String orderNo;
     private String orderQty;
     private String orderDate;
     private String despQty;
     private String deliveryDate;
+    private String sapId;
     private String inProdQty;
     private String status;
     private String stockQty;
     private String invoiceNo;
     private String invoiceDate;
+    private int isPending;
+    @Ignore
     private ArrayList<ItemModel> itemModelArrayList;
 
     public OrderModel() {
@@ -129,6 +138,12 @@ public class OrderModel implements Serializable {
         return itemModelArrayList;
     }
 
+    public void setItemList(ArrayList<ItemModel> offlineLists){
+        if(offlineLists!=null) {
+            this.itemModelArrayList = offlineLists;
+        }
+    }
+
     public String getStatus() {
         return status;
     }
@@ -165,6 +180,30 @@ public class OrderModel implements Serializable {
     public OrderModel setInvoiceDate(String invoiceDate) {
         this.invoiceDate = invoiceDate;
         return this;
+    }
+
+    public String getSapId() {
+        return sapId;
+    }
+
+    public void setSapId(String sapId) {
+        this.sapId = sapId;
+    }
+
+    public boolean getIsPending() {
+        if(this.isPending == 1){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void setIsPending(boolean isPending) {
+        if(isPending){
+            this.isPending = 1;
+        }else{
+            this.isPending = 0;
+        }
     }
 
     @Override
