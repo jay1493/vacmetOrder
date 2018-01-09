@@ -1,4 +1,4 @@
-package com.imagesoftware.anubhav.vacmet.daos;
+package com.imagesoftware.anubhav.vacmet.database.daos;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
