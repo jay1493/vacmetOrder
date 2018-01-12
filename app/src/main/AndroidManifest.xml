@@ -23,6 +23,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup">
+        <receiver android:name=".globalReceivers.UserAccessReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.imagesoftware.vacmet.user_revoked"/>
+            </intent-filter>
+
+        </receiver>
+        <service android:name=".services.UserAccessJobService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
         <activity
             android:name="com.gun0912.tedpicker.ImagePickerActivity"
             android:screenOrientation="portrait"

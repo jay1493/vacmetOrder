@@ -5,9 +5,11 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.arch.persistence.room.Room;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -31,6 +33,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
@@ -71,6 +74,15 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.firebase.jobdispatcher.Constraint;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.RetryStrategy;
+import com.firebase.jobdispatcher.Trigger;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -84,11 +96,16 @@ import com.gun0912.tedpicker.ImagePickerActivity;
 import com.imagesoftware.anubhav.vacmet.adapters.RecyclerviewAdapter;
 import com.imagesoftware.anubhav.vacmet.database.daos.DatabaseRequestsDao;
 import com.imagesoftware.anubhav.vacmet.database.VacmetDatabase;
+import com.imagesoftware.anubhav.vacmet.database.entities.ItemEntity;
+import com.imagesoftware.anubhav.vacmet.database.entities.OrderEntity;
+import com.imagesoftware.anubhav.vacmet.database.translators.ItemTranslator;
+import com.imagesoftware.anubhav.vacmet.database.translators.OrderTranslator;
 import com.imagesoftware.anubhav.vacmet.interfaces.ItemClickListener;
 import com.imagesoftware.anubhav.vacmet.model.InvoiceTo;
 import com.imagesoftware.anubhav.vacmet.model.ItemModel;
 import com.imagesoftware.anubhav.vacmet.model.OrderContainer;
 import com.imagesoftware.anubhav.vacmet.model.OrderModel;
+import com.imagesoftware.anubhav.vacmet.services.UserAccessJobService;
 import com.imagesoftware.anubhav.vacmet.services.VacmetOverlayService;
 import com.imagesoftware.anubhav.vacmet.utils.CircleTransform;
 import com.itextpdf.text.Document;
@@ -231,7 +248,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private File fileFromDb;
     private VacmetDatabase vacmetDatabase;
     private DatabaseRequestsDao databaseRequestsDao;
-
+    private LocalOrderRefereshBroadcastReceiver localBroadcast;
+    private IntentFilter intentFilter;
+    private FirebaseJobDispatcher firebaseJobDispatcher;
+    private final String jobExtraKey = "user_email";
+    private OrderTranslator orderTranslator;
+    private ItemTranslator itemTranslator;
 
     @Override
     protected void onStart() {
@@ -253,7 +275,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status_nav_drawer);
         init();
-        logingSharePrefs = getSharedPreferences(LoginPrefs, MODE_WORLD_WRITEABLE);
+        logingSharePrefs = getSharedPreferences(LoginPrefs, MODE_PRIVATE);
         orderIdPrefs = getSharedPreferences(OrderIdPrefs, MODE_PRIVATE);
         if (orderIdPrefs.getString(SapId, null) == null) {
             SharedPreferences.Editor editor = orderIdPrefs.edit();
@@ -275,7 +297,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         vacmetDatabase =  Room.databaseBuilder(OrderStatus.this,VacmetDatabase.class,"vacmet_db").build();
        databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
-
+        initializeJobDispatcherService();
 
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
 
@@ -333,6 +355,20 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     }
 
+    private void initializeJobDispatcherService() {
+/**
+ * setReplaceCurrent is necessary as it replaces old user creds in extras, sent to service.
+ */
+            firebaseJobDispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+            Bundle jobExtras = new Bundle();
+            jobExtras.putString(jobExtraKey,logingSharePrefs.getString(LoggedInUser, null));
+            Job makeJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.user_access_job)).setService(UserAccessJobService.class)
+                     .setExtras(jobExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
+                     .setReplaceCurrent(true).setTrigger(Trigger.executionWindow(7200,8400)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+            firebaseJobDispatcher.mustSchedule(makeJob);
+
+    }
+
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
@@ -368,6 +404,19 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     }
 
+    class LocalOrderRefereshBroadcastReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent!=null && intent.getAction()!=null && (intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE") ||
+                    intent.getAction().equals("android.net.wifi.WIFI_STATE_CHANGED"))){
+                if(connectionIsOnline()){
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+                }
+            }
+        }
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -380,6 +429,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void init() {
+        orderTranslator = new OrderTranslator();
+        itemTranslator = new ItemTranslator();
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        intentFilter.addAction("android.net.wifi.WIFI_STATE_CHANGED");
+        localBroadcast = new LocalOrderRefereshBroadcastReceiver();
+
+
         customGson = new GsonBuilder().registerTypeHierarchyAdapter(byte[].class,
                                 new ByteArrayToBase64TypeAdapter()).create();
         activity = this;
@@ -570,7 +627,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingEdit);
         floatingLogOut = (FloatingActionButton) findViewById(R.id.floatingLogout);
         floatingActionButton.setBackgroundColor(Color.WHITE);
-        sharedPreferences = getSharedPreferences("GooglePic", MODE_WORLD_WRITEABLE);
+        sharedPreferences = getSharedPreferences("GooglePic", MODE_PRIVATE);
         if (sharedPreferences.getString("PhotoUrl", null) != null) {
             Glide.with(this).load(sharedPreferences.getString("PhotoUrl", null))
                     .crossFade()
@@ -676,7 +733,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }else if(closedOrdersRadio.isChecked()){
             setCollapsingToolbarTitle(getResources().getString(R.string.delivery_status));
         }
-
+        LocalBroadcastManager.getInstance(this).registerReceiver(localBroadcast,intentFilter);
     }
 
     private void setCollapsingToolbarTitle(String s) {
@@ -1424,8 +1481,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     orderModelList.clear();
                 }
             }else{
-                //As soon as network is connected(via Job Scheduler) update orderModelList...
-                orderModelList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),openOrdersRadio.isChecked()?1:0);
+                List<OrderEntity> orderEntityList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),openOrdersRadio.isChecked()?1:0);
+                List<OrderModel> localOrderModelList = new ArrayList<>();
+                for(OrderEntity orderEntity : orderEntityList){
+                    localOrderModelList.add(orderTranslator.translateEntityToModel(orderEntity));
+                }
+                orderModelList =new ArrayList<>(localOrderModelList);
             }
             return orderModelList;
         }
@@ -1497,7 +1558,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         @Override
         protected List<ItemModel> doInBackground(Integer... strings) {
             selectedPos = strings[0];
-            return databaseRequestsDao.getItemsForOrderId(orderModelList.get(selectedPos).getOrderNo());
+            List<ItemModel> itemsList = new ArrayList<>();
+            for(ItemEntity itemEntity : databaseRequestsDao.getItemsForOrderId(orderModelList.get(selectedPos).getOrderNo())){
+                itemsList.add(itemTranslator.translateModelFromEntity(itemEntity));
+            }
+            return itemsList;
         }
 
         @Override
@@ -1521,10 +1586,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private void saveInVacmetDatabase(ArrayList<OrderModel> orderModelList) {
 
-         databaseRequestsDao.insertOrders(orderModelList);
+        List<OrderEntity> orderEntityList = new ArrayList<>();
          for(OrderModel orderModel : orderModelList){
-             if(orderModel.getItemList()!=null && orderModel.getItemList().size()>0) {
-                 databaseRequestsDao.insertItems(orderModel.getItemList());
+             orderEntityList.add(orderTranslator.translateModelToEntity(orderModel));
+         }
+         databaseRequestsDao.insertOrders(orderEntityList);
+         for(OrderEntity orderEntity : orderEntityList){
+             if(orderEntity.getItemModelArrayList()!=null && orderEntity.getItemModelArrayList().size()>0) {
+                 databaseRequestsDao.insertItems(orderEntity.getItemModelArrayList());
              }
          }
 
@@ -2055,4 +2124,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(localBroadcast);
+        super.onDestroy();
+    }
+
+    private boolean checkPlayServices() {
+        GoogleApiAvailability gApi = GoogleApiAvailability.getInstance();
+        int resultCode = gApi.isGooglePlayServicesAvailable(this);
+        if(resultCode != ConnectionResult.SUCCESS){
+            if(gApi.isUserResolvableError(resultCode)){
+                gApi.getErrorDialog(this, resultCode, 1).show();
+            }else{
+                Toast.makeText(this, getResources().getString(R.string.toast_playservices_unrecoverable), Toast.LENGTH_LONG).show();
+                finish();
+            } return false;
+        } return true;
+    }
 }

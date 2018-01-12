@@ -14,9 +14,9 @@ import java.util.List;
  * Created by anubhav on 27/1/17.
  */
 
-@Entity(tableName = "vacmet_item_for_orders",indices = {@Index(value = "selectedOrderNo")})
+
 public class ItemModel implements Serializable {
-    @ForeignKey(entity = OrderModel.class,parentColumns = "orderNo",childColumns = "selectedOrderNo", onDelete = ForeignKey.CASCADE, onUpdate = ForeignKey.CASCADE)
+    private int itemNo;
     private String selectedOrderNo;
     private String itemName;
     private String materialNo;
@@ -51,6 +51,8 @@ public class ItemModel implements Serializable {
     private ArrayList<String> containerNoList;
     private ArrayList<String> stockQtyList;
     private ArrayList<String> containedOrderNoList;
+    private int totalDespQtyList;
+    private int totalOrderedQtyList;
 
     public ItemModel() {
         lengthList = new ArrayList<>();
@@ -65,6 +67,14 @@ public class ItemModel implements Serializable {
         containerNoList = new ArrayList<>();
         stockQtyList = new ArrayList<>();
         containedOrderNoList = new ArrayList<>();
+    }
+
+    public int getItemNo() {
+        return itemNo;
+    }
+
+    public void setItemNo(int itemNo) {
+        this.itemNo = itemNo;
     }
 
     public String getItemName() {
@@ -388,6 +398,62 @@ public class ItemModel implements Serializable {
         this.selectedOrderNo = selectedOrderNo;
     }
 
+    public void setLengthList(ArrayList<String> lengthList) {
+        this.lengthList = lengthList;
+    }
+
+    public void setWidthList(ArrayList<String> widthList) {
+        this.widthList = widthList;
+    }
+
+    public void setTotalDespQty(ArrayList<Double> totalDespQty) {
+        this.totalDespQty = totalDespQty;
+    }
+
+    public ArrayList<Double> getTotalInprodQty() {
+        return totalInprodQty;
+    }
+
+    public void setTotalInprodQty(ArrayList<Double> totalInprodQty) {
+        this.totalInprodQty = totalInprodQty;
+    }
+
+    public void setTotalOrderedQty(ArrayList<Double> totalOrderedQty) {
+        this.totalOrderedQty = totalOrderedQty;
+    }
+
+    public void setTreatment1List(ArrayList<String> treatment1List) {
+        this.treatment1List = treatment1List;
+    }
+
+    public void setTreatment2List(ArrayList<String> treatment2List) {
+        this.treatment2List = treatment2List;
+    }
+
+    public void setItemDeliveryDatesList(ArrayList<String> itemDeliveryDatesList) {
+        this.itemDeliveryDatesList = itemDeliveryDatesList;
+    }
+
+    public void setShadesList(ArrayList<String> shadesList) {
+        this.shadesList = shadesList;
+    }
+
+    public ArrayList<String> getContainerNoList() {
+        return containerNoList;
+    }
+
+    public void setContainerNoList(ArrayList<String> containerNoList) {
+        this.containerNoList = containerNoList;
+    }
+
+    public void setStockQtyList(ArrayList<String> stockQtyList) {
+        this.stockQtyList = stockQtyList;
+    }
+
+    public void setContainedOrderNoList(ArrayList<String> containedOrderNoList) {
+        this.containedOrderNoList = containedOrderNoList;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -399,5 +465,13 @@ public class ItemModel implements Serializable {
     @Override
     public int hashCode() {
         return Arrays.hashCode(new Object[]{materialNo});
+    }
+
+    public List<Double> getTotalDespQtyList() {
+        return totalDespQty;
+    }
+
+    public List<Double>  getTotalOrderedQtyList() {
+        return totalOrderedQty;
     }
 }

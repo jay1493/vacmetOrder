@@ -7,8 +7,8 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
 
-import com.imagesoftware.anubhav.vacmet.model.ItemModel;
-import com.imagesoftware.anubhav.vacmet.model.OrderModel;
+import com.imagesoftware.anubhav.vacmet.database.entities.ItemEntity;
+import com.imagesoftware.anubhav.vacmet.database.entities.OrderEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,19 +21,19 @@ import java.util.List;
 public interface DatabaseRequestsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertOrders(List<OrderModel> orderModels);
+    void insertOrders(List<OrderEntity> orderEntities);
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertItems(List<ItemModel> itemModels);
+    void insertItems(List<ItemEntity> itemEntities);
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    void updateOrders(OrderModel... ordersToUpdate);
+    void updateOrders(OrderEntity... ordersToUpdate);
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    void updateItems(ItemModel... itemsToUpdate);
+    void updateItems(ItemEntity... itemsToUpdate);
 
 
     @Query("SELECT * FROM vacmet_orders WHERE sapId LIKE :sapId AND isPending = :orderType")
-    ArrayList<OrderModel> getOrdersForSapIdAndOrderType(String sapId, int orderType);
+    List<OrderEntity> getOrdersForSapIdAndOrderType(String sapId, int orderType);
     @Query("SELECT * FROM vacmet_item_for_orders WHERE selectedOrderNo LIKE :orderNo")
-    ArrayList<ItemModel> getItemsForOrderId(String orderNo);
+    List<ItemEntity> getItemsForOrderId(String orderNo);
 
 }

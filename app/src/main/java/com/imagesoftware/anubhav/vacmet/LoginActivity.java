@@ -172,7 +172,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
          */
         GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(gifImageView);
         Glide.with(this).load(R.raw.gif2).into(imageViewTarget);
-        sharedprefs = getSharedPreferences(LoginPrefs, MODE_WORLD_WRITEABLE);
+        sharedprefs = getSharedPreferences(LoginPrefs, MODE_PRIVATE);
         orderIdPrefs = getSharedPreferences(OrderIdPrefs, MODE_PRIVATE);
         intentFilter = new IntentFilter();
         intentFilter.addAction(RECEIVE_ACTION);
@@ -543,12 +543,30 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     etPassword_signIn.setError(getResources().getString(R.string.password_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
                     return;
                 }else{
-                    btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
-                    textSignIn.setVisibility(View.GONE);
-                    loaderSignIn.setVisibility(View.VISIBLE);
-                    GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
-                    Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
-                    signAnonymousFirebaseUser(false);
+
+                    if(connectionIsOnline()) {
+                        btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                        textSignIn.setVisibility(View.GONE);
+                        loaderSignIn.setVisibility(View.VISIBLE);
+                        GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                        Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                        signAnonymousFirebaseUser(false);
+                    }else{
+                        if (sharedprefs.getString(LoggedInUser, null) != null && sharedprefs.getString(LoggedInUserPassword, null) != null) {
+                            if(sharedprefs.getString(LoggedInUser, null).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) &&
+                                    sharedprefs.getString(LoggedInUserPassword, null).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
+                                btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                                textSignIn.setVisibility(View.GONE);
+                                loaderSignIn.setVisibility(View.VISIBLE);
+                                GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                                Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                                signAnonymousFirebaseUser(false);
+                            }else{
+                                etUserName_signIn.setError(getString(R.string.user_offline_match));
+
+                            }
+                        }
+                    }
                 }
                 btnLogin.performClick();
         }
@@ -869,12 +887,29 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                   etPassword_signIn.setError(getResources().getString(R.string.password_cannot_be_left_blank),getResources().getDrawable(R.drawable.error_24dp));
                   return;
               }else{
-                  btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
-                  textSignIn.setVisibility(View.GONE);
-                  loaderSignIn.setVisibility(View.VISIBLE);
-                  GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
-                  Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
-                  signAnonymousFirebaseUser(false);
+
+                  if(connectionIsOnline()) {
+                      btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                      textSignIn.setVisibility(View.GONE);
+                      loaderSignIn.setVisibility(View.VISIBLE);
+                      GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                      Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                      signAnonymousFirebaseUser(false);
+                  }else{
+                      if (sharedprefs.getString(LoggedInUser, null) != null && sharedprefs.getString(LoggedInUserPassword, null) != null) {
+                          if(sharedprefs.getString(LoggedInUser, null).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) &&
+                                  sharedprefs.getString(LoggedInUserPassword, null).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())){
+                              btnLogin.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sign_in_approved));
+                              textSignIn.setVisibility(View.GONE);
+                              loaderSignIn.setVisibility(View.VISIBLE);
+                              GlideDrawableImageViewTarget glideDrawableImageViewTarget = new GlideDrawableImageViewTarget(loaderSignIn);
+                              Glide.with(this).load(R.raw.rolling).into(glideDrawableImageViewTarget);
+                              signAnonymousFirebaseUser(false);
+                          }else{
+                              etUserName_signIn.setError(getString(R.string.user_offline_match));
+                          }
+                      }
+                  }
               }
       /*        if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet") &&
                       etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
@@ -946,24 +981,36 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void signAnonymousFirebaseUser(final boolean isAuthRequired) {
-        firebaseAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
 
-                if (!task.isSuccessful()) {
-                    Log.e("LoginActivity", "signInAnonymously", task.getException());
-                    Toast.makeText(LoginActivity.this, "Authentication failed.",
-                            Toast.LENGTH_SHORT).show();
-                }else if(task.isSuccessful()){
-                    if(isAuthRequired){
-                        updateUI(task.getResult().getUser(),true);
-                    }else{
-                        updateUI(task.getResult().getUser(),false);
+        if(connectionIsOnline()) {
+            firebaseAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+
+                    if (!task.isSuccessful()) {
+                        Log.e("LoginActivity", "signInAnonymously", task.getException());
+                        Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    } else if (task.isSuccessful()) {
+                        if (isAuthRequired) {
+                            updateUI(task.getResult().getUser(), true);
+                        } else {
+                            updateUI(task.getResult().getUser(), false);
+                        }
+
                     }
-
                 }
-            }
-        });
+            });
+        }else{
+
+            /**
+             *
+             *Just Sign In, as sharedPrefs would be saved already
+             */
+            Intent intent = new Intent(LoginActivity.this, OrderStatus.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     @TargetApi(23)
@@ -1246,6 +1293,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onFingerPrintSuccess() {
         inflatePasswordAutomaticSignIn(true);
+    }
+
+    private boolean connectionIsOnline() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo!=null && networkInfo.isConnected()){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
     private class SmsBroadcast extends BroadcastReceiver{

@@ -16,11 +16,10 @@ import java.util.Objects;
  * Created by anubhav on 23/1/17.
  */
 
-@Entity(tableName = "vacmet_orders",indices = {@Index(value = "orderNo")})
+
 public class OrderModel implements Serializable {
 
     private String partyName;
-    @PrimaryKey
     private String orderNo;
     private String orderQty;
     private String orderDate;

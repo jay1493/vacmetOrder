@@ -111,4 +111,8 @@
     <string name="activity_home_desc">You have successfully logged in with fingerprint authentication</string>
     <string name="activity_home_note">Close and re-open the app to see the fingerprint auth screen again</string>
     <string name="switch_to_manual_password">Switch to manual password</string>
+    <string name="refersh_order_action">action_referesh_vacmet_order</string>
+    <string name="toast_playservices_unrecoverable">Your Device Does\'nt support Google Play Services, some features of this app, will not work.</string>
+    <string name="user_access_job">user_access_job</string>
+    <string name="user_offline_match">User not matches with the saved user profile.</string>
 </resources>
