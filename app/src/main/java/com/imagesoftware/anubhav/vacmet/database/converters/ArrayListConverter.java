@@ -22,7 +22,7 @@ public class ArrayListConverter {
             while (listIterator.hasNext()) {
                 String token = listIterator.next();
                 if (token != null && listIterator.hasNext()) {
-                    s += token + ",";
+                    s += token + "$";
                 } else if (token != null) {
                     s += token;
                 }
@@ -36,7 +36,7 @@ public class ArrayListConverter {
     public ArrayList<String> convertToArrayList(String result){
         ArrayList<String> tokenList = null;
         if(!TextUtils.isEmpty(result)) {
-            String[] seperatedTokens = result.split(",");
+            String[] seperatedTokens = result.split("$");
             Log.i("ArrayListConverter", "convertToArrayList: "+seperatedTokens[0]+" "+seperatedTokens[seperatedTokens.length-1]);
 
             tokenList = new ArrayList<>(Arrays.asList(seperatedTokens));

@@ -191,19 +191,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initializeFirebaseAuth() {
-        firebaseAuth = FirebaseAuth.getInstance();
-        authStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    //SignedIn
-                } else {
-                    //SignedOut
+        if(connectionIsOnline()) {
+            firebaseAuth = FirebaseAuth.getInstance();
+            authStateListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user != null) {
+                        //SignedIn
+                    } else {
+                        //SignedOut
+                    }
+                    updateUI(user, false);
                 }
-                updateUI(user, false);
-            }
-        };
+            };
+        }
     }
 
     private void updateUI(FirebaseUser user, final boolean isAuthRequired) {
@@ -1214,7 +1216,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onStart() {
         super.onStart();
-        firebaseAuth.addAuthStateListener(authStateListener);
+        if(connectionIsOnline()) {
+            firebaseAuth.addAuthStateListener(authStateListener);
+        }
 
     }
 
@@ -1222,7 +1226,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStop() {
         super.onStop();
         unregisterReceiver(smsDeliverBroadcast);
-        firebaseAuth.removeAuthStateListener(authStateListener);
+        if(connectionIsOnline()) {
+            firebaseAuth.removeAuthStateListener(authStateListener);
+        }
 
     }
     public void onKeyboardDown(View v){

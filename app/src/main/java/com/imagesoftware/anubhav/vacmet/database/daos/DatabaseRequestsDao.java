@@ -36,4 +36,10 @@ public interface DatabaseRequestsDao {
     @Query("SELECT * FROM vacmet_item_for_orders WHERE selectedOrderNo LIKE :orderNo")
     List<ItemEntity> getItemsForOrderId(String orderNo);
 
+    @Query("DELETE FROM vacmet_orders")
+    void deleteOrders();
+    @Query("DELETE FROM vacmet_item_for_orders")
+    void deleteItems();
+
+
 }

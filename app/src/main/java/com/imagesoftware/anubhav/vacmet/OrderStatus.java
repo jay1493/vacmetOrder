@@ -254,6 +254,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String jobExtraKey = "user_email";
     private OrderTranslator orderTranslator;
     private ItemTranslator itemTranslator;
+    private View offlineClickedView;
+    private String offlineOrderType;
 
     @Override
     protected void onStart() {
@@ -1509,17 +1511,20 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     public void onClick(View view, int position, View clickedView) {
                         if(!connectionIsOnline()){
                             //Fill Items for order at pos, in background
-                            fillOfflineItemsForOrder(position);
+                            fillOfflineItemsForOrder(position,orderType,clickedView);
+                        }else{
+                            Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
+                            intent.putExtra("OrderInfo", orderModelList.get(position));
+                            intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
+                            intent.putExtra("isDispatched",orderType.equalsIgnoreCase("get_dispatch")?true:false);
+                            startActivity(intent);
                         }
-                        Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
-                        intent.putExtra("OrderInfo", orderModelList.get(position));
-                        intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
-                        intent.putExtra("isDispatched",orderType.equalsIgnoreCase("get_dispatch")?true:false);
+
                     /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                     ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                     ActivityCompat.startActivity(OrderStatus.this,intent,activityOptionsCompat.toBundle());*/
 
-                        startActivity(intent);
+
                     }
 
 
@@ -1535,8 +1540,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    private void fillOfflineItemsForOrder(int position) {
-
+    private void fillOfflineItemsForOrder(int position, String orderType, View clickedView) {
+        offlineOrderType = orderType;
+        offlineClickedView = clickedView;
         new ItemAsynTask().execute(position);
     }
 
@@ -1570,6 +1576,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             super.onPostExecute(itemModels);
             progressDialog.dismiss();
             orderModelList.get(selectedPos).setItemList(new ArrayList<ItemModel>(itemModels));
+            Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
+            intent.putExtra("OrderInfo", orderModelList.get(selectedPos));
+            intent.putExtra("TransitionName", ViewCompat.getTransitionName(offlineClickedView));
+            intent.putExtra("isDispatched",offlineOrderType.equalsIgnoreCase("get_dispatch")?true:false);
+            startActivity(intent);
         }
     }
 
@@ -1585,7 +1596,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void saveInVacmetDatabase(ArrayList<OrderModel> orderModelList) {
-
+        databaseRequestsDao.deleteOrders();
+        databaseRequestsDao.deleteItems();
         List<OrderEntity> orderEntityList = new ArrayList<>();
          for(OrderModel orderModel : orderModelList){
              orderEntityList.add(orderTranslator.translateModelToEntity(orderModel));

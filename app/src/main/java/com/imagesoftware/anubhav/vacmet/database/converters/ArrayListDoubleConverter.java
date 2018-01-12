@@ -21,7 +21,7 @@ public class ArrayListDoubleConverter {
             while (listIterator.hasNext()) {
                 String token = Double.toString(listIterator.next());
                 if (token != null && listIterator.hasNext()) {
-                    s += token + ",";
+                    s += token + "$";
                 } else if (token != null) {
                     s += token;
                 }
@@ -35,11 +35,15 @@ public class ArrayListDoubleConverter {
     public ArrayList<Double> convertToArrayList(String result){
         ArrayList<Double> tokenList = null;
         if(!TextUtils.isEmpty(result)) {
-            String[] seperatedTokens = result.split(",");
+            String[] seperatedTokens = result.split("$");
             tokenList = new ArrayList<>();
             Log.i("ArrayListConverter", "convertToArrayList: "+seperatedTokens[0]+" "+seperatedTokens[seperatedTokens.length-1]);
             for(int i=0; i< seperatedTokens.length; i++){
-                tokenList.add(Double.parseDouble(seperatedTokens[i]));
+                if(seperatedTokens[i].equalsIgnoreCase("0.0")){
+                    tokenList.add(0.0);
+                }else {
+                    tokenList.add(Double.parseDouble(seperatedTokens[i].contains(",") ? seperatedTokens[i].replaceAll(",", "") : seperatedTokens[i]));
+                }
             }
 
         }
