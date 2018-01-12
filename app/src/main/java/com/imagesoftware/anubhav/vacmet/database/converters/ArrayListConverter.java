@@ -7,6 +7,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 /**
  * Created by Anubhav-Singh on 09-01-2018.
@@ -36,7 +37,7 @@ public class ArrayListConverter {
     public ArrayList<String> convertToArrayList(String result){
         ArrayList<String> tokenList = null;
         if(!TextUtils.isEmpty(result)) {
-            String[] seperatedTokens = result.split("$");
+            String[] seperatedTokens = result.split(Pattern.quote("$"));
             Log.i("ArrayListConverter", "convertToArrayList: "+seperatedTokens[0]+" "+seperatedTokens[seperatedTokens.length-1]);
 
             tokenList = new ArrayList<>(Arrays.asList(seperatedTokens));

@@ -299,6 +299,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         vacmetDatabase =  Room.databaseBuilder(OrderStatus.this,VacmetDatabase.class,"vacmet_db").build();
        databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
+       if(connectionIsOnline()) {
+           new CustomDeleteOfflineTables().execute();
+
+       }
         initializeJobDispatcherService();
 
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
@@ -355,6 +359,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
 
+    }
+    class CustomDeleteOfflineTables extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            databaseRequestsDao.deleteOrders();
+            databaseRequestsDao.deleteItems();
+            return null;
+        }
     }
 
     private void initializeJobDispatcherService() {
@@ -1596,8 +1609,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void saveInVacmetDatabase(ArrayList<OrderModel> orderModelList) {
-        databaseRequestsDao.deleteOrders();
-        databaseRequestsDao.deleteItems();
+
         List<OrderEntity> orderEntityList = new ArrayList<>();
          for(OrderModel orderModel : orderModelList){
              orderEntityList.add(orderTranslator.translateModelToEntity(orderModel));
