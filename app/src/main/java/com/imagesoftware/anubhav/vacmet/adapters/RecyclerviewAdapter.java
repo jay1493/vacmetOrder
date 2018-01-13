@@ -29,8 +29,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private DecimalFormat decimalFormat;
     private boolean isDispatched;
     private OpenPdfClicked openPdfClicked;
+    private DeliveryDateChanged deliveryDateChangedListener;
 
-    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf) {
+    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf,DeliveryDateChanged deliveryDateChanged) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
@@ -38,6 +39,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         decimalFormat = new DecimalFormat("#.##");
         this.isDispatched = isDispatched;
         this.openPdfClicked = openPdf;
+        this.deliveryDateChangedListener = deliveryDateChanged;
     }
 
     @Override
@@ -94,7 +96,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.orderDate.setText(list.get(position).getInvoiceDate());
                     holder.txtOrderDateHeading.setText(context.getResources().getString(R.string.invoice_date));
                     holder.deliveryDate.setVisibility(View.GONE);
-
+                    holder.deliveryDate.setOnClickListener(null);
                     holder.openPdf.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -109,6 +111,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.orderNo.setText(list.get(position).getOrderNo());
                     holder.deliveryDate.setText(list.get(position).getDeliveryDate());
                     holder.deliveryDate.setVisibility(View.VISIBLE);
+                    holder.deliveryDate.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deliveryDateChangedListener.onDateClickListenerCall(v,position);
+                        }
+                    });
 
                 }
                 break;
@@ -174,5 +182,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
 
     public interface OpenPdfClicked{
         void onPdfClick(int pos);
+    }
+    public interface DeliveryDateChanged{
+        void onDateClickListenerCall(View view, int pos);
     }
 }

@@ -171,7 +171,7 @@
                         android:gravity="end"
                         android:padding="@dimen/d5"
                         android:id="@+id/ll_destDate"
-                        android:visibility="gone">
+                        android:visibility="visible">
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

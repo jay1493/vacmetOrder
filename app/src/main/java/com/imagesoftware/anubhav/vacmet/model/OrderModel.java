@@ -22,6 +22,7 @@ import java.util.Objects;
 
 public class OrderModel implements Serializable {
 
+    private int orderId;
     private String partyName;
     private String orderNo;
     private String orderQty;
@@ -42,6 +43,14 @@ public class OrderModel implements Serializable {
         itemModelArrayList = new ArrayList<>();
     }
 
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
 
     public String getPartyName() {
         return partyName;

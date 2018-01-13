@@ -2,6 +2,7 @@ package com.imagesoftware.anubhav.vacmet;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.arch.persistence.room.Room;
@@ -62,6 +63,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -105,6 +107,7 @@ import com.imagesoftware.anubhav.vacmet.model.InvoiceTo;
 import com.imagesoftware.anubhav.vacmet.model.ItemModel;
 import com.imagesoftware.anubhav.vacmet.model.OrderContainer;
 import com.imagesoftware.anubhav.vacmet.model.OrderModel;
+import com.imagesoftware.anubhav.vacmet.services.RefereshNetworkService;
 import com.imagesoftware.anubhav.vacmet.services.UserAccessJobService;
 import com.imagesoftware.anubhav.vacmet.services.VacmetOverlayService;
 import com.imagesoftware.anubhav.vacmet.utils.CircleTransform;
@@ -138,10 +141,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -152,7 +157,7 @@ import javax.net.ssl.X509TrustManager;
  * Created by anubhav on 23/1/17.
  */
 
-public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked {
+public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked,RecyclerviewAdapter.DeliveryDateChanged {
 
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
@@ -256,6 +261,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ItemTranslator itemTranslator;
     private View offlineClickedView;
     private String offlineOrderType;
+    private final String GET_PENDING_CODE = "get_pendingord";
+    private final String GET_DISPATCH_CODE = "get_dispatch";
+    private final String SAP_CODE = "sap_key";
+    private final String CLIENT_SERVER_CODE = "client_server_key";
 
     @Override
     protected void onStart() {
@@ -360,6 +369,60 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         });
 
     }
+
+    @Override
+    public void onDateClickListenerCall(final View viewHolder, final int pos) {
+        /**
+         * Change view date,refresh list, and update order.
+         */
+        Calendar cal = Calendar.getInstance();
+        String initialDespDt = orderModelList.get(pos).getDeliveryDate();
+        String[] dt = initialDespDt.split(Pattern.quote("-"));
+        final int yr = Integer.parseInt(dt[0]);
+        int mnth = Integer.parseInt(dt[1]);
+        int day = Integer.parseInt(dt[2]);
+        cal.set(Calendar.DAY_OF_MONTH,day);
+        cal.set(Calendar.MONTH,mnth-1);
+        cal.set(Calendar.YEAR,yr);
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,android.R.style.Theme_Holo_Dialog_NoActionBar ,new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                 StringBuilder stringBuilder = new StringBuilder();
+                 stringBuilder.append(String.valueOf(year));
+                 stringBuilder.append("-");
+                 String m = String.valueOf(month+1);
+                 if(m.length() == 1) {
+                     stringBuilder.append("0");
+                     stringBuilder.append(m);
+                 }else{
+                     stringBuilder.append(m);
+                 }
+                stringBuilder.append("-");
+                stringBuilder.append(String.valueOf(dayOfMonth));
+                orderModelList.get(pos).setDeliveryDate(stringBuilder.toString());
+                TextView delDt = (TextView)(viewHolder.findViewById(R.id.deliveryDate));
+                delDt.setText(stringBuilder.toString());
+                updateOrder(pos);
+
+            }
+        },yr,mnth,day);
+        datePickerDialog.show();
+    }
+
+    private void updateOrder(int pos) {
+        new UpdateOrderDueToDeliveryDate().execute(pos);
+    }
+    class UpdateOrderDueToDeliveryDate extends AsyncTask<Integer,Void,Void>{
+
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            int pos = integers[0];
+            databaseRequestsDao.updateOrders(orderTranslator.translateModelToEntity(orderModelList.get(pos)));
+            return null;
+        }
+    }
+
     class CustomDeleteOfflineTables extends AsyncTask<Void,Void,Void>{
 
         @Override
@@ -380,7 +443,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             Job makeJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.user_access_job)).setService(UserAccessJobService.class)
                      .setExtras(jobExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
                      .setReplaceCurrent(true).setTrigger(Trigger.executionWindow(7200,8400)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+            Bundle networkExtras = new Bundle();
+            networkExtras.putString(SAP_CODE,orderIdPrefs.getString(SapId, null));
+            networkExtras.putString(CLIENT_SERVER_CODE,orderIdPrefs.getString(ClientorServer, null));
+            Job networkJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.network_refersh_job)).setService(RefereshNetworkService.class)
+                    .setExtras(networkExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
+                    .setReplaceCurrent(true).setTrigger(Trigger.executionWindow(86400,87000)).setConstraints(Constraint.ON_ANY_NETWORK).build();
             firebaseJobDispatcher.mustSchedule(makeJob);
+            firebaseJobDispatcher.mustSchedule(networkJob);
 
     }
 
@@ -681,7 +751,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        },false, this);
+        },false, this,this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
@@ -1197,7 +1267,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             } else if (params[0].equalsIgnoreCase("s")) {
                 appendedParamInUrl = "S=" + id;
             }
-            if(connectionIsOnline()) {
+            List<OrderEntity> anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
+            if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0))) {
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
                     httpURLConnection.setRequestMethod("GET");
@@ -1550,7 +1621,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);

@@ -22,6 +22,7 @@ public class OrderTranslator {
             List<ItemEntity> itemEntities = new ArrayList<>();
             itemTranslator = new ItemTranslator();
             orderEntity = new OrderEntity();
+            orderEntity.setOrderId(orderModel.getOrderId());
             orderEntity.setDeliveryDate(orderModel.getDeliveryDate());
             orderEntity.setDespQty(orderModel.getDespQty());
             orderEntity.setInProdQty(orderModel.getInProdQty());
@@ -47,6 +48,7 @@ public class OrderTranslator {
         OrderModel orderModel = null;
         if(orderEntity!=null){
             orderModel = new OrderModel();
+            orderModel.setOrderId(orderEntity.getOrderId());
             orderModel.setDeliveryDate(orderEntity.getDeliveryDate());
             orderModel.setDespQty(orderEntity.getDespQty());
             orderModel.setInProdQty(orderEntity.getInProdQty());
