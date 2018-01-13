@@ -309,7 +309,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         vacmetDatabase =  Room.databaseBuilder(OrderStatus.this,VacmetDatabase.class,"vacmet_db").build();
        databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
        if(connectionIsOnline()) {
-           new CustomDeleteOfflineTables().execute();
+           /**
+            * Comment for now, as reloading is done via JobScheduler Service.
+            */
+//           new CustomDeleteOfflineTables().execute();
 
        }
         initializeJobDispatcherService();
