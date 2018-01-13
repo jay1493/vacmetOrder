@@ -421,7 +421,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         @Override
         protected Void doInBackground(Integer... integers) {
             int pos = integers[0];
-            databaseRequestsDao.updateOrders(orderTranslator.translateModelToEntity(orderModelList.get(pos)));
+            OrderEntity orderEntity = orderTranslator.translateModelToEntity(orderModelList.get(pos));
+            orderEntity.setOrderId(orderModelList.get(pos).getOrderId());
+            databaseRequestsDao.updateOrders(orderEntity);
             return null;
         }
     }
@@ -1242,7 +1244,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private class CustomAsyncTaskForRestOrderService extends AsyncTask<String, Void, List<OrderModel>> {
         String orderType = null;
-
+        List<OrderEntity> anySavedOrders = null;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -1270,7 +1272,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             } else if (params[0].equalsIgnoreCase("s")) {
                 appendedParamInUrl = "S=" + id;
             }
-            List<OrderEntity> anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
+            anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
             if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0))) {
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
@@ -1605,10 +1607,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this, orderModelList, new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, View clickedView) {
-                        if(!connectionIsOnline()){
+                        if(!connectionIsOnline() || (anySavedOrders!=null && anySavedOrders.size()>0)){
                             //Fill Items for order at pos, in background
                             fillOfflineItemsForOrder(position,orderType,clickedView);
-                        }else{
+                        }else if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() ==0))){
                             Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
                             intent.putExtra("OrderInfo", orderModelList.get(position));
                             intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));

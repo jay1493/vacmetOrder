@@ -985,6 +985,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void signAnonymousFirebaseUser(final boolean isAuthRequired) {
 
         if(connectionIsOnline()) {
+            if(firebaseAuth == null){
+                initializeFirebaseAuth();
+            }
             firebaseAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {

@@ -22,7 +22,7 @@ public class OrderTranslator {
             List<ItemEntity> itemEntities = new ArrayList<>();
             itemTranslator = new ItemTranslator();
             orderEntity = new OrderEntity();
-            orderEntity.setOrderId(orderModel.getOrderId());
+//            orderEntity.setOrderId(orderModel.getOrderId());
             orderEntity.setDeliveryDate(orderModel.getDeliveryDate());
             orderEntity.setDespQty(orderModel.getDespQty());
             orderEntity.setInProdQty(orderModel.getInProdQty());
