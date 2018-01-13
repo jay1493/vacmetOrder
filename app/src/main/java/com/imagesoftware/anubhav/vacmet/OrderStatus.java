@@ -1419,14 +1419,23 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         break;
                                     case Secondary_Table_Xml_Tag:
                                         if (itemModel != null) {
-                                            itemModel.setSelectedOrderNo(orderModel.getOrderNo());
+                                            if(orderType.equalsIgnoreCase("get_dispatch")){
+                                                itemModel.setSelectedOrderNo(orderModel.getInvoiceNo());
+                                            }else{
+                                                itemModel.setSelectedOrderNo(orderModel.getOrderNo());
+                                            }
+
                                             orderModel.addItemInOrder(itemModel, orderType.equalsIgnoreCase("get_dispatch") ? true : false);
                                         }
                                         saveItemInOrder = false;
                                         break;
                                     case Secondary_Table_Invoice_Xml_Tag:
                                         if (itemModel != null) {
-                                            itemModel.setSelectedOrderNo(orderModel.getOrderNo());
+                                            if(orderType.equalsIgnoreCase("get_dispatch")){
+                                                itemModel.setSelectedOrderNo(orderModel.getInvoiceNo());
+                                            }else{
+                                                itemModel.setSelectedOrderNo(orderModel.getOrderNo());
+                                            }
                                             orderModel.addItemInOrder(itemModel, orderType.equalsIgnoreCase("get_dispatch") ? true : false);
                                         }
                                         saveItemInOrder = false;
@@ -1578,7 +1587,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected List<ItemModel> doInBackground(Integer... strings) {
             selectedPos = strings[0];
             List<ItemModel> itemsList = new ArrayList<>();
-            for(ItemEntity itemEntity : databaseRequestsDao.getItemsForOrderId(orderModelList.get(selectedPos).getOrderNo())){
+            for(ItemEntity itemEntity : databaseRequestsDao.getItemsForOrderId(openOrdersRadio.isChecked()?orderModelList.get(selectedPos).getOrderNo():orderModelList.get(selectedPos).getInvoiceNo())){
                 itemsList.add(itemTranslator.translateModelFromEntity(itemEntity));
             }
             return itemsList;

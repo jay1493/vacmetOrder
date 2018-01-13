@@ -5,6 +5,9 @@ import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.os.Build;
+import android.text.TextUtils;
+
+import org.w3c.dom.Text;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -61,9 +64,11 @@ public class OrderModel implements Serializable {
     }
 
     public void setOrderQty(String orderQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        orderQty = decimalFormat.format(Double.parseDouble(orderQty));
-        this.orderQty = orderQty;
+        if(!TextUtils.isEmpty(orderQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            orderQty = decimalFormat.format(Double.parseDouble(orderQty));
+            this.orderQty = orderQty;
+        }
     }
 
     public String getOrderDate() {
@@ -79,9 +84,11 @@ public class OrderModel implements Serializable {
     }
 
     public void setDespQty(String despQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        despQty = decimalFormat.format(Double.parseDouble(despQty));
-        this.despQty = despQty;
+        if(!TextUtils.isEmpty(despQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            despQty = decimalFormat.format(Double.parseDouble(despQty));
+            this.despQty = despQty;
+        }
     }
 
     public String getDeliveryDate() {
@@ -98,8 +105,11 @@ public class OrderModel implements Serializable {
 
     public void setInProdQty(String inProdQty) {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
-        this.inProdQty = inProdQty;
+        if(!TextUtils.isEmpty(inProdQty)) {
+            inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
+
+            this.inProdQty = inProdQty;
+        }
     }
 
     public void addItemInOrder(ItemModel itemModel, boolean get_dispatch){
@@ -157,9 +167,11 @@ public class OrderModel implements Serializable {
     }
 
     public OrderModel setStockQty(String stockQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        stockQty = decimalFormat.format(Double.parseDouble(stockQty));
-        this.stockQty = stockQty;
+        if(!TextUtils.isEmpty(stockQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            stockQty = decimalFormat.format(Double.parseDouble(stockQty));
+            this.stockQty = stockQty;
+        }
         return this;
     }
 

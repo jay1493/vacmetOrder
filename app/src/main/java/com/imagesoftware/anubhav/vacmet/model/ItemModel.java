@@ -3,6 +3,7 @@ package com.imagesoftware.anubhav.vacmet.model;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
+import android.text.TextUtils;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -90,12 +91,14 @@ public class ItemModel implements Serializable {
     }
 
     public void setDespQty(String despQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        despQty = decimalFormat.format(Double.parseDouble(despQty));
-        if(totalDespQty!=null) {
-            totalDespQty.add(Double.valueOf(despQty));
+        if(!TextUtils.isEmpty(despQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            despQty = decimalFormat.format(Double.parseDouble(despQty));
+            if (totalDespQty != null) {
+                totalDespQty.add(Double.valueOf(despQty));
+            }
+            this.despQty = despQty;
         }
-        this.despQty = despQty;
     }
 
     public String getTotalQty() {
@@ -105,9 +108,11 @@ public class ItemModel implements Serializable {
     }
 
     public void setTotalQty(String totalQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        totalQty = decimalFormat.format(Double.parseDouble(totalQty));
-        this.totalQty = totalQty;
+        if(!TextUtils.isEmpty(totalQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            totalQty = decimalFormat.format(Double.parseDouble(totalQty));
+            this.totalQty = totalQty;
+        }
     }
 
     public String getMaterialNo() {
@@ -133,12 +138,14 @@ public class ItemModel implements Serializable {
     }
 
     public void setInProdQty(String inProdQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
-        if(totalInprodQty!=null){
-            totalInprodQty.add(Double.valueOf(inProdQty));
+        if(!TextUtils.isEmpty(inProdQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            inProdQty = decimalFormat.format(Double.parseDouble(inProdQty));
+            if (totalInprodQty != null) {
+                totalInprodQty.add(Double.valueOf(inProdQty));
+            }
+            this.inProdQty = inProdQty;
         }
-        this.inProdQty = inProdQty;
 
     }
     public List<Double> getDespList(){
@@ -306,12 +313,14 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setOrderedQty(String orderedQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        orderedQty = decimalFormat.format(Double.parseDouble(orderedQty));
-        if(totalOrderedQty!=null){
-            totalOrderedQty.add(Double.valueOf(orderedQty));
+        if(!TextUtils.isEmpty(orderedQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            orderedQty = decimalFormat.format(Double.parseDouble(orderedQty));
+            if (totalOrderedQty != null) {
+                totalOrderedQty.add(Double.valueOf(orderedQty));
+            }
+            this.orderedQty = orderedQty;
         }
-        this.orderedQty = orderedQty;
         return this;
     }
     public String getTotalOrderedQty(){
@@ -330,12 +339,14 @@ public class ItemModel implements Serializable {
     }
 
     public ItemModel setStockQty(String stockQty) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        stockQty = decimalFormat.format(Double.parseDouble(stockQty));
-        if(stockQtyList!=null){
-            stockQtyList.add(stockQty);
+        if(!TextUtils.isEmpty(stockQty)) {
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            stockQty = decimalFormat.format(Double.parseDouble(stockQty));
+            if (stockQtyList != null) {
+                stockQtyList.add(stockQty);
+            }
+            this.stockQty = stockQty;
         }
-        this.stockQty = stockQty;
         return this;
     }
 

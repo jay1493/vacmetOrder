@@ -19,7 +19,7 @@ public class ItemEntity implements Serializable {
 
         @PrimaryKey(autoGenerate = true)
         private int itemNo;
-        @ForeignKey(entity = OrderModel.class,parentColumns = "orderNo",childColumns = "selectedOrderNo", onDelete = ForeignKey.CASCADE, onUpdate = ForeignKey.CASCADE)
+//        @ForeignKey(entity = OrderModel.class,parentColumns = "orderNo",childColumns = "selectedOrderNo", onDelete = ForeignKey.CASCADE, onUpdate = ForeignKey.CASCADE)
         private String selectedOrderNo;
         private String itemName;
         private String materialNo;

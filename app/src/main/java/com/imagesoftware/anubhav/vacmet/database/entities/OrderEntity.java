@@ -15,13 +15,13 @@ import java.util.ArrayList;
 /**
  * Created by Anubhav-Singh on 12-01-2018.
  */
-@Entity(tableName = "vacmet_orders",indices = {@Index(value = "orderNo")})
+@Entity(tableName = "vacmet_orders")
 public class OrderEntity implements Serializable {
 
-
+        @PrimaryKey(autoGenerate = true)
+        private int orderId;
         private String partyName;
-        @PrimaryKey
-        @NonNull
+        @Nullable
         private String orderNo;
         @Nullable
         private String orderQty;
@@ -46,6 +46,14 @@ public class OrderEntity implements Serializable {
         private int isPending;
         @Ignore
         private ArrayList<ItemEntity> itemModelArrayList;
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
 
     public String getPartyName() {
         return partyName;

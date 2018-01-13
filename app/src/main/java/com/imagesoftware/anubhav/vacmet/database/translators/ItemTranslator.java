@@ -95,7 +95,7 @@ public class ItemTranslator {
             itemModel.setBillDate(itemEntity.getBillDate());
             itemModel.setBillNo(itemEntity.getBillNo());
             itemModel.setContainedOrderNo(itemEntity.getBillNo());
-            if(itemEntity.getContainedOrderNoList()!=null && itemEntity.getContainedOrderNoList().removeAll(null) && itemEntity.getContainedOrderNoList().size()>0) {
+            if(itemEntity.getContainedOrderNoList()!=null && itemEntity.getContainedOrderNoList().size()>0 && itemEntity.getContainedOrderNoList().size()>0) {
                 itemModel.setContainedOrderNoList(new ArrayList<String>(itemEntity.getContainedOrderNoList()));
             }
             itemModel.setContainerNo(itemEntity.getContainerNo());
