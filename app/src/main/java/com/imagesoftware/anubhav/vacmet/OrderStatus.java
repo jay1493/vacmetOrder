@@ -379,10 +379,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         String initialDespDt = orderModelList.get(pos).getDeliveryDate();
         String[] dt = initialDespDt.split(Pattern.quote("-"));
         final int yr = Integer.parseInt(dt[0]);
-        int mnth = Integer.parseInt(dt[1]);
+        int mnth = Integer.parseInt(dt[1])-1;
         int day = Integer.parseInt(dt[2]);
         cal.set(Calendar.DAY_OF_MONTH,day);
-        cal.set(Calendar.MONTH,mnth-1);
+        cal.set(Calendar.MONTH,mnth);
         cal.set(Calendar.YEAR,yr);
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,android.R.style.Theme_Holo_Dialog_NoActionBar ,new DatePickerDialog.OnDateSetListener() {
             @Override
