@@ -91,6 +91,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final int GOOGLE_SIGN_IN = 9090;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE = 9099;
     private static final int MY_PERMISSIONS_REQUEST_FINGERPRINT = 90192;
+    private static final String LOG_IN_MODE_IS_EXISTING_USER = "LOG_IN_MODE_IS_EXISTING_USER";
     private ImageView gifImageView, googleSignIn;
     private FrameLayout frameLayout;
     private LayoutInflater inflater;
@@ -313,6 +314,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         edit.putString(LoggedInUser, userEmail);
         edit.putString(LoggedInUserName, userName);
         edit.putString(LoggedInUserPassword, userPassword);
+        edit.putBoolean(LOG_IN_MODE_IS_EXISTING_USER, false);
         edit.apply();
         SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
         orderIdPrefsEdit.putString(SapId, userSapId);
@@ -371,10 +373,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
         if (foundUser && isAuthorized) {
             //User Found
+            boolean isExistingUser = false;
+            if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase(sharedprefs.getString(LoggedInUser, null))){
+                //User exists in record.
+                isExistingUser = true;
+            }
             SharedPreferences.Editor edit = sharedprefs.edit();
             edit.putString(LoggedInUser, etUserName_signIn.getText().toString().trim());
             edit.putString(LoggedInUserName, name);
             edit.putString(LoggedInUserPassword, etPassword_signIn.getText().toString().trim());
+            edit.putBoolean(LOG_IN_MODE_IS_EXISTING_USER, isExistingUser);
             edit.apply();
 
             SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
@@ -1012,6 +1020,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
              *
              *Just Sign In, as sharedPrefs would be saved already
              */
+            SharedPreferences.Editor edit = sharedprefs.edit();
+            edit.putBoolean(LOG_IN_MODE_IS_EXISTING_USER, true);
+            edit.apply();
             Intent intent = new Intent(LoginActivity.this, OrderStatus.class);
             startActivity(intent);
             finish();

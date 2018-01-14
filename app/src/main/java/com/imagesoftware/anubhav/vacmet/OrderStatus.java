@@ -265,6 +265,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String GET_DISPATCH_CODE = "get_dispatch";
     private final String SAP_CODE = "sap_key";
     private final String CLIENT_SERVER_CODE = "client_server_key";
+    private static final String LOG_IN_MODE_IS_EXISTING_USER = "LOG_IN_MODE_IS_EXISTING_USER";
+    private boolean replaceJobSchedulers;
 
     @Override
     protected void onStart() {
@@ -308,13 +310,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         vacmetDatabase =  Room.databaseBuilder(OrderStatus.this,VacmetDatabase.class,"vacmet_db").build();
        databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
-       if(connectionIsOnline()) {
-           /**
-            * Comment for now, as reloading is done via JobScheduler Service.
-            */
-//           new CustomDeleteOfflineTables().execute();
 
-       }
+        if(!logingSharePrefs.getBoolean(LOG_IN_MODE_IS_EXISTING_USER,false)){
+            new CustomDeleteOfflineTables().execute();
+            replaceJobSchedulers = true;
+        }
         initializeJobDispatcherService();
 
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
@@ -447,13 +447,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             jobExtras.putString(jobExtraKey,logingSharePrefs.getString(LoggedInUser, null));
             Job makeJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.user_access_job)).setService(UserAccessJobService.class)
                      .setExtras(jobExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
-                     .setReplaceCurrent(true).setTrigger(Trigger.executionWindow(7200,8400)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+                     .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(7200,8400)).setConstraints(Constraint.ON_ANY_NETWORK).build();
             Bundle networkExtras = new Bundle();
             networkExtras.putString(SAP_CODE,orderIdPrefs.getString(SapId, null));
             networkExtras.putString(CLIENT_SERVER_CODE,orderIdPrefs.getString(ClientorServer, null));
             Job networkJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.network_refersh_job)).setService(RefereshNetworkService.class)
                     .setExtras(networkExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
-                    .setReplaceCurrent(true).setTrigger(Trigger.executionWindow(86400,87000)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(86400,87000)).setConstraints(Constraint.ON_ANY_NETWORK).build();
             firebaseJobDispatcher.mustSchedule(makeJob);
             firebaseJobDispatcher.mustSchedule(networkJob);
 
