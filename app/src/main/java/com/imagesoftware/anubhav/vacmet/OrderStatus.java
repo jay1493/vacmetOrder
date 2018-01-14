@@ -76,6 +76,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.cooltechworks.views.shimmer.ShimmerRecyclerView;
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -201,7 +202,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final String ITEM_TREATMENT2_ = "TREATMENT2";
     private static final String ITEM_SHADES_ = "SHADES";
 
-    private RecyclerView recyclerView;
+    private ShimmerRecyclerView recyclerView;
     private ArrayList<OrderModel> orderModelList;
     private RecyclerviewAdapter recyclerViewAdapter;
     private NestedScrollView noSearchResultFound;
@@ -738,7 +739,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         ivCollapsingtoolbar = (ImageView) findViewById(R.id.ivCollapsingtoolbar);
-        recyclerView = (RecyclerView) findViewById(R.id.orderStatusList);
+        recyclerView = (ShimmerRecyclerView) findViewById(R.id.orderStatusList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         orderModelList = new ArrayList<>();
         recyclerViewAdapter = new RecyclerviewAdapter(this, orderModelList, new ItemClickListener() {
@@ -1248,7 +1249,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if (progressDialog != null && progressDialog.isShowing()) {
+            recyclerView.showShimmerAdapter();
+            /*if (progressDialog != null && progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
             if(connectionIsOnline()) {
@@ -1258,7 +1260,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.setCancelable(false);
-            progressDialog.show();
+            progressDialog.show();*/
         }
 
         @Override
@@ -1594,7 +1596,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         @Override
         protected void onPostExecute(List<OrderModel> s) {
             super.onPostExecute(s);
-            progressDialog.dismiss();
+//            progressDialog.dismiss();
+            recyclerView.hideShimmerAdapter();
             if (s.size() > 0) {
                 sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
                 for (OrderModel o : orderModelList) {
