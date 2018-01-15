@@ -30,8 +30,10 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private boolean isDispatched;
     private OpenPdfClicked openPdfClicked;
     private DeliveryDateChanged deliveryDateChangedListener;
+    private boolean isAdmin;
 
-    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf,DeliveryDateChanged deliveryDateChanged) {
+    public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf,DeliveryDateChanged deliveryDateChanged,
+                               boolean admin) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
@@ -40,6 +42,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         this.isDispatched = isDispatched;
         this.openPdfClicked = openPdf;
         this.deliveryDateChangedListener = deliveryDateChanged;
+        this.isAdmin = admin;
     }
 
     @Override
@@ -111,12 +114,16 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.orderNo.setText(list.get(position).getOrderNo());
                     holder.deliveryDate.setText(list.get(position).getDeliveryDate());
                     holder.deliveryDate.setVisibility(View.VISIBLE);
-                    holder.deliveryDate.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            deliveryDateChangedListener.onDateClickListenerCall(v,position);
-                        }
-                    });
+                    if(isAdmin) {
+                        holder.deliveryDate.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                deliveryDateChangedListener.onDateClickListenerCall(v, position);
+                            }
+                        });
+                    }else{
+                        holder.deliveryDate.setOnClickListener(null);
+                    }
 
                 }
                 break;

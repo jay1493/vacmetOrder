@@ -86,6 +86,15 @@ import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -147,6 +156,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -201,7 +211,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final String ITEM_TREATMENT1_ = "TREATMENT1";
     private static final String ITEM_TREATMENT2_ = "TREATMENT2";
     private static final String ITEM_SHADES_ = "SHADES";
-
+    private static final String ADMIN_ACCESS = "ADMIN_ACCESS";
     private ShimmerRecyclerView recyclerView;
     private ArrayList<OrderModel> orderModelList;
     private RecyclerviewAdapter recyclerViewAdapter;
@@ -268,6 +278,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String CLIENT_SERVER_CODE = "client_server_key";
     private static final String LOG_IN_MODE_IS_EXISTING_USER = "LOG_IN_MODE_IS_EXISTING_USER";
     private boolean replaceJobSchedulers;
+    private boolean isUserAdmin;
+    private DatabaseReference mReadDatabase;
+    private ValueEventListener valueEventListenerForOrders;
+    private FirebaseAuth firebaseAuth;
+    private DatabaseReference mWriteDatabase;
+    private FirebaseDatabase db;
+
 
     @Override
     protected void onStart() {
@@ -277,11 +294,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             ActionBar bar = getSupportActionBar();
             bar.setDisplayHomeAsUpEnabled(true);
         }
+        if(mReadDatabase !=null){
+            mReadDatabase.addValueEventListener(valueEventListenerForOrders);
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if(mReadDatabase !=null){
+            mReadDatabase.removeEventListener(valueEventListenerForOrders);
+        }
     }
 
     @Override
@@ -372,6 +395,79 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
 
+        if(logingSharePrefs.getBoolean(ADMIN_ACCESS,false)){
+            isUserAdmin = true;
+        }
+        setUpAuthenticationForWritingData();
+        setUpListenerForOrdersData();
+
+    }
+
+    private void setUpAuthenticationForWritingData() {
+        firebaseAuth = FirebaseAuth.getInstance();
+        if(firebaseAuth!=null){
+            firebaseAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if(task.isSuccessful()){
+                        FirebaseDatabase db = getFirebaseDatabaseInstance();
+                        if(db!=null) {
+                            mWriteDatabase = db.getReference("vacmet-44d24").child("orders");
+                        }
+                    }
+                }
+            });
+        }
+
+    }
+
+    private void setUpListenerForOrdersData() {
+        FirebaseDatabase db = getFirebaseDatabaseInstance();
+        if(db!=null) {
+            mReadDatabase = db.getReference("vacmet-44d24").child("orders");
+            if (mReadDatabase != null) {
+                valueEventListenerForOrders = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        new RefreshDatesInOrders().execute(dataSnapshot);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+            }
+        }
+    }
+
+    private FirebaseDatabase getFirebaseDatabaseInstance() {
+        if(db == null) {
+            db = FirebaseDatabase.getInstance();
+        }
+        return db;
+    }
+
+    class RefreshDatesInOrders extends AsyncTask<DataSnapshot,Void,Void>{
+
+        @Override
+        protected Void doInBackground(DataSnapshot... dataSnapshots) {
+            if(dataSnapshots[0]!=null) {
+                Map<String, Object> orders = (Map<String, Object>) dataSnapshots[0].getValue();
+                if (orders != null && orders.size() > 0) {
+                    List<OrderEntity> orderEntityList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null), 1);
+                    for (OrderEntity orderEntity : orderEntityList) {
+                        if (orders.get(orderEntity.getOrderNo())!=null){
+                            //Update current Order Entity.
+                            orderEntity.setDeliveryDate((String) orders.get(orderEntity.getOrderNo()));
+                            recyclerViewAdapter.notifyDataSetChanged();
+                            databaseRequestsDao.updateOrders(orderEntity);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     @Override
@@ -424,7 +520,21 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             int pos = integers[0];
             OrderEntity orderEntity = orderTranslator.translateModelToEntity(orderModelList.get(pos));
             orderEntity.setOrderId(orderModelList.get(pos).getOrderId());
+            final OrderEntity dummyOrder = orderEntity;
             databaseRequestsDao.updateOrders(orderEntity);
+            if(mWriteDatabase!=null){
+                mWriteDatabase.child(orderEntity.getOrderNo()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(dummyOrder.getDeliveryDate());
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
             return null;
         }
     }
@@ -502,6 +612,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(intent!=null && intent.getAction()!=null && (intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE") ||
                     intent.getAction().equals("android.net.wifi.WIFI_STATE_CHANGED"))){
                 if(connectionIsOnline()){
+                    setUpAuthenticationForWritingData();
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
                 }
             }
@@ -757,7 +868,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        },false, this,this);
+        },false, this,this,isUserAdmin);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
@@ -1250,6 +1361,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected void onPreExecute() {
             super.onPreExecute();
             recyclerView.showShimmerAdapter();
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             /*if (progressDialog != null && progressDialog.isShowing()) {
                 progressDialog.dismiss();
             }
@@ -1598,6 +1710,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             super.onPostExecute(s);
 //            progressDialog.dismiss();
             recyclerView.hideShimmerAdapter();
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             if (s.size() > 0) {
                 sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
                 for (OrderModel o : orderModelList) {
@@ -1629,7 +1742,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);

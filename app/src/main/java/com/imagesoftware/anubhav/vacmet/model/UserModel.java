@@ -14,9 +14,10 @@ public class UserModel {
     private String sapId;
     private String clientOrServer;
     private boolean isApproved;
+    private boolean isAdmin;
     private List<String> approvedPartyNames;
-    public UserModel(String userName, String userEmail, String userPass, String userContact , boolean approved,
-                     List<String> partyNames, String id, String cOrS) {
+    public UserModel(String userName, String userEmail, String userPass, String userContact, boolean approved,
+                     List<String> partyNames, String id, String cOrS, boolean adminRights) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPass = userPass;
@@ -25,6 +26,7 @@ public class UserModel {
         this.approvedPartyNames = partyNames;
         this.sapId = id;
         this.clientOrServer = cOrS;
+        this.isAdmin = adminRights;
     }
 
     public String getUserName() {
@@ -93,5 +95,13 @@ public class UserModel {
     public UserModel setClientOrServer(String clientOrServer) {
         this.clientOrServer = clientOrServer;
         return this;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean isAdmin) {
+       this.isAdmin = isAdmin;
     }
 }

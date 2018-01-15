@@ -88,10 +88,14 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener, FingerprintHandler.FingerPrintCallback {
+    static {
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+    }
     private static final int GOOGLE_SIGN_IN = 9090;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE = 9099;
     private static final int MY_PERMISSIONS_REQUEST_FINGERPRINT = 90192;
     private static final String LOG_IN_MODE_IS_EXISTING_USER = "LOG_IN_MODE_IS_EXISTING_USER";
+    private static final String ADMIN_ACCESS = "ADMIN_ACCESS";
     private ImageView gifImageView, googleSignIn;
     private FrameLayout frameLayout;
     private LayoutInflater inflater;
@@ -155,6 +159,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Cipher cipher;
     private static final String KEY_NAME = "PerfectSoftware";
     private TextView tv_switch_password_mode;
+    private boolean adminAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -217,7 +222,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if (behaviour.equalsIgnoreCase("SignUp")) {
 
 //                String primaryKey = mDatabase.push().getKey();
-                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer);
+                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer,false);
 
                 mDatabase.child(userEmail.replace(".", getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -365,7 +370,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (((boolean) user.get("approved"))) {
                     isAuthorized = true;
                 }
-
+                if(user.get("isAdmin")!=null) {
+                    adminAccess = ((boolean) user.get("isAdmin"));
+                }else if(user.get("admin")!=null){
+                    adminAccess = ((boolean) user.get("admin"));
+                }
                 name = ((String) user.get("userName"));
                 userSapId = ((String) user.get("sapId"));
                 userClientOrServer = ((String) user.get("clientOrServer"));
@@ -383,6 +392,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             edit.putString(LoggedInUserName, name);
             edit.putString(LoggedInUserPassword, etPassword_signIn.getText().toString().trim());
             edit.putBoolean(LOG_IN_MODE_IS_EXISTING_USER, isExistingUser);
+            edit.putBoolean(ADMIN_ACCESS,adminAccess);
             edit.apply();
 
             SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
@@ -770,6 +780,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           sendSms();
                       }else{
                           SmsManager smsManager = SmsManager.getDefault();
+                          //Todo: Problem when sim is at Always Ask
                           PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
                           smsManager.sendTextMessage(etContact_signUp.getText().toString().trim(), null , otpGeneratedValue, null, pendingIntent);
 
