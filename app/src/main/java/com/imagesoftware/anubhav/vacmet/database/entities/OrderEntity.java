@@ -44,6 +44,10 @@ public class OrderEntity implements Serializable {
         @Nullable
         private String invoiceDate;
         private int isPending;
+
+        @Nullable
+        private String adminNotes;
+
         @Ignore
         private ArrayList<ItemEntity> itemModelArrayList;
 
@@ -161,6 +165,15 @@ public class OrderEntity implements Serializable {
 
     public ArrayList<ItemEntity> getItemModelArrayList() {
         return itemModelArrayList;
+    }
+
+    @Nullable
+    public String getAdminNotes() {
+        return adminNotes;
+    }
+
+    public void setAdminNotes(@Nullable String adminNotes) {
+        this.adminNotes = adminNotes;
     }
 
     public void setItemModelArrayList(ArrayList<ItemEntity> itemModelArrayList) {

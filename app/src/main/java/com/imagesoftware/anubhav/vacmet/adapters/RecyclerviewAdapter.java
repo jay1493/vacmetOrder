@@ -3,6 +3,7 @@ package com.imagesoftware.anubhav.vacmet.adapters;
 import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,10 +31,11 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private boolean isDispatched;
     private OpenPdfClicked openPdfClicked;
     private DeliveryDateChanged deliveryDateChangedListener;
+    private RemarkEntered remarkEntered;
     private boolean isAdmin;
 
     public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf,DeliveryDateChanged deliveryDateChanged,
-                               boolean admin) {
+                               boolean admin, RemarkEntered remarkEnteredListener) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
@@ -43,6 +45,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         this.openPdfClicked = openPdf;
         this.deliveryDateChangedListener = deliveryDateChanged;
         this.isAdmin = admin;
+        this.remarkEntered = remarkEnteredListener;
     }
 
     @Override
@@ -100,6 +103,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.txtOrderDateHeading.setText(context.getResources().getString(R.string.invoice_date));
                     holder.deliveryDate.setVisibility(View.GONE);
                     holder.deliveryDate.setOnClickListener(null);
+                    holder.llAdminNotes.setOnClickListener(null);
+                    holder.llAdminNotes.setVisibility(View.GONE);
                     holder.openPdf.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -112,8 +117,35 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.orderDate.setText(list.get(position).getOrderDate());
                     holder.txtOrderDateHeading.setText(context.getResources().getString(R.string.Order_Date));
                     holder.orderNo.setText(list.get(position).getOrderNo());
-                    holder.deliveryDate.setText(list.get(position).getDeliveryDate());
-                    holder.deliveryDate.setVisibility(View.VISIBLE);
+                    if(!isAdmin) {
+                        if (!TextUtils.isEmpty(list.get(position).getAdminNotes())) {
+                            holder.llAdminNotes.setVisibility(View.VISIBLE);
+                            holder.txtAdminNotes.setText("Remarks from Admin: " + list.get(position).getAdminNotes());
+                            holder.txtAdminNotes.setSelected(true);
+                        } else {
+                            holder.llAdminNotes.setVisibility(View.GONE);
+                        }
+                    }else{
+                        holder.llAdminNotes.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                remarkEntered.onRemarkEnteredFromRecylerItem(view,position);
+                            }
+                        });
+                        holder.llAdminNotes.setVisibility(View.VISIBLE);
+                        if (!TextUtils.isEmpty(list.get(position).getAdminNotes())) {
+                            holder.txtAdminNotes.setText("Remarks: " + list.get(position).getAdminNotes());
+                            holder.txtAdminNotes.setSelected(true);
+                        }else{
+                            holder.txtAdminNotes.setText("Enter Remarks ");
+                        }
+                    }
+                    if(!TextUtils.isEmpty(list.get(position).getDeliveryDate())) {
+                        holder.deliveryDate.setText(list.get(position).getDeliveryDate());
+                        holder.deliveryDate.setVisibility(View.VISIBLE);
+                    }else{
+                        holder.deliveryDate.setVisibility(View.GONE);
+                    }
                     if(isAdmin) {
                         holder.deliveryDate.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -121,6 +153,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 deliveryDateChangedListener.onDateClickListenerCall(v, position);
                             }
                         });
+                        holder.deliveryDate.setVisibility(View.VISIBLE);
+                        if(!TextUtils.isEmpty(list.get(position).getDeliveryDate())) {
+                            holder.deliveryDate.setText(list.get(position).getDeliveryDate());
+                        }else{
+                            holder.deliveryDate.setText(context.getResources().getString(R.string.estimate_delivery_date));
+                        }
                     }else{
                         holder.deliveryDate.setOnClickListener(null);
                     }
@@ -143,6 +181,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     public class Viewholder extends RecyclerView.ViewHolder implements View.OnClickListener {
         LinearLayout llOrderDate;
         LinearLayout llMain;
+        LinearLayout llAdminNotes;
         TextView partyName ;
         TextView orderNo;
         TextView orderDate;
@@ -154,12 +193,15 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         LinearLayout llInvoice;
         LinearLayout llOrderNo;
         TextView txtInvoice;
+        TextView txtAdminNotes;
         ImageView openPdf;
+
         public Viewholder(View itemView, int viewType) {
             super(itemView);
             switch (viewType){
                 case 0:
                     llMain = (LinearLayout) itemView.findViewById(R.id.ll_orderStatus);
+                    llAdminNotes = (LinearLayout) itemView.findViewById(R.id.ll_adminNotes);
                     partyName = (TextView) itemView.findViewById(R.id.partyName);
                     txtOrderDateHeading = (TextView) itemView.findViewById(R.id.tvOrderDateHeading);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
@@ -171,6 +213,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llInvoice = (LinearLayout) itemView.findViewById(R.id.ll_invoiceNo);
                     llOrderNo = (LinearLayout) itemView.findViewById(R.id.ll_OrderNo);
                     txtInvoice = (TextView) itemView.findViewById(R.id.tvInvoiceNo);
+                    txtAdminNotes = (TextView) itemView.findViewById(R.id.tv_adminNotes);
                     openPdf = (ImageView) itemView.findViewById(R.id.open_invoice_pdf);
                     itemView.setOnClickListener(this);
                     break;
@@ -192,5 +235,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     }
     public interface DeliveryDateChanged{
         void onDateClickListenerCall(View view, int pos);
+    }
+    public interface RemarkEntered{
+        void onRemarkEnteredFromRecylerItem(View view,int pos);
     }
 }

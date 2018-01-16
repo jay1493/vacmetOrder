@@ -116,4 +116,12 @@
     <string name="user_access_job">user_access_job</string>
     <string name="user_offline_match">User not matches with the saved user profile.</string>
     <string name="network_refersh_job">network_refersh_job</string>
+    <string name="database_error_msg_for_alert">Database Error!, Please Try Again with correct details, or contact Admins</string>
+    <string name="network_error_msg_alert">Authentication to Server Failed! Please Try Again</string>
+    <string name="lets_try_again">Let\'s Try Again!!</string>
+    <string name="input_remarks">Enter Remarks</string>
+    <string name="save_remark">Save Remark</string>
+    <string name="dismiss_remark">Dismiss Remark</string>
+    <string name="estimate_delivery_date">Estimated Delivery Date</string>
+    <string name="remark_hint">Input Remark Here</string>
 </resources>

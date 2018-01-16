@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -27,6 +28,7 @@ import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -50,6 +52,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.crashlytics.android.Crashlytics;
 import com.imagesoftware.anubhav.vacmet.emailSending.GmailSender;
 import com.imagesoftware.anubhav.vacmet.model.UserModel;
 import com.imagesoftware.anubhav.vacmet.utils.FingerprintHandler;
@@ -69,6 +72,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import io.fabric.sdk.android.Fabric;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -160,12 +164,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final String KEY_NAME = "PerfectSoftware";
     private TextView tv_switch_password_mode;
     private boolean adminAccess;
+    private AlertDialog.Builder alertDialogBuilderForAuthFail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_login);
         activity = this;
+        initializeAlerts();
         initializeFirebaseAuth();
         init();
         random = new Random();
@@ -194,6 +201,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions).build();
 
 
+    }
+
+    private void initializeAlerts() {
+       alertDialogBuilderForAuthFail = new AlertDialog.Builder(LoginActivity.this).setCancelable(false)
+                .setIcon(getResources().getDrawable(R.drawable.vac_small)).setMessage(R.string.network_error_msg_alert).
+                        setPositiveButton(R.string.lets_try_again, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                frameLayout.removeAllViewsInLayout();
+                                login_btns.setVisibility(View.VISIBLE);
+                                btnSignIn.setVisibility(View.VISIBLE);
+                                btnSignUp.setVisibility(View.VISIBLE);
+                                dialogInterface.dismiss();
+                            }
+                        }).setNegativeButton("",null);
     }
 
     private void initializeFirebaseAuth() {
@@ -246,7 +268,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                       alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+                       alertDialogBuilderForAuthFail.show();
                     }
                 });
 
@@ -275,7 +298,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Toast.makeText(activity, "There seems a problem in connecting...Try again!!", Toast.LENGTH_SHORT).show();
+                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+                        alertDialogBuilderForAuthFail.show();
 
                     }
                 });
@@ -289,7 +313,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+                        alertDialogBuilderForAuthFail.show();
                     }
                 });
 
@@ -297,7 +322,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         } else {
             //Not SignedIn
-            Toast.makeText(activity, "User not connected to server...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "User not connected to server...Login Again!!", Toast.LENGTH_SHORT).show();
         }
         if (isAuthRequired) {
             if (progressDialog != null && progressDialog.isShowing()) {
@@ -399,7 +424,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             orderIdPrefsEdit.putString(SapId, userSapId);
             orderIdPrefsEdit.putString(ClientorServer, userClientOrServer);
             orderIdPrefsEdit.apply();
-//            Toast.makeText(activity, "Yipee, you're through...", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(LoginActivity.this, OrderStatus.class);
             startActivity(intent);
             finish();
@@ -932,50 +956,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       }
                   }
               }
-      /*        if(etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet") &&
-                      etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
-                  frameLayout.removeAllViewsInLayout();
-                  View view_otp = inflater.inflate(R.layout.activity_otp,null,false);
-                  view_otp.findViewById(R.id.approved_user_layout).setVisibility(View.GONE);
-                  view_otp.findViewById(R.id.otp_layout).setVisibility(View.GONE);
-                  view_otp.findViewById(R.id.loader_layout).setVisibility(View.VISIBLE);
-                  frameLayout.addView(view_otp);
-                  bottomSheetBehavior.setHideable(false);
-                  bottomSheetBehavior.setBottomSheetCallback(null);
-                  bottomSheetBehavior.setSkipCollapsed(false);
-                  bottomSheetBehavior.setPeekHeight(500);
-                  ((ImageView)findViewById(R.id.loader)).setBackgroundResource(R.drawable.frames_1);
-                  final AnimationDrawable animationDrawable = (AnimationDrawable) ((ImageView)findViewById(R.id.loader)).getBackground();
-                  animationDrawable.start();
-                  Handler handler = new Handler();
-                  handler.postDelayed(new Runnable() {
-                      @Override
-                      public void run() {
-                          animationDrawable.stop();
-                          findViewById(R.id.loader_layout).setVisibility(View.GONE);
-                          findViewById(R.id.approved_user_layout).setVisibility(View.VISIBLE);
-                      }
-                  },2000);
-                  handler.postDelayed(new Runnable() {
-                      @Override
-                      public void run() {
-                          Intent intent = new Intent(LoginActivity.this,OrderStatus.class);
-                          startActivity(intent);
-                          finish();
-                      }
-                  },5000);
-              }else{
-                  if(!etUserName_signIn.getText().toString().trim().equalsIgnoreCase("vacmet")){
-                      etUserName_signIn.requestFocus();
-                      etUserName_signIn.setError(getResources().getString(R.string.username_not_correct),getResources().getDrawable(R.drawable.error_24dp));
-                      return;
-                  }else if(!etPassword_signIn.getText().toString().trim().equalsIgnoreCase("qwerty12")){
-                      etPassword_signIn.requestFocus();
-                      etPassword_signIn.setError(getResources().getString(R.string.password_not_correct),getResources().getDrawable(R.drawable.error_24dp));
-                      return;
-                  }
-
-              }*/
 
               break;
           case R.id.activity_login:
@@ -1012,9 +992,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 public void onComplete(@NonNull Task<AuthResult> task) {
 
                     if (!task.isSuccessful()) {
-                        Log.e("LoginActivity", "signInAnonymously", task.getException());
-                        Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show();
+                        Log.d("LoginActivity", "signInAnonymously", task.getException());
+                        alertDialogBuilderForAuthFail.show();
+
                     } else if (task.isSuccessful()) {
                         if (isAuthRequired) {
                             updateUI(task.getResult().getUser(), true);
@@ -1285,7 +1265,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(activity, "The Connection could not be established! Please Try Again...", Toast.LENGTH_SHORT).show();
+        alertDialogBuilderForAuthFail.show();
     }
 
     @Override

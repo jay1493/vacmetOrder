@@ -9,6 +9,7 @@ import android.arch.persistence.room.Room;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -40,6 +41,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -113,6 +115,7 @@ import com.imagesoftware.anubhav.vacmet.database.entities.OrderEntity;
 import com.imagesoftware.anubhav.vacmet.database.translators.ItemTranslator;
 import com.imagesoftware.anubhav.vacmet.database.translators.OrderTranslator;
 import com.imagesoftware.anubhav.vacmet.interfaces.ItemClickListener;
+import com.imagesoftware.anubhav.vacmet.model.AdminModel;
 import com.imagesoftware.anubhav.vacmet.model.InvoiceTo;
 import com.imagesoftware.anubhav.vacmet.model.ItemModel;
 import com.imagesoftware.anubhav.vacmet.model.OrderContainer;
@@ -157,6 +160,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -168,7 +172,7 @@ import javax.net.ssl.X509TrustManager;
  * Created by anubhav on 23/1/17.
  */
 
-public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked,RecyclerviewAdapter.DeliveryDateChanged {
+public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked,RecyclerviewAdapter.DeliveryDateChanged,RecyclerviewAdapter.RemarkEntered {
 
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
@@ -284,6 +288,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private FirebaseAuth firebaseAuth;
     private DatabaseReference mWriteDatabase;
     private FirebaseDatabase db;
+    private AlertDialog.Builder alertBuilderForRemarksInput;
 
 
     @Override
@@ -340,7 +345,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             replaceJobSchedulers = true;
         }
         initializeJobDispatcherService();
-
+        setUpAuthenticationForWritingData();
+        setUpListenerForOrdersData();
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
 
         setSupportActionBar(toolbar);
@@ -398,8 +404,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if(logingSharePrefs.getBoolean(ADMIN_ACCESS,false)){
             isUserAdmin = true;
         }
-        setUpAuthenticationForWritingData();
-        setUpListenerForOrdersData();
+        if(!isUserAdmin){
+            adminConsole.setVisibility(View.GONE);
+        }else{
+            adminConsole.setVisibility(View.VISIBLE);
+        }
+
 
     }
 
@@ -448,23 +458,73 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         return db;
     }
 
+    @Override
+    public void onRemarkEnteredFromRecylerItem(View view, int pos) {
+       initializeRemarkDialog(view,pos);
+    }
+
     class RefreshDatesInOrders extends AsyncTask<DataSnapshot,Void,Void>{
 
         @Override
         protected Void doInBackground(DataSnapshot... dataSnapshots) {
             if(dataSnapshots[0]!=null) {
-                Map<String, Object> orders = (Map<String, Object>) dataSnapshots[0].getValue();
-                if (orders != null && orders.size() > 0) {
-                    List<OrderEntity> orderEntityList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null), 1);
-                    for (OrderEntity orderEntity : orderEntityList) {
-                        if (orders.get(orderEntity.getOrderNo())!=null){
-                            //Update current Order Entity.
-                            orderEntity.setDeliveryDate((String) orders.get(orderEntity.getOrderNo()));
-                            recyclerViewAdapter.notifyDataSetChanged();
-                            databaseRequestsDao.updateOrders(orderEntity);
+                DataSnapshot matchedData = null;
+
+                    if(openOrdersRadio.isChecked()) {
+                        /*List<OrderEntity> orderEntityList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null), 1);
+                        if (orderEntityList != null) {
+                            OrderEntity matchedEntity = null;
+                            for (OrderEntity orderEntity : orderEntityList) {
+                                for (DataSnapshot dataSnapshot : dataSnapshots[0].getChildren()) {
+                                    if (dataSnapshot.getKey().equalsIgnoreCase(orderEntity.getOrderNo())) {
+                                        matchedData = dataSnapshot;
+                                        matchedEntity = orderEntity;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (matchedData != null) {
+                                AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
+                                matchedEntity.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
+                                matchedEntity.setAdminNotes(fetchedAdminModel.getAdminNote());
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        recyclerViewAdapter.notifyDataSetChanged();
+                                    }
+                                });
+
+                                databaseRequestsDao.updateOrders(matchedEntity);
+                            }
+                        }else*/
+                        if(orderModelList!=null && orderModelList.size()>0){
+                            OrderModel matchedOrderModel = null;
+                            for (OrderModel orderModel : orderModelList) {
+                                for (DataSnapshot dataSnapshot : dataSnapshots[0].getChildren()) {
+                                    if (dataSnapshot.getKey().equalsIgnoreCase(orderModel.getOrderNo())) {
+                                        matchedData = dataSnapshot;
+                                        matchedOrderModel = orderModel;
+                                        if (matchedData != null) {
+                                            AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
+                                            matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
+                                            matchedOrderModel.setAdminNotes(fetchedAdminModel.getAdminNote());
+                                            OrderEntity updateEntity = orderTranslator.translateModelToEntity(matchedOrderModel);
+
+                                            databaseRequestsDao.updateOrders(updateEntity);
+                                        }
+                                    }
+                                }
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    recyclerViewAdapter.notifyDataSetChanged();
+                                }
+                            });
+
                         }
                     }
-                }
             }
             return null;
         }
@@ -477,13 +537,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
          */
         Calendar cal = Calendar.getInstance();
         String initialDespDt = orderModelList.get(pos).getDeliveryDate();
-        String[] dt = initialDespDt.split(Pattern.quote("-"));
-        final int yr = Integer.parseInt(dt[0]);
-        int mnth = Integer.parseInt(dt[1])-1;
-        int day = Integer.parseInt(dt[2]);
-        cal.set(Calendar.DAY_OF_MONTH,day);
-        cal.set(Calendar.MONTH,mnth);
-        cal.set(Calendar.YEAR,yr);
+        int yr = cal.get(Calendar.YEAR);
+        int mnth = cal.get(Calendar.MONTH);
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        if(!TextUtils.isEmpty(orderModelList.get(pos).getDeliveryDate())) {
+            String[] dt = initialDespDt.split(Pattern.quote("-"));
+            yr = Integer.parseInt(dt[0]);
+            mnth = Integer.parseInt(dt[1]) - 1;
+            day = Integer.parseInt(dt[2]);
+            cal.set(Calendar.DAY_OF_MONTH, day);
+            cal.set(Calendar.MONTH, mnth);
+            cal.set(Calendar.YEAR, yr);
+        }
         DatePickerDialog datePickerDialog = new DatePickerDialog(this,android.R.style.Theme_Holo_Dialog_NoActionBar ,new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -526,7 +591,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 mWriteDatabase.child(orderEntity.getOrderNo()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(dummyOrder.getDeliveryDate());
+                        AdminModel adminModel = new AdminModel();
+                        adminModel.setDeliveryDate(dummyOrder.getDeliveryDate());
+                        adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
                     }
 
                     @Override
@@ -650,9 +718,6 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         openOrdersRadio = (RadioButton) findViewById(R.id.radioOpenOrders);
         closedOrdersRadio = (RadioButton) findViewById(R.id.radioClosedOrders);
-        if (!BuildConfig.DEBUG) {
-            adminConsole.setVisibility(View.GONE);
-        }
 
         openOrdersRadio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -868,9 +933,39 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        },false, this,this,isUserAdmin);
+        },false, this,this,isUserAdmin,this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
+    }
+
+    private void initializeRemarkDialog(final View view,final int pos) {
+        alertBuilderForRemarksInput = new AlertDialog.Builder(this);
+        final EditText editForDialog = new EditText(this);
+        editForDialog.setTextColor(getResources().getColor(R.color.black));
+        editForDialog.setHint(R.string.remark_hint);
+        alertBuilderForRemarksInput.setView(editForDialog);
+        alertBuilderForRemarksInput.setCancelable(false)
+                .setIcon(getResources().getDrawable(R.drawable.vac_small)).setMessage(R.string.input_remarks).
+                setPositiveButton(R.string.save_remark, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        orderModelList.get(pos).setAdminNotes(editForDialog.getText().toString().trim());
+                        TextView delDt = (TextView)(view.findViewById(R.id.tv_adminNotes));
+                        if(!TextUtils.isEmpty(editForDialog.getText().toString().trim())) {
+                            delDt.setText(editForDialog.getText().toString().trim());
+                        }else{
+                            delDt.setText("Enter Remarks ");
+                        }
+                        updateOrder(pos);
+                        dialogInterface.dismiss();
+                    }
+                }).setNegativeButton("Dismiss Remark", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertBuilderForRemarksInput.show();
     }
 /*
     private void feedDummyData() {
@@ -1357,6 +1452,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private class CustomAsyncTaskForRestOrderService extends AsyncTask<String, Void, List<OrderModel>> {
         String orderType = null;
         List<OrderEntity> anySavedOrders = null;
+        boolean isFirebaseRefereshNeeded = false;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -1388,6 +1484,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
             anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
             if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0))) {
+                if(orderType.equalsIgnoreCase(GET_PENDING_CODE)) {
+                    isFirebaseRefereshNeeded = true;
+                }
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
                     httpURLConnection.setRequestMethod("GET");
@@ -1517,7 +1616,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         break;
                                     case DOC_DATE:
                                         if (orderModel != null && !saveItemInOrder) {
-                                            orderModel.setDeliveryDate(xmlPullParser.nextText());
+                                            /**
+                                             * Currently not saving this date from service, we will be notified by firebase
+                                             */
+//                                            orderModel.setDeliveryDate(xmlPullParser.nextText());
                                         } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                             itemModel.setDeliveryDate(xmlPullParser.nextText());
                                         }
@@ -1680,7 +1782,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                 }*/
                   if(orderModelList!=null && orderModelList.size()>0){
-                      saveInVacmetDatabase(orderModelList);
+                      saveInVacmetDatabase(orderModelList,isFirebaseRefereshNeeded);
                   }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
@@ -1742,7 +1844,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);
@@ -1809,7 +1911,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     }
 
-    private void saveInVacmetDatabase(ArrayList<OrderModel> orderModelList) {
+    private void saveInVacmetDatabase(ArrayList<OrderModel> orderModelList, boolean isFirebaseRefereshNeeded) {
+        if(isFirebaseRefereshNeeded){
+
+        }
 
         List<OrderEntity> orderEntityList = new ArrayList<>();
          for(OrderModel orderModel : orderModelList){

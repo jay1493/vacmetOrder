@@ -36,6 +36,7 @@ public class OrderModel implements Serializable {
     private String invoiceNo;
     private String invoiceDate;
     private int isPending;
+    private String adminNotes;
     @Ignore
     private ArrayList<ItemModel> itemModelArrayList;
 
@@ -224,6 +225,14 @@ public class OrderModel implements Serializable {
         }else{
             this.isPending = 0;
         }
+    }
+
+    public String getAdminNotes() {
+        return adminNotes;
+    }
+
+    public void setAdminNotes(String adminNotes) {
+        this.adminNotes = adminNotes;
     }
 
     @Override
