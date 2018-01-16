@@ -30,7 +30,7 @@
     <string name="Order_Date">"Order Date: "</string>
     <string name="Order_Qty">Order Qty:</string>
     <string name="Order_Desp_Qty">Desp. Qty:</string>
-    <string name="No_result_found">No Results found for your search query.</string>
+    <string name="No_result_found">No Results found for your search query, Swipe Up to Try Again.</string>
     <string name="order_status">Order Status</string>
     <string name="party_name">"Party Name: "</string>
     <string name="Delivery_Date">"Delivery Date: "</string>
