@@ -165,6 +165,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private TextView tv_switch_password_mode;
     private boolean adminAccess;
     private AlertDialog alertDialogBuilderForAuthFail;
+    private TextView textViewForAlertBuilder;
+    private AlertDialog.Builder alertBuilder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -204,8 +206,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initializeAlerts() {
-       AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this).setCancelable(false)
-                .setIcon(getResources().getDrawable(R.drawable.vac_small)).setMessage(R.string.network_error_msg_alert).
+       textViewForAlertBuilder = new TextView(this);
+       textViewForAlertBuilder.setTextColor(getResources().getColor(R.color.black));
+       textViewForAlertBuilder.setCompoundDrawables(getResources().getDrawable(R.drawable.vac_small),null,null,null);
+       textViewForAlertBuilder.setPadding((int)getResources().getDimension(R.dimen.d5),(int)getResources().getDimension(R.dimen.d5),(int)getResources().getDimension(R.dimen.d5),(int)getResources().getDimension(R.dimen.d5));
+       textViewForAlertBuilder.setText(R.string.network_error_msg_alert);
+       alertBuilder = new AlertDialog.Builder(LoginActivity.this).setCancelable(false)
+                .setIcon(getResources().getDrawable(R.drawable.vac_small)).setView(textViewForAlertBuilder).
                         setPositiveButton(R.string.lets_try_again, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -216,7 +223,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 dialogInterface.dismiss();
                             }
                         }).setNegativeButton("",null);
-        alertDialogBuilderForAuthFail = builder.create();
+        alertDialogBuilderForAuthFail = alertBuilder.create();
     }
 
     private void initializeFirebaseAuth() {
@@ -270,6 +277,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 //                       alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+                       textViewForAlertBuilder.setText(R.string.database_error_msg_for_alert);
+                       alertDialogBuilderForAuthFail = alertBuilder.create();
                        alertDialogBuilderForAuthFail.show();
                     }
                 });
@@ -300,6 +309,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 //                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+                        textViewForAlertBuilder.setText(R.string.database_error_msg_for_alert);
+                        alertDialogBuilderForAuthFail = alertBuilder.create();
                         alertDialogBuilderForAuthFail.show();
 
                     }
@@ -315,6 +326,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 //                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+                        textViewForAlertBuilder.setText(R.string.database_error_msg_for_alert);
+                        alertDialogBuilderForAuthFail = alertBuilder.create();
                         alertDialogBuilderForAuthFail.show();
                     }
                 });
@@ -768,7 +781,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                       !etReEnterPass_signUp.getText().toString().trim().equalsIgnoreCase("")&&
                       !etContact_signUp.getText().toString().trim().equalsIgnoreCase("")&&
                       !etSapId.getText().toString().trim().equalsIgnoreCase("")&&
-                      etPassword_signUp.getText().toString().trim().equals(etReEnterPass_signUp.getText().toString().trim())){
+                      etPassword_signUp.getText().toString().trim().equals(etReEnterPass_signUp.getText().toString().trim()) && connectionIsOnline()){
                   animation.cancel();
                   frameLayout.removeAllViewsInLayout();
                   userName = etFirstName_signUp.getText().toString().trim()+" "+etLastName_signUp.getText().toString().trim();
@@ -836,11 +849,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                               }
                           }else{
                               Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+                              textViewForAlertBuilder.setText(R.string.network_error_msg_alert);
+                              alertDialogBuilderForAuthFail = alertBuilder.create();
                               alertDialogBuilderForAuthFail.show();
 
                           }
                       }
                   }
+              }if(!connectionIsOnline()){
+              textViewForAlertBuilder.setText(R.string.network_error_msg_alert);
+              alertDialogBuilderForAuthFail = alertBuilder.create();
+                alertDialogBuilderForAuthFail.show();
               }if(etFirstName_signUp.getText().toString().trim().equalsIgnoreCase("")){
                   etFirstName_signUp.setHintTextColor(Color.RED);
               }if(etLastName_signUp.getText().toString().trim().equalsIgnoreCase("")){
@@ -955,6 +974,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           }else{
                               etUserName_signIn.setError(getString(R.string.user_offline_match));
                           }
+                      }else{
+                          textViewForAlertBuilder.setText(R.string.first_time_offline_logine_msg);
+                          alertDialogBuilderForAuthFail = alertBuilder.create();
+                          alertDialogBuilderForAuthFail.show();
                       }
                   }
               }
@@ -995,6 +1018,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     if (!task.isSuccessful()) {
                         Log.d("LoginActivity", "signInAnonymously", task.getException());
+                        textViewForAlertBuilder.setText(R.string.network_error_msg_alert);
+                        alertDialogBuilderForAuthFail = alertBuilder.create();
                         alertDialogBuilderForAuthFail.show();
 
                     } else if (task.isSuccessful()) {
@@ -1269,6 +1294,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        textViewForAlertBuilder.setText(R.string.network_error_msg_alert);
+        alertDialogBuilderForAuthFail = alertBuilder.create();
         alertDialogBuilderForAuthFail.show();
     }
 

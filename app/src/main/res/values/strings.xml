@@ -124,4 +124,5 @@
     <string name="dismiss_remark">Dismiss Remark</string>
     <string name="estimate_delivery_date">Estimated Delivery Date</string>
     <string name="remark_hint">Input Remark Here</string>
+    <string name="first_time_offline_logine_msg">Oops! we could\'nt find you while you are offline!, please login once to access application offline features!</string>
 </resources>
