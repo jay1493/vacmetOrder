@@ -164,7 +164,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final String KEY_NAME = "PerfectSoftware";
     private TextView tv_switch_password_mode;
     private boolean adminAccess;
-    private AlertDialog.Builder alertDialogBuilderForAuthFail;
+    private AlertDialog alertDialogBuilderForAuthFail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -204,7 +204,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initializeAlerts() {
-       alertDialogBuilderForAuthFail = new AlertDialog.Builder(LoginActivity.this).setCancelable(false)
+       AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this).setCancelable(false)
                 .setIcon(getResources().getDrawable(R.drawable.vac_small)).setMessage(R.string.network_error_msg_alert).
                         setPositiveButton(R.string.lets_try_again, new DialogInterface.OnClickListener() {
                             @Override
@@ -216,6 +216,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                 dialogInterface.dismiss();
                             }
                         }).setNegativeButton("",null);
+        alertDialogBuilderForAuthFail = builder.create();
     }
 
     private void initializeFirebaseAuth() {
@@ -268,7 +269,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                       alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+//                       alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
                        alertDialogBuilderForAuthFail.show();
                     }
                 });
@@ -298,7 +299,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+//                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
                         alertDialogBuilderForAuthFail.show();
 
                     }
@@ -313,7 +314,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
+//                        alertDialogBuilderForAuthFail.setMessage(R.string.database_error_msg_for_alert);
                         alertDialogBuilderForAuthFail.show();
                     }
                 });
@@ -835,6 +836,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                               }
                           }else{
                               Toast.makeText(activity, "Please check your mobile-network/wifi, and try again...", Toast.LENGTH_SHORT).show();
+                              alertDialogBuilderForAuthFail.show();
 
                           }
                       }
@@ -1093,10 +1095,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @TargetApi(23)
     private void sendSms() {
         if (checkSelfPermission(android.Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (shouldShowRequestPermissionRationale(android.Manifest.permission.SEND_SMS)) {
             } else {
-                requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
+                requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
         }else{
@@ -1110,10 +1113,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @TargetApi(23)
     private void sendSmsToAdmin() {
         if (checkSelfPermission(android.Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (shouldShowRequestPermissionRationale(android.Manifest.permission.SEND_SMS)) {
             } else {
-                requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
+                requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
         }else{
@@ -1129,12 +1133,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_SEND_SMS: {
                 if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     SmsManager smsManager = SmsManager.getDefault();
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
                     smsManager.sendTextMessage(etContact_signUp.getText().toString().trim(), null , otpGeneratedValue, null, pendingIntent);
                 } else {
-                    requestPermissions(new String[]{android.Manifest.permission.SEND_SMS},
+                    requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
                             MY_PERMISSIONS_REQUEST_SEND_SMS);
                 }
             }
