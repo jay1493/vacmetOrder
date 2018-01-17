@@ -1251,7 +1251,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStart() {
         super.onStart();
         if(connectionIsOnline()) {
-            firebaseAuth.addAuthStateListener(authStateListener);
+            if(firebaseAuth!=null) {
+                firebaseAuth.addAuthStateListener(authStateListener);
+            }
         }
 
     }
@@ -1261,7 +1263,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onStop();
         unregisterReceiver(smsDeliverBroadcast);
         if(connectionIsOnline()) {
-            firebaseAuth.removeAuthStateListener(authStateListener);
+            if(firebaseAuth!=null) {
+                firebaseAuth.removeAuthStateListener(authStateListener);
+            }
         }
 
     }
