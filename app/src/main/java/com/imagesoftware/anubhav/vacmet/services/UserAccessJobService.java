@@ -70,6 +70,7 @@ public class UserAccessJobService extends JobService {
             final String final_user = user_email;
             firebaseAuth = FirebaseAuth.getInstance();
             mDatabase = FirebaseDatabase.getInstance().getReference("users");
+            finalJobParams = initialJobParams;
             mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {

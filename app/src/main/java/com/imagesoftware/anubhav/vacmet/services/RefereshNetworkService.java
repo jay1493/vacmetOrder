@@ -293,7 +293,7 @@ public class RefereshNetworkService extends JobService {
                                         break;
                                     case DOC_DATE:
                                         if (orderModel != null && !saveItemInOrder) {
-                                            orderModel.setDeliveryDate(xmlPullParser.nextText());
+//                                            orderModel.setDeliveryDate(xmlPullParser.nextText());
                                         } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                             itemModel.setDeliveryDate(xmlPullParser.nextText());
                                         }
