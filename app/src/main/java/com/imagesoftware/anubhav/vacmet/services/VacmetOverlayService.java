@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -202,14 +203,16 @@ public class VacmetOverlayService extends Service {
         HashMap<Long,Integer> deliveryDiff = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();
         for(int i=0;i<orderModelList.size();i++){
-            Date d = null;
-            try {
-                d = simpleDateFormat.parse(orderModelList.get(i).getDeliveryDate());
-            } catch (ParseException e) {
-                e.printStackTrace();
+            if(!TextUtils.isEmpty(orderModelList.get(i).getDeliveryDate())) {
+                Date d = null;
+                try {
+                    d = simpleDateFormat.parse(orderModelList.get(i).getDeliveryDate());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                deliveryDiff.put(new Long(d1.getTime() - d.getTime()), new Integer(i));
+                stringBuilder.append(orderModelList.get(i).getPartyName() + "  " + orderModelList.get(i).getDeliveryDate() + " :: ");
             }
-            deliveryDiff.put(new Long(d1.getTime()-d.getTime()),new Integer(i));
-            stringBuilder.append(orderModelList.get(i).getPartyName()+"  "+orderModelList.get(i).getDeliveryDate()+" :: ");
         }
         /**
          * Doubt about tree map sorting
