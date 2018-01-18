@@ -214,6 +214,7 @@
                 android:id="@+id/llOrderInfo_prodQty"
                 android:layout_below="@id/stock_desp_qty"
                 android:gravity="start"
+                android:visibility="gone"
                 android:padding="@dimen/d5">
                 <TextView
                     android:layout_width="wrap_content"

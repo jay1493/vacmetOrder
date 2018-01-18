@@ -32,13 +32,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/bill_no"
+                android:text="@string/bl_no"
                 android:textStyle="bold"/>
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/logisticsAlert_billNo"
-                android:hint="@string/input_bill_no"
+                android:hint="@string/input_bl_no"
                 android:textColor="@color/black"
                 android:text=""
                 android:textSize="@dimen/d15sp"/>

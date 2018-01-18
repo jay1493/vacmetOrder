@@ -143,10 +143,10 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         if(list.get(position).getLogisticsModel()!=null){
                             LogisticsModel logisticsModel = list.get(position).getLogisticsModel();
                             if(!TextUtils.isEmpty(logisticsModel.getEta()) || !TextUtils.isEmpty(logisticsModel.getContainerNo())
-                                    || !TextUtils.isEmpty(logisticsModel.getVesselNo()) || !TextUtils.isEmpty(logisticsModel.getBillNo())){
+                                    || !TextUtils.isEmpty(logisticsModel.getVesselNo()) || !TextUtils.isEmpty(logisticsModel.getBlNo())){
                                 StringBuilder logisticsStringBuilder = new StringBuilder();
-                                if(!TextUtils.isEmpty(logisticsModel.getBillNo())){
-                                    logisticsStringBuilder.append("Bill No: "+logisticsModel.getBillNo());
+                                if(!TextUtils.isEmpty(logisticsModel.getBlNo())){
+                                    logisticsStringBuilder.append("Bl No: "+logisticsModel.getBlNo());
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getContainerNo())){
                                     if(logisticsStringBuilder.length()>0){
@@ -171,7 +171,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                     }
                                 }
                                 holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.logistics_details));
-                                holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bill No:","Container No:","Vessel No:","E.T.A:"}));
+                                holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bl No:","Container No:","Vessel No:","E.T.A:"}));
                             }else{
                                 holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.input_logistics_details));
                             }
@@ -183,11 +183,11 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         if(list.get(position).getLogisticsModel()!=null){
                             LogisticsModel logisticsModel = list.get(position).getLogisticsModel();
                             if(!TextUtils.isEmpty(logisticsModel.getEta()) || !TextUtils.isEmpty(logisticsModel.getContainerNo())
-                                    || !TextUtils.isEmpty(logisticsModel.getVesselNo()) || !TextUtils.isEmpty(logisticsModel.getBillNo())){
+                                    || !TextUtils.isEmpty(logisticsModel.getVesselNo()) || !TextUtils.isEmpty(logisticsModel.getBlNo())){
                                 StringBuilder logisticsStringBuilder = new StringBuilder();
-                                if(!TextUtils.isEmpty(logisticsModel.getBillNo())){
+                                if(!TextUtils.isEmpty(logisticsModel.getBlNo())){
 
-                                    logisticsStringBuilder.append("Bill No: "+logisticsModel.getBillNo());
+                                    logisticsStringBuilder.append("Bl No: "+logisticsModel.getBlNo());
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getContainerNo())){
                                     if(logisticsStringBuilder.length()>0){
@@ -212,7 +212,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                     }
                                 }
                                 holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.logistics_details));
-                                holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bill No:","Container No:","Vessel No:","E.T.A:"}));
+                                holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bl No:","Container No:","Vessel No:","E.T.A:"}));
                                 holder.llLogistics.setVisibility(View.VISIBLE);
                             }else{
                                 holder.llLogistics.setVisibility(View.GONE);

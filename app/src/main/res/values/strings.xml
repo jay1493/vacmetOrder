@@ -39,7 +39,7 @@
     <string name="Quantity_Info">Quantity Info(For all items)</string>
     <string name="Order_Prod_Qty">"In Production: "</string>
     <string name="Item_Name">Item Name</string>
-    <string name="despQty_OrderQty">Desp Qty/Order Qty</string>
+    <string name="despQty_OrderQty">Desp Qty/Order Qty[kg\'s]</string>
     <string name="username_cannot_be_left_blank">Username cannot be left blank</string>
     <string name="password_cannot_be_left_blank">Password cannot be left blank</string>
     <string name="fetching_orders">Fetching orders from server...Please Wait!!</string>
@@ -74,7 +74,7 @@
     <string name="item_shades">Shades(if any):</string>
     <string name="orderTransition">Order Transition</string>
     <string name="status_not_known">Status(Not known)</string>
-    <string name="item_length_cumulative">Length(s):</string>
+    <string name="item_length_cumulative">Length(s)[mtrs]:</string>
     <string name="item_width_cumulative">Width(s):</string>
     <string name="open_qty">Open Qty:</string>
     <string name="stock_left">(Stock left)</string>
@@ -139,4 +139,6 @@
     <string name="data_cant_be_saved_in_firebase">Oops! your data can\'t be saved right now!</string>
     <string name="input_logistics_details">Provide Logistics Details For Invoice Here...</string>
     <string name="logistics_details">Logistics Details:</string>
+    <string name="bl_no">BL No.:</string>
+    <string name="input_bl_no">Input BL No</string>
 </resources>

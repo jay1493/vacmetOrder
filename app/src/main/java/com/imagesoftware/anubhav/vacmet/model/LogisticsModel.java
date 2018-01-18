@@ -8,17 +8,17 @@ import java.io.Serializable;
 
 public class LogisticsModel implements Serializable {
 
-    private String billNo;
+    private String blNo;
     private String containerNo;
     private String vesselNo;
     private String eta;
 
-    public String getBillNo() {
-        return billNo;
+    public String getBlNo() {
+        return blNo;
     }
 
-    public void setBillNo(String billNo) {
-        this.billNo = billNo;
+    public void setBlNo(String blNo) {
+        this.blNo = blNo;
     }
 
     public String getContainerNo() {

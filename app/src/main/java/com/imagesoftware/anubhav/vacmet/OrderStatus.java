@@ -306,6 +306,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private DatabaseReference mWriteDatabaseForLogistics;
     private ValueEventListener valueEventListenerForLogistics;
     private DatabaseReference mReadDatabaseForLogistics;
+    private List<OrderEntity> anySavedOrders;
 
 
     @Override
@@ -573,7 +574,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                                 }else{
                                                     logisticsModel = matchedOrderModel.getLogisticsModel();
                                                 }
-                                                logisticsModel.setBillNo(fetchedAdminModel.getBillNo());
+                                                logisticsModel.setBlNo(fetchedAdminModel.getBlNo());
                                                 logisticsModel.setContainerNo(fetchedAdminModel.getContainerNo());
                                                 logisticsModel.setVesselNo(fetchedAdminModel.getVesselNo());
                                                 logisticsModel.setEta(fetchedAdminModel.getEta());
@@ -589,7 +590,25 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    recyclerViewAdapter.notifyDataSetChanged();
+                                    recyclerViewAdapter = new RecyclerviewAdapter(OrderStatus.this, orderModelList, new ItemClickListener() {
+                                        @Override
+                                        public void onClick(View view, int position, View clickedView) {
+                                            if(!connectionIsOnline() || (anySavedOrders!=null && anySavedOrders.size()>0)){
+                                                //Fill Items for order at pos, in background
+                                                fillOfflineItemsForOrder(position,closedOrdersRadio.isChecked()?GET_DISPATCH_CODE:GET_PENDING_CODE,clickedView);
+                                            }else if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() ==0))){
+                                                Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
+                                                intent.putExtra("OrderInfo", orderModelList.get(position));
+                                                intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
+                                                intent.putExtra("isDispatched",closedOrdersRadio.isChecked()?true:false);
+                                                startActivity(intent);
+                                            }
+
+                                        }
+
+
+                                    },closedOrdersRadio.isChecked()?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this,OrderStatus.this,OrderStatus.this);
+                                    recyclerView.setAdapter(recyclerViewAdapter);
                                 }
                             });
 
@@ -684,7 +703,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                 logisticsModel.setEta(dummyOrder.getLogisticsModel().getEta());
                                 logisticsModel.setVesselNo(dummyOrder.getLogisticsModel().getVesselNo());
                                 logisticsModel.setContainerNo(dummyOrder.getLogisticsModel().getContainerNo());
-                                logisticsModel.setBillNo(dummyOrder.getLogisticsModel().getBillNo());
+                                logisticsModel.setBlNo(dummyOrder.getLogisticsModel().getBlNo());
                                 mWriteDatabaseForLogistics.child(dummyOrder.getInvoiceNo()).setValue(logisticsModel);
                             }
 
@@ -974,6 +993,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 } else {
                     orderType = "get_pendingord";
                 }
+                DefaultSapId = etSapId.getText().toString().trim();
                 SharedPreferences.Editor editor = orderIdPrefs.edit();
                 editor.putString(SapId, etSapId.getText().toString().trim());
                 editor.putString(ClientorServer, isClientorServer);
@@ -1072,8 +1092,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         logisticsContainerNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_container);
         logisticsETA = (EditText) logisticsView.findViewById(R.id.logisticsAlert_eta);
         if(orderModelList.get(pos).getLogisticsModel()!=null) {
-            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBillNo())) {
-                logisticsBillNo.setText(orderModelList.get(pos).getLogisticsModel().getBillNo());
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBlNo())) {
+                logisticsBillNo.setText(orderModelList.get(pos).getLogisticsModel().getBlNo());
             }
 
             if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getVesselNo())) {
@@ -1093,10 +1113,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             public void onClick(DialogInterface dialogInterface, int i) {
                 LogisticsModel logisticsModel = new LogisticsModel();
                if(!TextUtils.isEmpty(logisticsBillNo.getText().toString().trim())){
-                   logisticsModel.setBillNo(logisticsBillNo.getText().toString().trim());
-                   logisticsStringBuilder.append("Bill No: "+logisticsBillNo.getText().toString().trim());
+                   logisticsModel.setBlNo(logisticsBillNo.getText().toString().trim());
+                   logisticsStringBuilder.append("Bl No: "+logisticsBillNo.getText().toString().trim());
                }else{
-                   logisticsModel.setBillNo(null);
+                   logisticsModel.setBlNo(null);
                }
                 if(!TextUtils.isEmpty(logisticsContainerNo.getText().toString().trim())){
                     logisticsModel.setContainerNo(logisticsContainerNo.getText().toString().trim());
@@ -1131,7 +1151,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
                 orderModelList.get(pos).setLogisticsModel(logisticsModel);
                 TextView logistics = (TextView) view.findViewById(R.id.tv_logistics);
-                logistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bill No:","Container No:","Vessel No:","E.T.A:"}));
+                logistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bl No:","Container No:","Vessel No:","E.T.A:"}));
                 updateOrder(pos);
                 TextView logisticsHeader = (TextView) view.findViewById(R.id.tv_headerLogistics);
                 if(logisticsStringBuilder.length()>0){
@@ -1591,7 +1611,6 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     private class CustomAsyncTaskForRestOrderService extends AsyncTask<String, Void, List<OrderModel>> {
         String orderType = null;
-        List<OrderEntity> anySavedOrders = null;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
