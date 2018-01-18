@@ -11,6 +11,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/rl_uploadInvoiceAdmin"
+            android:background="@color/grey"
+            android:elevation="@dimen/d5"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true">
+                <TextView
+                    android:id="@+id/tv_uploadInvoices"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/d10"
+                    android:drawableLeft="@drawable/upload_pdf_drawable"
+                    android:drawablePadding="@dimen/d5"
+                    android:textStyle="bold"
+                    android:text="@string/upload_invoices"/>
+            </LinearLayout>
+
+        </RelativeLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -210,7 +233,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/ll_adminNotes"
-            android:visibility="visible"
+            android:visibility="gone"
             android:orientation="vertical">
             <View
                 android:layout_width="match_parent"
@@ -229,6 +252,44 @@
                 android:scrollHorizontally="true"
                 android:focusable="true"
                 android:focusableInTouchMode="true"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ll_logistics"
+            android:visibility="gone"
+            android:padding="@dimen/d5"
+            android:orientation="vertical">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/charcoal"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/logistics_details"
+                    android:id="@+id/tv_headerLogistics"
+                    android:padding="@dimen/d5"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/tv_logistics"
+                    android:padding="@dimen/d5"
+                    android:ellipsize="marquee"
+                    android:textColor="@color/red_transperant"
+                    android:text=""
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:singleLine="true"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"/>
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
 

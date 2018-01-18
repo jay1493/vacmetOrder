@@ -145,7 +145,8 @@
                         android:textAllCaps="false"
                         android:padding="@dimen/d10"
                         android:textColor="@color/black"
-                        android:text="@string/upload_invoices"/>
+                        android:text="@string/upload_invoices"
+                        android:visibility="gone"/>
 
                 </LinearLayout>
 

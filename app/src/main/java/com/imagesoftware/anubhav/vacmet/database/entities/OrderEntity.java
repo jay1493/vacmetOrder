@@ -1,5 +1,6 @@
 package com.imagesoftware.anubhav.vacmet.database.entities;
 
+import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
@@ -8,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.imagesoftware.anubhav.vacmet.model.ItemModel;
+import com.imagesoftware.anubhav.vacmet.model.LogisticsModel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,6 +49,10 @@ public class OrderEntity implements Serializable {
 
         @Nullable
         private String adminNotes;
+
+        @Nullable
+        @Embedded
+        private LogisticsModel logisticsModel;
 
         @Ignore
         private ArrayList<ItemEntity> itemModelArrayList;
@@ -178,5 +184,14 @@ public class OrderEntity implements Serializable {
 
     public void setItemModelArrayList(ArrayList<ItemEntity> itemModelArrayList) {
         this.itemModelArrayList = itemModelArrayList;
+    }
+
+    @Nullable
+    public LogisticsModel getLogisticsModel() {
+        return logisticsModel;
+    }
+
+    public void setLogisticsModel(@Nullable LogisticsModel logisticsModel) {
+        this.logisticsModel = logisticsModel;
     }
 }

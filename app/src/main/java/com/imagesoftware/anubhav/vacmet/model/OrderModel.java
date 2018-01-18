@@ -37,6 +37,7 @@ public class OrderModel implements Serializable {
     private String invoiceDate;
     private int isPending;
     private String adminNotes;
+    private LogisticsModel logisticsModel;
     @Ignore
     private ArrayList<ItemModel> itemModelArrayList;
 
@@ -233,6 +234,14 @@ public class OrderModel implements Serializable {
 
     public void setAdminNotes(String adminNotes) {
         this.adminNotes = adminNotes;
+    }
+
+    public LogisticsModel getLogisticsModel() {
+        return logisticsModel;
+    }
+
+    public void setLogisticsModel(LogisticsModel logisticsModel) {
+        this.logisticsModel = logisticsModel;
     }
 
     @Override

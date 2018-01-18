@@ -50,7 +50,11 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.transition.ChangeBounds;
 import android.transition.ChangeImageTransform;
 import android.transition.ChangeTransform;
@@ -60,6 +64,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -119,6 +124,7 @@ import com.imagesoftware.anubhav.vacmet.interfaces.ItemClickListener;
 import com.imagesoftware.anubhav.vacmet.model.AdminModel;
 import com.imagesoftware.anubhav.vacmet.model.InvoiceTo;
 import com.imagesoftware.anubhav.vacmet.model.ItemModel;
+import com.imagesoftware.anubhav.vacmet.model.LogisticsModel;
 import com.imagesoftware.anubhav.vacmet.model.OrderContainer;
 import com.imagesoftware.anubhav.vacmet.model.OrderModel;
 import com.imagesoftware.anubhav.vacmet.services.RefereshNetworkService;
@@ -171,7 +177,8 @@ import javax.net.ssl.X509TrustManager;
  * Created by anubhav on 23/1/17.
  */
 
-public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked,RecyclerviewAdapter.DeliveryDateChanged,RecyclerviewAdapter.RemarkEntered {
+public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked,RecyclerviewAdapter.DeliveryDateChanged,RecyclerviewAdapter.RemarkEntered,
+        RecyclerviewAdapter.UploadInvoiceListener,RecyclerviewAdapter.LogisticsDetailsListener{
 
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
@@ -290,6 +297,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private AlertDialog.Builder alertBuilderForRemarksInput;
     private SwipeRefreshLayout swipeRefereshLayout;
     private HashMap<String, OrderEntity> orderEntityMap;
+    private EditText logisticsBillNo;
+    private EditText logisticsVesselNo;
+    private EditText logisticsContainerNo;
+    private EditText logisticsETA;
+    private AlertDialog.Builder builderForLogistics;
+    private StringBuilder logisticsStringBuilder;
+    private DatabaseReference mWriteDatabaseForLogistics;
+    private ValueEventListener valueEventListenerForLogistics;
+    private DatabaseReference mReadDatabaseForLogistics;
 
 
     @Override
@@ -303,11 +319,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if(mReadDatabase !=null){
             mReadDatabase.addValueEventListener(valueEventListenerForOrders);
         }
+        if(mReadDatabaseForLogistics !=null){
+            mReadDatabaseForLogistics.addValueEventListener(valueEventListenerForLogistics);
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if(mReadDatabaseForLogistics !=null){
+            mReadDatabaseForLogistics.removeEventListener(valueEventListenerForLogistics);
+        }
         if(mReadDatabase !=null){
             mReadDatabase.removeEventListener(valueEventListenerForOrders);
         }
@@ -347,7 +369,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
         initializeJobDispatcherService();
         setUpAuthenticationForWritingData();
-//        setUpListenerForOrdersData();
+        setUpAuthenticationForWritingDataForLogistics();
+
         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
 
         setSupportActionBar(toolbar);
@@ -397,7 +420,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 deletedOrders.put(new Integer(viewHolder.getAdapterPosition()), orderModelList.get(viewHolder.getAdapterPosition()));
                 orderModelList.remove(viewHolder.getAdapterPosition());
-                dispalySnackBar(viewHolder.getAdapterPosition());
+                dispalySnackBarForAdvanceRecylerViewItemRemoved(viewHolder.getAdapterPosition());
                 recyclerViewAdapter.notifyItemRemoved(viewHolder.getAdapterPosition());
             }
         });
@@ -431,6 +454,23 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
 
     }
+    private void setUpAuthenticationForWritingDataForLogistics() {
+        firebaseAuth = FirebaseAuth.getInstance();
+        if(firebaseAuth!=null){
+            firebaseAuth.signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if(task.isSuccessful()){
+                        FirebaseDatabase db = getFirebaseDatabaseInstance();
+                        if(db!=null) {
+                            mWriteDatabaseForLogistics = db.getReference("vacmet-44d24").child("dispatch-logistics");
+                        }
+                    }
+                }
+            });
+        }
+
+    }
 
     private void setUpListenerForOrdersData() {
         FirebaseDatabase db = getFirebaseDatabaseInstance();
@@ -440,17 +480,38 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 valueEventListenerForOrders = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        new RefreshDatesInOrders().execute(dataSnapshot);
+                        new RefreshDatesInOrders().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,dataSnapshot);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                       dispalyGeneralizedSnackBar(getResources().getString(R.string.data_cant_be_saved_in_firebase));
                     }
                 };
             }
         }
     }
+
+    private void setUpListenerForLogisticsData() {
+        FirebaseDatabase db = getFirebaseDatabaseInstance();
+        if(db!=null) {
+            mReadDatabaseForLogistics = db.getReference("vacmet-44d24").child("dispatch-logistics");
+            if (mReadDatabaseForLogistics != null) {
+                valueEventListenerForLogistics = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        new RefreshDatesInOrders().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,dataSnapshot);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        dispalyGeneralizedSnackBar(getResources().getString(R.string.data_cant_be_saved_in_firebase));
+                    }
+                };
+            }
+        }
+    }
+
 
     private FirebaseDatabase getFirebaseDatabaseInstance() {
         if(db == null) {
@@ -464,6 +525,17 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
        initializeRemarkDialog(view,pos);
     }
 
+    @Override
+    public void onUploadInvoicePdfClicked(View view, int pos) {
+        filenameToSaveInDb = orderModelList.get(pos).getInvoiceNo();
+        startAddingImages();
+    }
+
+    @Override
+    public void onLogisticsDetailsInput(View view, int pos) {
+      initializeLogisticsDialog(view,pos);
+    }
+
     class RefreshDatesInOrders extends AsyncTask<DataSnapshot,Void,Void>{
 
         @Override
@@ -471,52 +543,45 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(dataSnapshots[0]!=null) {
                 DataSnapshot matchedData = null;
 
-                    if(openOrdersRadio.isChecked()) {
-//                        List<OrderEntity> orderEntityList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null), 1);
-
-
-                        /*List<OrderEntity> orderEntityList = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null), 1);
-                        if (orderEntityList != null) {
-                            OrderEntity matchedEntity = null;
-                            for (OrderEntity orderEntity : orderEntityList) {
-                                for (DataSnapshot dataSnapshot : dataSnapshots[0].getChildren()) {
-                                    if (dataSnapshot.getKey().equalsIgnoreCase(orderEntity.getOrderNo())) {
-                                        matchedData = dataSnapshot;
-                                        matchedEntity = orderEntity;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (matchedData != null) {
-                                AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
-                                matchedEntity.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
-                                matchedEntity.setAdminNotes(fetchedAdminModel.getAdminNote());
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        recyclerViewAdapter.notifyDataSetChanged();
-                                    }
-                                });
-
-                                databaseRequestsDao.updateOrders(matchedEntity);
-                            }
-                        }else*/
                         if(orderModelList!=null && orderModelList.size()>0){
                             OrderModel matchedOrderModel = null;
                             for (OrderModel orderModel : orderModelList) {
                                 for (DataSnapshot dataSnapshot : dataSnapshots[0].getChildren()) {
-                                    if (dataSnapshot.getKey().equalsIgnoreCase(orderModel.getOrderNo())) {
-                                        matchedData = dataSnapshot;
-                                        matchedOrderModel = orderModel;
-                                        if (matchedData != null) {
-                                            AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
-                                            matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
-                                            matchedOrderModel.setAdminNotes(fetchedAdminModel.getAdminNote());
-                                            OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForOrderNo(orderIdPrefs.getString(SapId, null), 1,matchedOrderModel.getOrderNo());
-                                            orderEntityFromSavedDb.setDeliveryDate(matchedOrderModel.getDeliveryDate());
-                                            orderEntityFromSavedDb.setAdminNotes(matchedOrderModel.getAdminNotes());
-                                            databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                    if(openOrdersRadio.isChecked()) {
+                                        if (dataSnapshot.getKey().equalsIgnoreCase(orderModel.getOrderNo())) {
+                                            matchedData = dataSnapshot;
+                                            matchedOrderModel = orderModel;
+                                            if (matchedData != null) {
+                                                AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
+                                                matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
+                                                matchedOrderModel.setAdminNotes(fetchedAdminModel.getAdminNote());
+                                                OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForOrderNo(orderIdPrefs.getString(SapId, null), 1, matchedOrderModel.getOrderNo());
+                                                orderEntityFromSavedDb.setDeliveryDate(matchedOrderModel.getDeliveryDate());
+                                                orderEntityFromSavedDb.setAdminNotes(matchedOrderModel.getAdminNotes());
+                                                databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                            }
+                                        }
+                                    }else if(closedOrdersRadio.isChecked()){
+                                        if (dataSnapshot.getKey().equalsIgnoreCase(orderModel.getInvoiceNo())) {
+                                            matchedData = dataSnapshot;
+                                            matchedOrderModel = orderModel;
+                                            if (matchedData != null) {
+                                                LogisticsModel fetchedAdminModel = matchedData.getValue(LogisticsModel.class);
+                                                LogisticsModel logisticsModel = null;
+                                                if(matchedOrderModel.getLogisticsModel() == null){
+                                                    logisticsModel = new LogisticsModel();
+                                                }else{
+                                                    logisticsModel = matchedOrderModel.getLogisticsModel();
+                                                }
+                                                logisticsModel.setBillNo(fetchedAdminModel.getBillNo());
+                                                logisticsModel.setContainerNo(fetchedAdminModel.getContainerNo());
+                                                logisticsModel.setVesselNo(fetchedAdminModel.getVesselNo());
+                                                logisticsModel.setEta(fetchedAdminModel.getEta());
+                                                matchedOrderModel.setLogisticsModel(logisticsModel);
+                                                OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForInvoiceNo(orderIdPrefs.getString(SapId, null), 0, matchedOrderModel.getInvoiceNo());
+                                                orderEntityFromSavedDb.setLogisticsModel(matchedOrderModel.getLogisticsModel());
+                                                databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                            }
                                         }
                                     }
                                 }
@@ -529,7 +594,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             });
 
                         }
-                    }
+
             }
             return null;
         }
@@ -592,22 +657,45 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             orderEntity.setOrderId(orderModelList.get(pos).getOrderId());
             final OrderEntity dummyOrder = orderEntity;
             databaseRequestsDao.updateOrders(orderEntity);
-            if(mWriteDatabase!=null){
-                mWriteDatabase.child(orderEntity.getOrderNo()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        AdminModel adminModel = new AdminModel();
-                        adminModel.setDeliveryDate(dummyOrder.getDeliveryDate());
-                        adminModel.setAdminNote(dummyOrder.getAdminNotes());
-                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
-                    }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                if(openOrdersRadio.isChecked()) {
+                    if(mWriteDatabase!=null) {
+                        mWriteDatabase.child(orderEntity.getOrderNo()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                AdminModel adminModel = new AdminModel();
+                                adminModel.setDeliveryDate(dummyOrder.getDeliveryDate());
+                                adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                                mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                            }
 
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                dispalyGeneralizedSnackBar(getResources().getString(R.string.data_cant_be_saved_in_firebase));
+                            }
+                        });
                     }
-                });
-            }
+                }else if(closedOrdersRadio.isChecked()){
+                    if(mWriteDatabaseForLogistics!=null) {
+                        mWriteDatabaseForLogistics.child(orderEntity.getInvoiceNo()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                LogisticsModel logisticsModel = new LogisticsModel();
+                                logisticsModel.setEta(dummyOrder.getLogisticsModel().getEta());
+                                logisticsModel.setVesselNo(dummyOrder.getLogisticsModel().getVesselNo());
+                                logisticsModel.setContainerNo(dummyOrder.getLogisticsModel().getContainerNo());
+                                logisticsModel.setBillNo(dummyOrder.getLogisticsModel().getBillNo());
+                                mWriteDatabaseForLogistics.child(dummyOrder.getInvoiceNo()).setValue(logisticsModel);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                dispalyGeneralizedSnackBar(getResources().getString(R.string.data_cant_be_saved_in_firebase));
+                            }
+                        });
+                    }
+                }
+
             return null;
         }
     }
@@ -686,6 +774,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     intent.getAction().equals("android.net.wifi.WIFI_STATE_CHANGED"))){
                 if(connectionIsOnline()){
                     setUpAuthenticationForWritingData();
+                    setUpAuthenticationForWritingDataForLogistics();
                     hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
                 }
             }
@@ -939,7 +1028,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        },false, this,this,isUserAdmin,this);
+        },false, this,this,isUserAdmin,this,this,this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
@@ -973,58 +1062,95 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         });
         alertBuilderForRemarksInput.show();
     }
-/*
-    private void feedDummyData() {
-        Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        ArrayList<ItemModel> party1 = new ArrayList<>();
-        ItemModel itemModel1 = new ItemModel("Polyester Film(Grade Printing)","10","30");
-        ItemModel itemModel2 = new ItemModel("BOPP","20","50");
-        party1.add(itemModel1);
-        party1.add(itemModel2);
-        OrderModel o1 = new OrderModel("Varna Limited, Sri Lanka","0179","130","14/12/2016","35","28/01/2017","30",party1);
-        ArrayList<ItemModel> party2 = new ArrayList<>();
-        ItemModel itemModel21 = new ItemModel("Polyester Film(Grade Printing)","10","10");
-        ItemModel itemModel22 = new ItemModel("BOPP","2","5");
-        party2.add(itemModel21);
-        party2.add(itemModel22);
-        OrderModel o2 = new OrderModel("Roto Packing Material Industries Co. UAE","0012","30","15/12/2016","10","25/12/2016","15",party2);
-        ArrayList<ItemModel> party3 = new ArrayList<>();
-        ItemModel itemModel31 = new ItemModel("Polyester Film(Grade Printing)","25","25");
-        ItemModel itemModel32 = new ItemModel("BOPP","25","30");
-        party3.add(itemModel31);
-        party3.add(itemModel32);
-        OrderModel o3 = new OrderModel("Amcor Flexibiles Durban,South Africa","0157","50","19/12/2016","25","25/01/2017","25",party3);
-        ArrayList<ItemModel> party4 = new ArrayList<>();
-        ItemModel itemModel41 = new ItemModel("Polyester Film(Grade Printing)","2","25");
-        ItemModel itemModel42 = new ItemModel("BOPP Film","25","50");
-        party4.add(itemModel41);
-        party4.add(itemModel42);
-        OrderModel o4 = new OrderModel("Party C","12114","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date),"105",party4);
-        ArrayList<ItemModel> party5 = new ArrayList<>();
-        ItemModel itemModel51 = new ItemModel("Polyester Film(Grade Printing)","0","25");
-        ItemModel itemModel52 = new ItemModel("BOPP Film","125","250");
-        party5.add(itemModel51);
-        party5.add(itemModel52);
-        OrderModel o5 = new OrderModel("Party A","12115","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date),"500",party5);
-        ArrayList<ItemModel> party6 = new ArrayList<>();
-        ItemModel itemModel61 = new ItemModel("Polyester Film(Grade Printing)","0","25");
-        ItemModel itemModel62 = new ItemModel("BOPP Film","12","25");
-        party6.add(itemModel61);
-        party6.add(itemModel62);
-        OrderModel o6 = new OrderModel("Party X","12116","200",simpleDateFormat.format(date),"100",simpleDateFormat.format(date),"70",party6);
-        orderModelList.add(o1);
-        orderModelList.add(o2);
-        orderModelList.add(o3);
-        orderModelList.add(o4);
-        orderModelList.add(o5);
-        orderModelList.add(o6);
-        for(OrderModel o: orderModelList){
-            searchList.add(o);
+    private void initializeLogisticsDialog(final View view,final int pos) {
+        builderForLogistics = new AlertDialog.Builder(this);
+        View logisticsView = LayoutInflater.from(this).inflate(R.layout.logistics_dialog_layout,null);
+        builderForLogistics.setView(logisticsView);
+        logisticsStringBuilder = new StringBuilder();
+        logisticsBillNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_billNo);
+        logisticsVesselNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_vessel);
+        logisticsContainerNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_container);
+        logisticsETA = (EditText) logisticsView.findViewById(R.id.logisticsAlert_eta);
+        if(orderModelList.get(pos).getLogisticsModel()!=null) {
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBillNo())) {
+                logisticsBillNo.setText(orderModelList.get(pos).getLogisticsModel().getBillNo());
+            }
+
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getVesselNo())) {
+                logisticsVesselNo.setText(orderModelList.get(pos).getLogisticsModel().getVesselNo());
+            }
+
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getContainerNo())) {
+                logisticsContainerNo.setText(orderModelList.get(pos).getLogisticsModel().getContainerNo());
+            }
+
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getEta())) {
+                logisticsETA.setText(orderModelList.get(pos).getLogisticsModel().getEta());
+            }
         }
+        builderForLogistics.setCancelable(false).setPositiveButton(R.string.save_logistics_data, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                LogisticsModel logisticsModel = new LogisticsModel();
+               if(!TextUtils.isEmpty(logisticsBillNo.getText().toString().trim())){
+                   logisticsModel.setBillNo(logisticsBillNo.getText().toString().trim());
+                   logisticsStringBuilder.append("Bill No: "+logisticsBillNo.getText().toString().trim());
+               }else{
+                   logisticsModel.setBillNo(null);
+               }
+                if(!TextUtils.isEmpty(logisticsContainerNo.getText().toString().trim())){
+                    logisticsModel.setContainerNo(logisticsContainerNo.getText().toString().trim());
+                    if(logisticsStringBuilder.length()>0){
+                        logisticsStringBuilder.append(", Container No: "+logisticsContainerNo.getText().toString().trim());
+                    }else{
+                        logisticsStringBuilder.append("Container No: "+logisticsContainerNo.getText().toString().trim());
+                    }
+
+                }else{
+                    logisticsModel.setContainerNo(null);
+                }
+                if(!TextUtils.isEmpty(logisticsVesselNo.getText().toString().trim())){
+                    logisticsModel.setVesselNo(logisticsVesselNo.getText().toString().trim());
+                    if(logisticsStringBuilder.length()>0){
+                        logisticsStringBuilder.append(", Vessel No: "+logisticsVesselNo.getText().toString().trim());
+                    }else{
+                        logisticsStringBuilder.append("Vessel No: "+logisticsVesselNo.getText().toString().trim());
+                    }
+                }else{
+                    logisticsModel.setVesselNo(null);
+                }
+                if(!TextUtils.isEmpty(logisticsETA.getText().toString().trim())){
+                    logisticsModel.setEta(logisticsETA.getText().toString().trim());
+                    if(logisticsStringBuilder.length()>0){
+                        logisticsStringBuilder.append(", E.T.A: "+logisticsETA.getText().toString().trim());
+                    }else{
+                        logisticsStringBuilder.append("E.T.A: "+logisticsETA.getText().toString().trim());
+                    }
+                }else{
+                    logisticsModel.setEta(null);
+                }
+                orderModelList.get(pos).setLogisticsModel(logisticsModel);
+                TextView logistics = (TextView) view.findViewById(R.id.tv_logistics);
+                logistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bill No:","Container No:","Vessel No:","E.T.A:"}));
+                updateOrder(pos);
+                TextView logisticsHeader = (TextView) view.findViewById(R.id.tv_headerLogistics);
+                if(logisticsStringBuilder.length()>0){
+                    logisticsHeader.setText(getResources().getString(R.string.logistics_details));
+                }else {
+                    logisticsHeader.setText(getResources().getString(R.string.input_invoice_logistics_details));
+                }
+                dialogInterface.dismiss();
+            }
+        }).setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+               dialogInterface.dismiss();
+            }
+        });
+
+        builderForLogistics.show();
 
     }
-*/
 
     @Override
     protected void onResume() {
@@ -1149,7 +1275,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    private boolean dispalySnackBar(final int position) {
+    private boolean dispalySnackBarForAdvanceRecylerViewItemRemoved(final int position) {
         Snackbar snackbar = Snackbar.make(coordinatorLayout, "Undo Removed Order", Snackbar.LENGTH_SHORT).setAction("Undo", new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -1164,6 +1290,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         textView.setTextColor(getResources().getColor(R.color.white));
         snackbar.show();
         return false;
+    }
+    private void dispalyGeneralizedSnackBar(String msg) {
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_SHORT);
+        snackbar.setActionTextColor(getResources().getColor(R.color.white));
+        View sBarView = snackbar.getView();
+        TextView textView = (TextView) sBarView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(getResources().getColor(R.color.white));
+        snackbar.show();
     }
 
     @Override
@@ -1822,7 +1956,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected void onPostExecute(List<OrderModel> s) {
             super.onPostExecute(s);
 //            progressDialog.dismiss();
-            setUpListenerForOrdersData();
+            if(openOrdersRadio.isChecked()) {
+                setUpListenerForOrdersData();
+            }else if(closedOrdersRadio.isChecked()) {
+                setUpListenerForLogisticsData();
+            }
             recyclerView.hideShimmerAdapter();
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             if (s.size() > 0) {
@@ -1856,7 +1994,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this,OrderStatus.this,OrderStatus.this);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);
@@ -2023,24 +2161,28 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 croppedImagesUri = (ArrayList<String>) cameraSelectedImagesUris.clone();
             }
         }
-        new MaterialDialog.Builder(this)
-                .title(R.string.creating_pdf).inputType(InputType.TYPE_CLASS_NUMBER)
-                .content(R.string.enter_file_name).itemsColor(getResources().getColor(R.color.black)).theme(Theme.LIGHT)
-                .input(getString(R.string.example), null, new MaterialDialog.InputCallback() {
-                    @Override
-                    public void onInput(MaterialDialog dialog, CharSequence input) {
-                        if (input == null || input.toString().trim().equals("")) {
-                            Toast.makeText(OrderStatus.this, R.string.toast_name_not_blank, Toast.LENGTH_LONG).show();
-                        } else {
-                            filenameToSaveInDb = input.toString();
+        if(!TextUtils.isEmpty(filenameToSaveInDb)){
+            new CreatingPdf().execute("Save", null, null);
+        }else {
+            new MaterialDialog.Builder(this)
+                    .title(R.string.creating_pdf).inputType(InputType.TYPE_CLASS_NUMBER)
+                    .content(R.string.enter_file_name).itemsColor(getResources().getColor(R.color.black)).theme(Theme.LIGHT)
+                    .input(getString(R.string.example), null, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(MaterialDialog dialog, CharSequence input) {
+                            if (input == null || input.toString().trim().equals("")) {
+                                Toast.makeText(OrderStatus.this, R.string.toast_name_not_blank, Toast.LENGTH_LONG).show();
+                            } else {
+                                filenameToSaveInDb = input.toString();
 
-                            new CreatingPdf().execute("Save",null,null);
+                                new CreatingPdf().execute("Save", null, null);
 
 
+                            }
                         }
-                    }
-                })
-                .show();
+                    })
+                    .show();
+        }
     }
 
     public class CreatingPdf extends AsyncTask<String, String, String> {
@@ -2490,4 +2632,19 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             } return false;
         } return true;
     }
+
+    /**This Function Does'nt handle duplicate Arguments, and should be unique.*/
+    public static SpannableString convertStringInSpanColors(String str,String[] colorArgs){
+        SpannableString spannableString = new SpannableString(str);
+        for(int i=0; i<colorArgs.length; i++){
+            if(str.contains(colorArgs[i])) {
+                spannableString.setSpan(new ForegroundColorSpan(Color.DKGRAY), str.indexOf(colorArgs[i]),
+                        str.indexOf(colorArgs[i])+colorArgs[i].length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+
+
+        return spannableString;
+    }
+
 }

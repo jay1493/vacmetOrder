@@ -5,7 +5,10 @@
     <dimen name="activity_horizontal_margin">64dp</dimen>
     <dimen name="activity_vertical_margin">64dp</dimen>
     <dimen name="d5">8dp</dimen>
+    <dimen name="d8sp">11sp</dimen>
+    <dimen name="d10sp">15sp</dimen>
     <dimen name="d10">15dp</dimen>
+    <dimen name="d15sp">18sp</dimen>
     <dimen name="d20">25dp</dimen>
     <dimen name="d30">35dp</dimen>
     <dimen name="d50">55dp</dimen>

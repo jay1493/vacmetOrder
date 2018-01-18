@@ -125,4 +125,18 @@
     <string name="estimate_delivery_date">Estimated Delivery Date</string>
     <string name="remark_hint">Input Remark Here</string>
     <string name="first_time_offline_logine_msg">Oops! we could\'nt find you while you are offline!, please login once to access application offline features!</string>
+    <string name="input_invoice_logistics_details">Input Invoice Logistics Details</string>
+    <string name="input_bill_no">Input Bill No</string>
+    <string name="e_t_a">E.T.A:</string>
+    <string name="input_e_t_a">Input E.T.A</string>
+    <string name="input_container_no">Input Container No</string>
+    <string name="container_no">Container No:</string>
+    <string name="input_vessel_no">Input Vessel No</string>
+    <string name="vessel_no">Vessel No:</string>
+    <string name="vacmet_logistics">Vacmet Logistics</string>
+    <string name="save_logistics_data">Save Logistics Data</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="data_cant_be_saved_in_firebase">Oops! your data can\'t be saved right now!</string>
+    <string name="input_logistics_details">Provide Logistics Details For Invoice Here...</string>
+    <string name="logistics_details">Logistics Details:</string>
 </resources>

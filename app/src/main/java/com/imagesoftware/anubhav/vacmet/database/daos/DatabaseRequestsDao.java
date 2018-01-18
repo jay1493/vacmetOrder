@@ -37,6 +37,8 @@ public interface DatabaseRequestsDao {
     List<ItemEntity> getItemsForOrderId(String orderNo);
     @Query("SELECT * FROM vacmet_orders WHERE sapId LIKE :sapId AND isPending = :orderType AND orderNo LIKE :orderNo")
     OrderEntity getOrderForOrderNo(String sapId, int orderType, String orderNo);
+    @Query("SELECT * FROM vacmet_orders WHERE sapId LIKE :sapId AND isPending = :orderType AND invoiceNo LIKE :invoiceNo")
+    OrderEntity getOrderForInvoiceNo(String sapId, int orderType, String invoiceNo);
 
     @Query("DELETE FROM vacmet_orders")
     void deleteOrders();

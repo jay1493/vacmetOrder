@@ -24,4 +24,5 @@ public class AdminModel {
     public void setAdminNote(String adminNote) {
         this.adminNote = adminNote;
     }
+
 }

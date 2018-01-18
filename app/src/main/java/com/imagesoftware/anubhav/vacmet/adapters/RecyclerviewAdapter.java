@@ -9,14 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.imagesoftware.anubhav.vacmet.R;
 import com.imagesoftware.anubhav.vacmet.interfaces.ItemClickListener;
+import com.imagesoftware.anubhav.vacmet.model.LogisticsModel;
 import com.imagesoftware.anubhav.vacmet.model.OrderModel;
 
 import java.text.DecimalFormat;
 import java.util.List;
+
+import static com.imagesoftware.anubhav.vacmet.OrderStatus.convertStringInSpanColors;
 
 /**
  * Created by anubhav on 23/1/17.
@@ -33,9 +37,11 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private DeliveryDateChanged deliveryDateChangedListener;
     private RemarkEntered remarkEntered;
     private boolean isAdmin;
+    private UploadInvoiceListener uploadPdf;
+    private LogisticsDetailsListener logisticsDetails;
 
     public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf,DeliveryDateChanged deliveryDateChanged,
-                               boolean admin, RemarkEntered remarkEnteredListener) {
+                               boolean admin, RemarkEntered remarkEnteredListener, UploadInvoiceListener uploadInvoiceListener, LogisticsDetailsListener logisticsDetailsListener) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
@@ -46,6 +52,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         this.deliveryDateChangedListener = deliveryDateChanged;
         this.isAdmin = admin;
         this.remarkEntered = remarkEnteredListener;
+        this.uploadPdf = uploadInvoiceListener;
+        this.logisticsDetails = logisticsDetailsListener;
     }
 
     @Override
@@ -105,13 +113,118 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.deliveryDate.setOnClickListener(null);
                     holder.llAdminNotes.setOnClickListener(null);
                     holder.llAdminNotes.setVisibility(View.GONE);
+                    if(isAdmin) {
+                        holder.uploadInvoice.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                uploadPdf.onUploadInvoicePdfClicked(view,position);
+                            }
+                        });
+                        holder.uploadInvoice.setVisibility(View.VISIBLE);
+                    }else{
+                        holder.uploadInvoice.setOnClickListener(null);
+                        holder.uploadInvoice.setVisibility(View.GONE);
+                    }
                     holder.openPdf.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             openPdfClicked.onPdfClick(position);
                         }
                     });
+
+                    if(isAdmin){
+                        holder.llLogistics.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                logisticsDetails.onLogisticsDetailsInput(view,position);
+                            }
+                        });
+                        holder.llLogistics.setVisibility(View.VISIBLE);
+                        if(list.get(position).getLogisticsModel()!=null){
+                            LogisticsModel logisticsModel = list.get(position).getLogisticsModel();
+                            if(!TextUtils.isEmpty(logisticsModel.getEta()) || !TextUtils.isEmpty(logisticsModel.getContainerNo())
+                                    || !TextUtils.isEmpty(logisticsModel.getVesselNo()) || !TextUtils.isEmpty(logisticsModel.getBillNo())){
+                                StringBuilder logisticsStringBuilder = new StringBuilder();
+                                if(!TextUtils.isEmpty(logisticsModel.getBillNo())){
+                                    logisticsStringBuilder.append("Bill No: "+logisticsModel.getBillNo());
+                                }
+                                if(!TextUtils.isEmpty(logisticsModel.getContainerNo())){
+                                    if(logisticsStringBuilder.length()>0){
+                                        logisticsStringBuilder.append(", Container No: "+logisticsModel.getContainerNo());
+                                    }else{
+                                        logisticsStringBuilder.append("Container No: "+logisticsModel.getContainerNo());
+                                    }
+
+                                }
+                                if(!TextUtils.isEmpty(logisticsModel.getVesselNo())){
+                                    if(logisticsStringBuilder.length()>0){
+                                        logisticsStringBuilder.append(", Vessel No: "+logisticsModel.getVesselNo());
+                                    }else{
+                                        logisticsStringBuilder.append("Vessel No: "+logisticsModel.getVesselNo());
+                                    }
+                                }
+                                if(!TextUtils.isEmpty(logisticsModel.getEta())){
+                                    if(logisticsStringBuilder.length()>0){
+                                        logisticsStringBuilder.append(", E.T.A: "+logisticsModel.getEta());
+                                    }else{
+                                        logisticsStringBuilder.append("E.T.A: "+logisticsModel.getEta());
+                                    }
+                                }
+                                holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.logistics_details));
+                                holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bill No:","Container No:","Vessel No:","E.T.A:"}));
+                            }else{
+                                holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.input_logistics_details));
+                            }
+                        }else{
+                            holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.input_logistics_details));
+                        }
+                    }else{
+                        holder.llLogistics.setOnClickListener(null);
+                        if(list.get(position).getLogisticsModel()!=null){
+                            LogisticsModel logisticsModel = list.get(position).getLogisticsModel();
+                            if(!TextUtils.isEmpty(logisticsModel.getEta()) || !TextUtils.isEmpty(logisticsModel.getContainerNo())
+                                    || !TextUtils.isEmpty(logisticsModel.getVesselNo()) || !TextUtils.isEmpty(logisticsModel.getBillNo())){
+                                StringBuilder logisticsStringBuilder = new StringBuilder();
+                                if(!TextUtils.isEmpty(logisticsModel.getBillNo())){
+
+                                    logisticsStringBuilder.append("Bill No: "+logisticsModel.getBillNo());
+                                }
+                                if(!TextUtils.isEmpty(logisticsModel.getContainerNo())){
+                                    if(logisticsStringBuilder.length()>0){
+                                        logisticsStringBuilder.append(", Container No: "+logisticsModel.getContainerNo());
+                                    }else{
+                                        logisticsStringBuilder.append("Container No: "+logisticsModel.getContainerNo());
+                                    }
+
+                                }
+                                if(!TextUtils.isEmpty(logisticsModel.getVesselNo())){
+                                    if(logisticsStringBuilder.length()>0){
+                                        logisticsStringBuilder.append(", Vessel No: "+logisticsModel.getVesselNo());
+                                    }else{
+                                        logisticsStringBuilder.append("Vessel No: "+logisticsModel.getVesselNo());
+                                    }
+                                }
+                                if(!TextUtils.isEmpty(logisticsModel.getEta())){
+                                    if(logisticsStringBuilder.length()>0){
+                                        logisticsStringBuilder.append(", E.T.A: "+logisticsModel.getEta());
+                                    }else{
+                                        logisticsStringBuilder.append("E.T.A: "+logisticsModel.getEta());
+                                    }
+                                }
+                                holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.logistics_details));
+                                holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bill No:","Container No:","Vessel No:","E.T.A:"}));
+                                holder.llLogistics.setVisibility(View.VISIBLE);
+                            }else{
+                                holder.llLogistics.setVisibility(View.GONE);
+                            }
+                        }else{
+                            holder.llLogistics.setVisibility(View.GONE);
+                        }
+                    }
+
                 }else{
+                    holder.llLogistics.setVisibility(View.GONE);
+                    holder.uploadInvoice.setVisibility(View.GONE);
                     holder.llInvoice.setVisibility(View.GONE);
                     holder.llOrderNo.setVisibility(View.VISIBLE);
                     holder.orderDate.setText(list.get(position).getOrderDate());
@@ -192,9 +305,13 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         TextView noRecords;
         LinearLayout llInvoice;
         LinearLayout llOrderNo;
+        LinearLayout llLogistics;
         TextView txtInvoice;
         TextView txtAdminNotes;
+        TextView txtLogistics;
+        TextView txtHeaderLogistics;
         ImageView openPdf;
+        RelativeLayout uploadInvoice;
 
         public Viewholder(View itemView, int viewType) {
             super(itemView);
@@ -203,10 +320,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llMain = (LinearLayout) itemView.findViewById(R.id.ll_orderStatus);
                     llAdminNotes = (LinearLayout) itemView.findViewById(R.id.ll_adminNotes);
                     partyName = (TextView) itemView.findViewById(R.id.partyName);
+                    uploadInvoice = (RelativeLayout) itemView.findViewById(R.id.rl_uploadInvoiceAdmin);
                     txtOrderDateHeading = (TextView) itemView.findViewById(R.id.tvOrderDateHeading);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
                     llOrderDate = (LinearLayout) itemView.findViewById(R.id.ll_OrderDate);
+                    llLogistics = (LinearLayout) itemView.findViewById(R.id.ll_logistics);
                     orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
                     despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
                     deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);
@@ -214,6 +333,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llOrderNo = (LinearLayout) itemView.findViewById(R.id.ll_OrderNo);
                     txtInvoice = (TextView) itemView.findViewById(R.id.tvInvoiceNo);
                     txtAdminNotes = (TextView) itemView.findViewById(R.id.tv_adminNotes);
+                    txtLogistics = (TextView) itemView.findViewById(R.id.tv_logistics);
+                    txtHeaderLogistics = (TextView) itemView.findViewById(R.id.tv_headerLogistics);
                     openPdf = (ImageView) itemView.findViewById(R.id.open_invoice_pdf);
                     itemView.setOnClickListener(this);
                     break;
@@ -238,5 +359,12 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     }
     public interface RemarkEntered{
         void onRemarkEnteredFromRecylerItem(View view,int pos);
+    }
+    public interface UploadInvoiceListener{
+        void onUploadInvoicePdfClicked(View view, int pos);
+    }
+
+    public interface LogisticsDetailsListener{
+        void onLogisticsDetailsInput(View view,int pos);
     }
 }
