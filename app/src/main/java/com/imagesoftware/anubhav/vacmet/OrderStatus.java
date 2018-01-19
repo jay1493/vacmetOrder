@@ -49,11 +49,13 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.transition.ChangeBounds;
 import android.transition.ChangeImageTransform;
@@ -64,11 +66,13 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.Xml;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -309,7 +313,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ValueEventListener valueEventListenerForLogistics;
     private DatabaseReference mReadDatabaseForLogistics;
     private List<OrderEntity> anySavedOrders;
-
+    private EditText etSearchBar;
+    private TextWatcher searchTextWatcher;
 
 
     @Override
@@ -337,6 +342,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if(mReadDatabase !=null){
             mReadDatabase.removeEventListener(valueEventListenerForOrders);
         }
+        etSearchBar.removeTextChangedListener(searchTextWatcher);
     }
 
     @Override
@@ -834,6 +840,44 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             setUpTransitionEffects();
         }
+        searchTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+               if(TextUtils.isEmpty(editable.toString())){
+                  //Clean Results
+                   etSearchBar.setHint(getResources().getString(R.string.search_hint));
+                   etSearchBar.clearFocus();
+                   orderModelList.clear();
+                   for (int i = 0; i < searchList.size(); i++) {
+                       orderModelList.add(searchList.get(i));
+                   }
+                   noSearchResultFound.setVisibility(View.GONE);
+                   recyclerView.setVisibility(View.VISIBLE);
+                   recyclerViewAdapter.notifyDataSetChanged();
+
+               }
+            }
+        };
+        etSearchBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if(i == EditorInfo.IME_ACTION_SEARCH){
+                  handleSearch(textView.getText().toString());
+                  return true;
+                }
+                return false;
+            }
+        });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -1099,6 +1143,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         ivCollapsingtoolbar = (ImageView) findViewById(R.id.ivCollapsingtoolbar);
+        etSearchBar = (EditText) findViewById(R.id.searchBar);
+        etSearchBar.clearFocus();
         recyclerView = (ShimmerRecyclerView) findViewById(R.id.orderStatusList);
         swipeRefereshLayout = (SwipeRefreshLayout) findViewById(R.id.swipyrefreshlayout);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -1121,6 +1167,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         },false, this,this,isUserAdmin,this,this,this,this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
+
     }
 
     private void initializeRemarkDialog(final View view,final int pos) {
@@ -1155,7 +1202,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private void initializeLogisticsDialog(final View view,final int pos) {
         AlertDialog logisticsAlert = null;
         builderForLogistics = new AlertDialog.Builder(this);
-        final View logisticsView = LayoutInflater.from(this).inflate(R.layout.logistics_dialog_layout,null);
+        View logisticsView = LayoutInflater.from(this).inflate(R.layout.logistics_dialog_layout,null);
         builderForLogistics.setView(logisticsView);
         builderForLogistics.setCancelable(false);
         logisticsStringBuilder = new StringBuilder();
@@ -1163,8 +1210,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         logisticsVesselNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_vessel);
         logisticsContainerNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_container);
         logisticsETA = (EditText) logisticsView.findViewById(R.id.logisticsAlert_eta);
-        Button positiveBtn = (Button) findViewById(R.id.logisticsAlert_positive);
-        Button negativeBtn = (Button) findViewById(R.id.logisticsAlert_negative);
+        Button positiveBtn = (Button) logisticsView.findViewById(R.id.logisticsAlert_positive);
+        Button negativeBtn = (Button) logisticsView.findViewById(R.id.logisticsAlert_negative);
         if(orderModelList.get(pos).getLogisticsModel()!=null) {
             if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBlNo())) {
                 logisticsBillNo.setText(orderModelList.get(pos).getLogisticsModel().getBlNo());
@@ -1288,6 +1335,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             setCollapsingToolbarTitle(getResources().getString(R.string.delivery_status));
         }
         LocalBroadcastManager.getInstance(this).registerReceiver(localBroadcast,intentFilter);
+        etSearchBar.addTextChangedListener(searchTextWatcher);
     }
 
     private void setCollapsingToolbarTitle(String s) {
@@ -1427,7 +1475,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
+      /*  MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.search, menu);
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         final SearchView searchView =
@@ -1490,7 +1538,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
                 return false;
             }
-        });
+        });*/
 
         return true;
     }
@@ -2089,6 +2137,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             if (s.size() > 0) {
                 sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
+                searchList.clear();
                 for (OrderModel o : orderModelList) {
                     searchList.add(o);
                 }
