@@ -34,6 +34,7 @@ public class OrderTranslator {
             orderEntity.setOrderQty(orderModel.getOrderQty());
             orderEntity.setPartyName(orderModel.getPartyName());
             orderEntity.setSapId(orderModel.getSapId());
+            orderEntity.setOldModifiedDates(orderModel.getOldModifiedDates());
             orderEntity.setStatus(orderModel.getStatus());
             orderEntity.setStockQty(orderModel.getStockQty());
             orderEntity.setAdminNotes(orderModel.getAdminNotes());
@@ -56,6 +57,7 @@ public class OrderTranslator {
             orderModel.setInProdQty(orderEntity.getInProdQty());
             orderModel.setAdminNotes(orderEntity.getAdminNotes());
             orderModel.setLogisticsModel(orderEntity.getLogisticsModel());
+            orderModel.setOldModifiedDates(orderEntity.getOldModifiedDates());
             orderModel.setInvoiceDate(orderEntity.getInvoiceDate());
             orderModel.setInvoiceNo(orderEntity.getInvoiceNo());
             orderModel.setIsPending(orderEntity.getIsPending() == 1);

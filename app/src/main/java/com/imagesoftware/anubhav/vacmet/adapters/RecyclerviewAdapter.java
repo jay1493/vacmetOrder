@@ -39,9 +39,11 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     private boolean isAdmin;
     private UploadInvoiceListener uploadPdf;
     private LogisticsDetailsListener logisticsDetails;
+    private ShowPrevModifiedDatesListener showPrevModifiedDates;
 
     public RecyclerviewAdapter(Context context, List<OrderModel> list, ItemClickListener itemClickListener, boolean isDispatched, OpenPdfClicked openPdf,DeliveryDateChanged deliveryDateChanged,
-                               boolean admin, RemarkEntered remarkEnteredListener, UploadInvoiceListener uploadInvoiceListener, LogisticsDetailsListener logisticsDetailsListener) {
+                               boolean admin, RemarkEntered remarkEnteredListener, UploadInvoiceListener uploadInvoiceListener, LogisticsDetailsListener logisticsDetailsListener,
+                               ShowPrevModifiedDatesListener showPrevModifiedDatesListener) {
         this.context = context;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.list = list;
@@ -54,6 +56,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         this.remarkEntered = remarkEnteredListener;
         this.uploadPdf = uploadInvoiceListener;
         this.logisticsDetails = logisticsDetailsListener;
+        this.showPrevModifiedDates = showPrevModifiedDatesListener;
     }
 
     @Override
@@ -104,6 +107,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     }
                 });
                 if(isDispatched){
+                    holder.showPreviousModDates.setVisibility(View.GONE);
+                    holder.showPreviousModDates.setOnClickListener(null);
                     holder.llInvoice.setVisibility(View.VISIBLE);
                     holder.txtInvoice.setText(list.get(position).getInvoiceNo());
                     holder.llOrderNo.setVisibility(View.GONE);
@@ -223,6 +228,15 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     }
 
                 }else{
+                    if(list.get(position).getOldModifiedDates()!=null && list.get(position).getOldModifiedDates().size()>0) {
+                        holder.showPreviousModDates.setVisibility(View.VISIBLE);
+                        holder.showPreviousModDates.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                showPrevModifiedDates.showPreviousDates(view, position);
+                            }
+                        });
+                    }
                     holder.llLogistics.setVisibility(View.GONE);
                     holder.uploadInvoice.setVisibility(View.GONE);
                     holder.llInvoice.setVisibility(View.GONE);
@@ -311,6 +325,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         TextView txtLogistics;
         TextView txtHeaderLogistics;
         ImageView openPdf;
+        ImageView showPreviousModDates;
         RelativeLayout uploadInvoice;
 
         public Viewholder(View itemView, int viewType) {
@@ -336,6 +351,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     txtLogistics = (TextView) itemView.findViewById(R.id.tv_logistics);
                     txtHeaderLogistics = (TextView) itemView.findViewById(R.id.tv_headerLogistics);
                     openPdf = (ImageView) itemView.findViewById(R.id.open_invoice_pdf);
+                    showPreviousModDates = (ImageView) itemView.findViewById(R.id.prevModifiedDates);
                     itemView.setOnClickListener(this);
                     break;
                 case 1:
@@ -367,4 +383,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
     public interface LogisticsDetailsListener{
         void onLogisticsDetailsInput(View view,int pos);
     }
+
+    public interface ShowPrevModifiedDatesListener{
+        void showPreviousDates(View view, int pos);
+    }
+
 }

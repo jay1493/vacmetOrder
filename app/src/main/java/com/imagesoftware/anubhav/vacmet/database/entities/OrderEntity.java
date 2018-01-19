@@ -48,6 +48,9 @@ public class OrderEntity implements Serializable {
         private int isPending;
 
         @Nullable
+        private ArrayList<String> oldModifiedDates;
+
+        @Nullable
         private String adminNotes;
 
         @Nullable
@@ -171,6 +174,15 @@ public class OrderEntity implements Serializable {
 
     public ArrayList<ItemEntity> getItemModelArrayList() {
         return itemModelArrayList;
+    }
+
+    @Nullable
+    public ArrayList<String> getOldModifiedDates() {
+        return oldModifiedDates;
+    }
+
+    public void setOldModifiedDates(@Nullable ArrayList<String> oldModifiedDates) {
+        this.oldModifiedDates = oldModifiedDates;
     }
 
     @Nullable

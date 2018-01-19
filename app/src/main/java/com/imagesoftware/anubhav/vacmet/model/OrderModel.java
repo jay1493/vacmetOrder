@@ -38,6 +38,7 @@ public class OrderModel implements Serializable {
     private int isPending;
     private String adminNotes;
     private LogisticsModel logisticsModel;
+    private ArrayList<String> oldModifiedDates;
     @Ignore
     private ArrayList<ItemModel> itemModelArrayList;
 
@@ -242,6 +243,14 @@ public class OrderModel implements Serializable {
 
     public void setLogisticsModel(LogisticsModel logisticsModel) {
         this.logisticsModel = logisticsModel;
+    }
+
+    public ArrayList<String> getOldModifiedDates() {
+        return oldModifiedDates;
+    }
+
+    public void setOldModifiedDates(ArrayList<String> oldModifiedDates) {
+        this.oldModifiedDates = oldModifiedDates;
     }
 
     @Override

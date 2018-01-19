@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@color/charcoal">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/prev_modified_dates"
+        android:layout_gravity="center"
+        android:padding="@dimen/d5"
+        android:gravity="center"
+        android:textColor="@color/white_alpha"
+        android:textStyle="bold"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/d5"
+        android:layout_gravity="center"
+        android:textColor="@color/white_alpha"
+        android:textSize="@dimen/d12sp"
+        android:text="@string/we_are_sorry_for_the_delay_we_are_working_to_deliver_you_at_the_earliest"/>
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </ListView>
+
+</LinearLayout>

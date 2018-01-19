@@ -199,6 +199,16 @@
                             android:padding="@dimen/d5"
                             android:id="@+id/ll_destDate"
                             android:visibility="visible">
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/show_prev_dates"
+                                android:adjustViewBounds="true"
+                                android:scaleType="centerInside"
+                                android:padding="@dimen/d5"
+                                android:layout_gravity="center"
+                                android:id="@+id/prevModifiedDates"
+                                android:visibility="gone"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -207,6 +217,7 @@
                                 android:gravity="right"
                                 android:text="Delivery Date:"
                                 android:textStyle="bold"
+                                android:maxLines="2"
                                 android:textColor="#FF0000"/>
                         </LinearLayout>
                     </LinearLayout>

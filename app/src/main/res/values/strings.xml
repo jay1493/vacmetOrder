@@ -141,4 +141,7 @@
     <string name="logistics_details">Logistics Details:</string>
     <string name="bl_no">BL No.:</string>
     <string name="input_bl_no">Input BL No</string>
+    <string name="date_modification_split_key">(Modified)</string>
+    <string name="prev_modified_dates">Previously Modified Schedules:</string>
+    <string name="we_are_sorry_for_the_delay_we_are_working_to_deliver_you_at_the_earliest">(We are sorry for the delay, we are working to deliver you at the earliest)</string>
 </resources>

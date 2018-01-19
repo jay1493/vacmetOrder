@@ -69,12 +69,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -178,7 +180,7 @@ import javax.net.ssl.X509TrustManager;
  */
 
 public class OrderStatus extends AppCompatActivity implements View.OnClickListener,RecyclerviewAdapter.OpenPdfClicked,RecyclerviewAdapter.DeliveryDateChanged,RecyclerviewAdapter.RemarkEntered,
-        RecyclerviewAdapter.UploadInvoiceListener,RecyclerviewAdapter.LogisticsDetailsListener{
+        RecyclerviewAdapter.UploadInvoiceListener,RecyclerviewAdapter.LogisticsDetailsListener, RecyclerviewAdapter.ShowPrevModifiedDatesListener{
 
 
     private static final int MY_PERMISSIONS_REQUEST_SYSTEM_ALERT_WINDOW = 9090;
@@ -307,6 +309,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private ValueEventListener valueEventListenerForLogistics;
     private DatabaseReference mReadDatabaseForLogistics;
     private List<OrderEntity> anySavedOrders;
+
 
 
     @Override
@@ -537,6 +540,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
       initializeLogisticsDialog(view,pos);
     }
 
+    @Override
+    public void showPreviousDates(View view, int pos) {
+       initiatePreviousDatesDialog(view,pos);
+    }
+
     class RefreshDatesInOrders extends AsyncTask<DataSnapshot,Void,Void>{
 
         @Override
@@ -554,11 +562,24 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                             matchedOrderModel = orderModel;
                                             if (matchedData != null) {
                                                 AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
-                                                matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
+                                                String dt = fetchedAdminModel.getDeliveryDate();
+                                                if(dt.contains(getResources().getString(R.string.date_modification_split_key))){
+                                                    List<String> modifiedDatesList = new ArrayList<>();
+                                                    String[] splitDts = dt.split(Pattern.quote(getResources().getString(R.string.date_modification_split_key)));
+                                                    for (int i=0;i<splitDts.length-1;i++) {
+                                                        modifiedDatesList.add(splitDts[i]);
+                                                    }
+                                                     matchedOrderModel.setOldModifiedDates(new ArrayList<String>(modifiedDatesList));
+                                                     String fetchNewDt = dt.substring(dt.lastIndexOf(getResources().getString(R.string.date_modification_split_key))+(getResources().getString(R.string.date_modification_split_key).length()),dt.length());
+                                                     matchedOrderModel.setDeliveryDate(fetchNewDt);
+                                                }else {
+                                                    matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
+                                                }
                                                 matchedOrderModel.setAdminNotes(fetchedAdminModel.getAdminNote());
                                                 OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForOrderNo(orderIdPrefs.getString(SapId, null), 1, matchedOrderModel.getOrderNo());
                                                 orderEntityFromSavedDb.setDeliveryDate(matchedOrderModel.getDeliveryDate());
                                                 orderEntityFromSavedDb.setAdminNotes(matchedOrderModel.getAdminNotes());
+                                                orderEntityFromSavedDb.setOldModifiedDates(matchedOrderModel.getOldModifiedDates());
                                                 databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
                                             }
                                         }
@@ -607,7 +628,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         }
 
 
-                                    },closedOrdersRadio.isChecked()?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this,OrderStatus.this,OrderStatus.this);
+                                    },closedOrdersRadio.isChecked()?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this,OrderStatus.this,OrderStatus.this,OrderStatus.this);
                                     recyclerView.setAdapter(recyclerViewAdapter);
                                 }
                             });
@@ -671,7 +692,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
         @Override
         protected Void doInBackground(Integer... integers) {
-            int pos = integers[0];
+            final int pos = integers[0];
             OrderEntity orderEntity = orderTranslator.translateModelToEntity(orderModelList.get(pos));
             orderEntity.setOrderId(orderModelList.get(pos).getOrderId());
             final OrderEntity dummyOrder = orderEntity;
@@ -682,10 +703,59 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         mWriteDatabase.child(orderEntity.getOrderNo()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                AdminModel adminModel = new AdminModel();
-                                adminModel.setDeliveryDate(dummyOrder.getDeliveryDate());
-                                adminModel.setAdminNote(dummyOrder.getAdminNotes());
-                                mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                                AdminModel fetchOldModel = dataSnapshot.getValue(AdminModel.class);
+                                if(fetchOldModel!=null && !TextUtils.isEmpty(fetchOldModel.getDeliveryDate())){
+                                    List<String> modifiedDatesList = new ArrayList<>();
+                                    //Retrieve old value, and append new date at the end
+                                    String dt = fetchOldModel.getDeliveryDate();
+                                    StringBuilder dateBuilder = new StringBuilder();
+                                    if(dt.contains(getResources().getString(R.string.date_modification_split_key))) {
+                                        String[] splitDts = fetchOldModel.getDeliveryDate().split(Pattern.quote(getResources().getString(R.string.date_modification_split_key)));
+                                        for (int i=0;i<splitDts.length-1;i++) {
+                                            modifiedDatesList.add(splitDts[i]);
+                                        }
+                                        dateBuilder.append(dt);
+                                        dateBuilder.append(getResources().getString(R.string.date_modification_split_key));
+                                        dateBuilder.append(dummyOrder.getDeliveryDate());
+                                        AdminModel adminModel = new AdminModel();
+                                        adminModel.setDeliveryDate(dateBuilder.toString());
+                                        adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+
+                                    }else{
+                                        //Consists of one date only
+                                        modifiedDatesList.add(dt);
+                                        dateBuilder.append(dt);
+                                        dateBuilder.append(getResources().getString(R.string.date_modification_split_key));
+                                        dateBuilder.append(dummyOrder.getDeliveryDate());
+                                        AdminModel adminModel = new AdminModel();
+                                        adminModel.setDeliveryDate(dateBuilder.toString());
+                                        adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                                    }
+                                   if(modifiedDatesList!=null && modifiedDatesList.size()>0){
+                                        orderModelList.get(pos).setOldModifiedDates(new ArrayList<String>(modifiedDatesList));
+                                        final List<String> finalList = modifiedDatesList;
+                                        Thread thread = new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                OrderEntity entity = databaseRequestsDao.getOrderForOrderNo(orderIdPrefs.getString(SapId, null), 1, orderModelList.get(pos).getOrderNo());
+                                                entity.setOldModifiedDates(new ArrayList<String>(finalList));
+                                                databaseRequestsDao.updateOrders(entity);
+                                            }
+                                        });
+                                        thread.start();
+
+                                   }
+
+                                }else{
+                                    //Just Set Value
+                                    AdminModel adminModel = new AdminModel();
+                                    adminModel.setDeliveryDate(dummyOrder.getDeliveryDate());
+                                    adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                                    mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                                }
+
                             }
 
                             @Override
@@ -1048,7 +1118,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
 
 
-        },false, this,this,isUserAdmin,this,this,this);
+        },false, this,this,isUserAdmin,this,this,this,this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
     }
@@ -1083,14 +1153,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         alertBuilderForRemarksInput.show();
     }
     private void initializeLogisticsDialog(final View view,final int pos) {
+        AlertDialog logisticsAlert = null;
         builderForLogistics = new AlertDialog.Builder(this);
-        View logisticsView = LayoutInflater.from(this).inflate(R.layout.logistics_dialog_layout,null);
+        final View logisticsView = LayoutInflater.from(this).inflate(R.layout.logistics_dialog_layout,null);
         builderForLogistics.setView(logisticsView);
+        builderForLogistics.setCancelable(false);
         logisticsStringBuilder = new StringBuilder();
         logisticsBillNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_billNo);
         logisticsVesselNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_vessel);
         logisticsContainerNo = (EditText) logisticsView.findViewById(R.id.logisticsAlert_container);
         logisticsETA = (EditText) logisticsView.findViewById(R.id.logisticsAlert_eta);
+        Button positiveBtn = (Button) findViewById(R.id.logisticsAlert_positive);
+        Button negativeBtn = (Button) findViewById(R.id.logisticsAlert_negative);
         if(orderModelList.get(pos).getLogisticsModel()!=null) {
             if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBlNo())) {
                 logisticsBillNo.setText(orderModelList.get(pos).getLogisticsModel().getBlNo());
@@ -1108,68 +1182,99 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 logisticsETA.setText(orderModelList.get(pos).getLogisticsModel().getEta());
             }
         }
-        builderForLogistics.setCancelable(false).setPositiveButton(R.string.save_logistics_data, new DialogInterface.OnClickListener() {
+        /*builderForLogistics.setCancelable(false).setPositiveButton(R.string.save_logistics_data, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                LogisticsModel logisticsModel = new LogisticsModel();
-               if(!TextUtils.isEmpty(logisticsBillNo.getText().toString().trim())){
-                   logisticsModel.setBlNo(logisticsBillNo.getText().toString().trim());
-                   logisticsStringBuilder.append("Bl No: "+logisticsBillNo.getText().toString().trim());
-               }else{
-                   logisticsModel.setBlNo(null);
-               }
-                if(!TextUtils.isEmpty(logisticsContainerNo.getText().toString().trim())){
-                    logisticsModel.setContainerNo(logisticsContainerNo.getText().toString().trim());
-                    if(logisticsStringBuilder.length()>0){
-                        logisticsStringBuilder.append(", Container No: "+logisticsContainerNo.getText().toString().trim());
-                    }else{
-                        logisticsStringBuilder.append("Container No: "+logisticsContainerNo.getText().toString().trim());
-                    }
-
-                }else{
-                    logisticsModel.setContainerNo(null);
-                }
-                if(!TextUtils.isEmpty(logisticsVesselNo.getText().toString().trim())){
-                    logisticsModel.setVesselNo(logisticsVesselNo.getText().toString().trim());
-                    if(logisticsStringBuilder.length()>0){
-                        logisticsStringBuilder.append(", Vessel No: "+logisticsVesselNo.getText().toString().trim());
-                    }else{
-                        logisticsStringBuilder.append("Vessel No: "+logisticsVesselNo.getText().toString().trim());
-                    }
-                }else{
-                    logisticsModel.setVesselNo(null);
-                }
-                if(!TextUtils.isEmpty(logisticsETA.getText().toString().trim())){
-                    logisticsModel.setEta(logisticsETA.getText().toString().trim());
-                    if(logisticsStringBuilder.length()>0){
-                        logisticsStringBuilder.append(", E.T.A: "+logisticsETA.getText().toString().trim());
-                    }else{
-                        logisticsStringBuilder.append("E.T.A: "+logisticsETA.getText().toString().trim());
-                    }
-                }else{
-                    logisticsModel.setEta(null);
-                }
-                orderModelList.get(pos).setLogisticsModel(logisticsModel);
-                TextView logistics = (TextView) view.findViewById(R.id.tv_logistics);
-                logistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bl No:","Container No:","Vessel No:","E.T.A:"}));
-                updateOrder(pos);
-                TextView logisticsHeader = (TextView) view.findViewById(R.id.tv_headerLogistics);
-                if(logisticsStringBuilder.length()>0){
-                    logisticsHeader.setText(getResources().getString(R.string.logistics_details));
-                }else {
-                    logisticsHeader.setText(getResources().getString(R.string.input_invoice_logistics_details));
-                }
-                dialogInterface.dismiss();
-            }
+            public void onClick(DialogInterface dialogInterface, int i)
         }).setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                dialogInterface.dismiss();
             }
+        });*/
+        logisticsAlert = builderForLogistics.create();
+
+        logisticsAlert.show();
+
+        final AlertDialog finalLogisticsAlert = logisticsAlert;
+        positiveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                {
+                    LogisticsModel logisticsModel = new LogisticsModel();
+                    if(!TextUtils.isEmpty(logisticsBillNo.getText().toString().trim())){
+                        logisticsModel.setBlNo(logisticsBillNo.getText().toString().trim());
+                        logisticsStringBuilder.append("Bl No: "+logisticsBillNo.getText().toString().trim());
+                    }else{
+                        logisticsModel.setBlNo(null);
+                    }
+                    if(!TextUtils.isEmpty(logisticsContainerNo.getText().toString().trim())){
+                        logisticsModel.setContainerNo(logisticsContainerNo.getText().toString().trim());
+                        if(logisticsStringBuilder.length()>0){
+                            logisticsStringBuilder.append(", Container No: "+logisticsContainerNo.getText().toString().trim());
+                        }else{
+                            logisticsStringBuilder.append("Container No: "+logisticsContainerNo.getText().toString().trim());
+                        }
+
+                    }else{
+                        logisticsModel.setContainerNo(null);
+                    }
+                    if(!TextUtils.isEmpty(logisticsVesselNo.getText().toString().trim())){
+                        logisticsModel.setVesselNo(logisticsVesselNo.getText().toString().trim());
+                        if(logisticsStringBuilder.length()>0){
+                            logisticsStringBuilder.append(", Vessel No: "+logisticsVesselNo.getText().toString().trim());
+                        }else{
+                            logisticsStringBuilder.append("Vessel No: "+logisticsVesselNo.getText().toString().trim());
+                        }
+                    }else{
+                        logisticsModel.setVesselNo(null);
+                    }
+                    if(!TextUtils.isEmpty(logisticsETA.getText().toString().trim())){
+                        logisticsModel.setEta(logisticsETA.getText().toString().trim());
+                        if(logisticsStringBuilder.length()>0){
+                            logisticsStringBuilder.append(", E.T.A: "+logisticsETA.getText().toString().trim());
+                        }else{
+                            logisticsStringBuilder.append("E.T.A: "+logisticsETA.getText().toString().trim());
+                        }
+                    }else{
+                        logisticsModel.setEta(null);
+                    }
+                    orderModelList.get(pos).setLogisticsModel(logisticsModel);
+                    TextView logistics = (TextView) view.findViewById(R.id.tv_logistics);
+                    logistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bl No:","Container No:","Vessel No:","E.T.A:"}));
+                    updateOrder(pos);
+                    TextView logisticsHeader = (TextView) view.findViewById(R.id.tv_headerLogistics);
+                    if(logisticsStringBuilder.length()>0){
+                        logisticsHeader.setText(getResources().getString(R.string.logistics_details));
+                    }else {
+                        logisticsHeader.setText(getResources().getString(R.string.input_invoice_logistics_details));
+                    }
+
+                    finalLogisticsAlert.dismiss();
+                }
+            }
+        });
+        negativeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+              finalLogisticsAlert.dismiss();
+            }
         });
 
-        builderForLogistics.show();
 
+
+    }
+
+    private void initiatePreviousDatesDialog(final View view,final int pos) {
+       AlertDialog.Builder prevDatesDialog = new AlertDialog.Builder(this);
+       if(orderModelList.get(pos).getOldModifiedDates()!=null && orderModelList.get(pos).getOldModifiedDates().size()>0){
+           View inflateView = LayoutInflater.from(OrderStatus.this).inflate(R.layout.single_textview_alert,null);
+           prevDatesDialog.setView(inflateView);
+           ListView lv = (ListView) inflateView.findViewById(R.id.listView1);
+           ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,orderModelList.get(pos).getOldModifiedDates());
+           lv.setAdapter(adapter);
+           prevDatesDialog.show();
+       }
     }
 
     @Override
@@ -2013,7 +2118,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this,OrderStatus.this,OrderStatus.this);
+                },orderType.equalsIgnoreCase("get_dispatch")?true:false,OrderStatus.this,OrderStatus.this,isUserAdmin,OrderStatus.this,OrderStatus.this,OrderStatus.this,OrderStatus.this);
                 recyclerView.setAdapter(recyclerViewAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 noSearchResultFound.setVisibility(View.GONE);

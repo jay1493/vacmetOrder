@@ -123,7 +123,7 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
                 txtLabelDispatchOrInvoice.setText(getResources().getString(R.string.Request_dispatch_date));
                 orderNo.setText(orderModel.getOrderNo());
                 requestDispatchDate.setText(orderModel.getDeliveryDate());
-                llInProdQty.setVisibility(View.VISIBLE);
+                llInProdQty.setVisibility(View.GONE);
                 //Todo Visibility -Also DeliveryDate and Stock are hidden from layouts of ListOrderClass
                 llStockQty.setVisibility(View.GONE);
                 llRequestDispatchDate.setVisibility(View.GONE);

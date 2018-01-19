@@ -15,4 +15,7 @@
         <item name="color">@color/white</item>
         <item name="spinBars">true</item>
     </style>
+    <style name="AboutDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:textColor">?android:attr/textColorPrimaryInverseDisableOnly</item>
+    </style>
 </resources>
