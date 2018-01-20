@@ -861,9 +861,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                    for (int i = 0; i < searchList.size(); i++) {
                        orderModelList.add(searchList.get(i));
                    }
-                   noSearchResultFound.setVisibility(View.GONE);
-                   recyclerView.setVisibility(View.VISIBLE);
-                   recyclerViewAdapter.notifyDataSetChanged();
+                   if(orderModelList!=null && orderModelList.size()>0) {
+                       noSearchResultFound.setVisibility(View.GONE);
+                       recyclerView.setVisibility(View.VISIBLE);
+                       recyclerViewAdapter.notifyDataSetChanged();
+                   }else{
+                       noSearchResultFound.setVisibility(View.VISIBLE);
+                       recyclerView.setVisibility(View.GONE);
+                   }
 
                }
             }
