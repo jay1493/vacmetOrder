@@ -1250,7 +1250,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         final AlertDialog finalLogisticsAlert = logisticsAlert;
         positiveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View viewClicked) {
                 {
                     LogisticsModel logisticsModel = new LogisticsModel();
                     if(!TextUtils.isEmpty(logisticsBillNo.getText().toString().trim())){

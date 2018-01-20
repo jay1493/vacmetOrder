@@ -216,6 +216,7 @@
                                 android:padding="@dimen/d5"
                                 android:gravity="right"
                                 android:text="Delivery Date:"
+                                android:textSize="@dimen/d12sp"
                                 android:textStyle="bold"
                                 android:maxLines="2"
                                 android:textColor="#FF0000"/>
