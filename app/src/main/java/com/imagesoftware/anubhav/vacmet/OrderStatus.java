@@ -198,6 +198,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
     public static final String STATUS = "STATUS";
+    public static final String CUSTOMER_PO_DATE = "CUSTOMER_PO_DATE";
+    public static final String CUSTOMER_PO_NO = "CUSTOMER_PO_NO";
     public static final String OPEN_QTY = "OPEN_QTY";
     public static final String DESP_QTY = "DESP_QTY";
     public static final String STOCK_QTY = "STOCK_QTY";
@@ -820,7 +822,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             networkExtras.putString(CLIENT_SERVER_CODE,orderIdPrefs.getString(ClientorServer, null));
             Job networkJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.network_refersh_job)).setService(RefereshNetworkService.class)
                     .setExtras(networkExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
-                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(86400,87000)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(10800,12600)).setConstraints(Constraint.ON_ANY_NETWORK).build();
             firebaseJobDispatcher.mustSchedule(makeJob);
             firebaseJobDispatcher.mustSchedule(networkJob);
 
@@ -1218,19 +1220,19 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         Button positiveBtn = (Button) logisticsView.findViewById(R.id.logisticsAlert_positive);
         Button negativeBtn = (Button) logisticsView.findViewById(R.id.logisticsAlert_negative);
         if(orderModelList.get(pos).getLogisticsModel()!=null) {
-            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBlNo())) {
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getBlNo()) && !getResources().getString(R.string.logistics_awaited).equalsIgnoreCase(orderModelList.get(pos).getLogisticsModel().getBlNo())) {
                 logisticsBillNo.setText(orderModelList.get(pos).getLogisticsModel().getBlNo());
             }
 
-            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getVesselNo())) {
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getVesselNo())  && !getResources().getString(R.string.logistics_awaited).equalsIgnoreCase(orderModelList.get(pos).getLogisticsModel().getVesselNo()))  {
                 logisticsVesselNo.setText(orderModelList.get(pos).getLogisticsModel().getVesselNo());
             }
 
-            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getContainerNo())) {
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getContainerNo()) && !getResources().getString(R.string.logistics_awaited).equalsIgnoreCase(orderModelList.get(pos).getLogisticsModel().getContainerNo()))  {
                 logisticsContainerNo.setText(orderModelList.get(pos).getLogisticsModel().getContainerNo());
             }
 
-            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getEta())) {
+            if (!TextUtils.isEmpty(orderModelList.get(pos).getLogisticsModel().getEta()) && !getResources().getString(R.string.logistics_awaited).equalsIgnoreCase(orderModelList.get(pos).getLogisticsModel().getEta()))  {
                 logisticsETA.setText(orderModelList.get(pos).getLogisticsModel().getEta());
             }
         }
@@ -1257,38 +1259,38 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         logisticsModel.setBlNo(logisticsBillNo.getText().toString().trim());
                         logisticsStringBuilder.append("Bl No: "+logisticsBillNo.getText().toString().trim());
                     }else{
-                        logisticsModel.setBlNo(null);
+                        logisticsModel.setBlNo(getResources().getString(R.string.logistics_awaited));
                     }
                     if(!TextUtils.isEmpty(logisticsContainerNo.getText().toString().trim())){
                         logisticsModel.setContainerNo(logisticsContainerNo.getText().toString().trim());
                         if(logisticsStringBuilder.length()>0){
-                            logisticsStringBuilder.append(", Container No: "+logisticsContainerNo.getText().toString().trim());
+                            logisticsStringBuilder.append(" || Container No: "+logisticsContainerNo.getText().toString().trim());
                         }else{
                             logisticsStringBuilder.append("Container No: "+logisticsContainerNo.getText().toString().trim());
                         }
 
                     }else{
-                        logisticsModel.setContainerNo(null);
+                        logisticsModel.setContainerNo(getResources().getString(R.string.logistics_awaited));
                     }
                     if(!TextUtils.isEmpty(logisticsVesselNo.getText().toString().trim())){
                         logisticsModel.setVesselNo(logisticsVesselNo.getText().toString().trim());
                         if(logisticsStringBuilder.length()>0){
-                            logisticsStringBuilder.append(", Vessel No: "+logisticsVesselNo.getText().toString().trim());
+                            logisticsStringBuilder.append(" || Vessel No: "+logisticsVesselNo.getText().toString().trim());
                         }else{
                             logisticsStringBuilder.append("Vessel No: "+logisticsVesselNo.getText().toString().trim());
                         }
                     }else{
-                        logisticsModel.setVesselNo(null);
+                        logisticsModel.setVesselNo(getResources().getString(R.string.logistics_awaited));
                     }
                     if(!TextUtils.isEmpty(logisticsETA.getText().toString().trim())){
                         logisticsModel.setEta(logisticsETA.getText().toString().trim());
                         if(logisticsStringBuilder.length()>0){
-                            logisticsStringBuilder.append(", E.T.A: "+logisticsETA.getText().toString().trim());
+                            logisticsStringBuilder.append(" || E.T.A: "+logisticsETA.getText().toString().trim());
                         }else{
                             logisticsStringBuilder.append("E.T.A: "+logisticsETA.getText().toString().trim());
                         }
                     }else{
-                        logisticsModel.setEta(null);
+                        logisticsModel.setEta(getResources().getString(R.string.logistics_awaited));
                     }
                     orderModelList.get(pos).setLogisticsModel(logisticsModel);
                     TextView logistics = (TextView) view.findViewById(R.id.tv_logistics);
@@ -1912,6 +1914,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                             itemModel.setStatus(xmlPullParser.nextText());
                                         }
                                         break;
+                                    case CUSTOMER_PO_NO:
+                                        /**
+                                         * Here overriding for item would occur, as it was told that p.i details would remain same for all items.
+                                         */
+                                        if(orderModel!=null && saveItemInOrder){
+                                            orderModel.setCustomerPONo(xmlPullParser.nextText().trim());
+                                        }
+                                        break;
+                                    case CUSTOMER_PO_DATE:
+                                        /**
+                                         * Here overriding for item would occur, as it was told that p.i details would remain same for all items.
+                                         */
+                                        if(orderModel!=null && saveItemInOrder){
+                                            orderModel.setCustomerPODate(xmlPullParser.nextText().trim());
+                                        }
+                                        break;
                                     case OPEN_QTY:
                                         String qty1 = xmlPullParser.nextText();
                                         if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty1)) {
@@ -1970,7 +1988,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         break;
                                     case ITEM_CONTAINER_NO_:
                                         if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                            itemModel.setContainerNo(xmlPullParser.nextText());
+                                            String contStr = xmlPullParser.nextText();
+                                            itemModel.setContainerNo(contStr);
+                                            orderModel.addContainerNo(contStr);
                                         }
                                         break;
                                     case ITEM_BILL_NO_:

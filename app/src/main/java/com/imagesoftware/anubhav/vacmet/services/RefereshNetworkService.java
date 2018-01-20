@@ -58,6 +58,8 @@ public class RefereshNetworkService extends JobService {
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
     public static final String STATUS = "STATUS";
+    public static final String CUSTOMER_PO_DATE = "CUSTOMER_PO_DATE";
+    public static final String CUSTOMER_PO_NO = "CUSTOMER_PO_NO";
     public static final String OPEN_QTY = "OPEN_QTY";
     public static final String DESP_QTY = "DESP_QTY";
     public static final String STOCK_QTY = "STOCK_QTY";
@@ -110,9 +112,7 @@ public class RefereshNetworkService extends JobService {
     @Override
     public void onCreate() {
         super.onCreate();
-        vacmetDatabase =  Room.databaseBuilder(this,VacmetDatabase.class,"vacmet_db").build();
-        databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
-        orderTranslator = new OrderTranslator();
+
     }
 
     @Override
@@ -123,6 +123,9 @@ public class RefereshNetworkService extends JobService {
          * hence onJobFinished would be required to call from the worker thread.
          *
          */
+        vacmetDatabase =  Room.databaseBuilder(this,VacmetDatabase.class,"vacmet_db").build();
+        databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
+        orderTranslator = new OrderTranslator();
         if(job!=null && job.getExtras()!=null && job.getExtras().getString(SAP_CODE)!=null && job.getExtras().getString(CLIENT_SERVER_CODE)!=null) {
             initialJob = job;
             sapKey = job.getExtras().getString(SAP_CODE);
@@ -139,6 +142,7 @@ public class RefereshNetworkService extends JobService {
         //Only called when job is finished midway, hence clear resources here, and return true, to indicate to reschedule job
         if(customAsynTaskForJob!=null){
             customAsynTaskForJob.cancel(true);
+            counter = 0;
         }
         return true;
     }
@@ -267,6 +271,22 @@ public class RefereshNetworkService extends JobService {
                                             itemModel.setStatus(xmlPullParser.nextText());
                                         }
                                         break;
+                                    case CUSTOMER_PO_NO:
+                                        /**
+                                         * Here overriding for item would occur, as it was told that p.i details would remain same for all items.
+                                         */
+                                        if(orderModel!=null && saveItemInOrder){
+                                            orderModel.setCustomerPONo(xmlPullParser.nextText().trim());
+                                        }
+                                        break;
+                                    case CUSTOMER_PO_DATE:
+                                        /**
+                                         * Here overriding for item would occur, as it was told that p.i details would remain same for all items.
+                                         */
+                                        if(orderModel!=null && saveItemInOrder){
+                                            orderModel.setCustomerPODate(xmlPullParser.nextText().trim());
+                                        }
+                                        break;
                                     case OPEN_QTY:
                                         String qty1 = xmlPullParser.nextText();
                                         if (orderModel != null && !saveItemInOrder && !TextUtils.isEmpty(qty1)) {
@@ -322,7 +342,9 @@ public class RefereshNetworkService extends JobService {
                                         break;
                                     case ITEM_CONTAINER_NO_:
                                         if (orderModel != null && saveItemInOrder && itemModel != null) {
-                                            itemModel.setContainerNo(xmlPullParser.nextText());
+                                            String contStr = xmlPullParser.nextText();
+                                            itemModel.setContainerNo(contStr);
+                                            orderModel.addContainerNo(contStr);
                                         }
                                         break;
                                     case ITEM_BILL_NO_:
@@ -475,7 +497,8 @@ public class RefereshNetworkService extends JobService {
         @Override
         protected void onPostExecute(List<OrderModel> s) {
             super.onPostExecute(s);
-            if(s!=null && s.size()>0 && counter++ <= 0){
+            counter = counter+1;
+            if(s!=null && s.size()>0 && counter < 2){
                 new CustomAsyncTaskForRestOrderService().execute(clientServerKey,sapKey,GET_DISPATCH_CODE);
             }else if(s!=null && s.size()>0){
                 jobFinished(initialJob,false);

@@ -60,6 +60,11 @@ public class OrderEntity implements Serializable {
         @Ignore
         private ArrayList<ItemEntity> itemModelArrayList;
 
+        @Nullable
+        private String customerPONo;
+        @Nullable
+        private String customerPODate;
+
     public int getOrderId() {
         return orderId;
     }
@@ -205,5 +210,23 @@ public class OrderEntity implements Serializable {
 
     public void setLogisticsModel(@Nullable LogisticsModel logisticsModel) {
         this.logisticsModel = logisticsModel;
+    }
+
+    @Nullable
+    public String getCustomerPONo() {
+        return customerPONo;
+    }
+
+    public void setCustomerPONo(@Nullable String customerPONo) {
+        this.customerPONo = customerPONo;
+    }
+
+    @Nullable
+    public String getCustomerPODate() {
+        return customerPODate;
+    }
+
+    public void setCustomerPODate(@Nullable String customerPODate) {
+        this.customerPODate = customerPODate;
     }
 }

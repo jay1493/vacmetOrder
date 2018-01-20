@@ -41,6 +41,8 @@ public class OrderModel implements Serializable {
     private ArrayList<String> oldModifiedDates;
     @Ignore
     private ArrayList<ItemModel> itemModelArrayList;
+    private String customerPONo;
+    private String customerPODate;
 
     public OrderModel() {
         itemModelArrayList = new ArrayList<>();
@@ -251,6 +253,38 @@ public class OrderModel implements Serializable {
 
     public void setOldModifiedDates(ArrayList<String> oldModifiedDates) {
         this.oldModifiedDates = oldModifiedDates;
+    }
+
+    public void addContainerNo(String containerNo){
+        if(this.logisticsModel==null){
+            this.logisticsModel = new LogisticsModel();
+        }
+        if(!TextUtils.isEmpty(this.logisticsModel.getContainerNo()) && !("Awaited").equalsIgnoreCase(this.logisticsModel.getContainerNo())){
+            StringBuilder stringBuilder = new StringBuilder();
+            String prevNos = this.logisticsModel.getContainerNo();
+            stringBuilder.append(prevNos);
+            stringBuilder.append(",");
+            stringBuilder.append(containerNo);
+            this.logisticsModel.setContainerNo(stringBuilder.toString());
+        }else{
+            this.logisticsModel.setContainerNo(containerNo);
+        }
+    }
+
+    public String getCustomerPONo() {
+        return customerPONo;
+    }
+
+    public void setCustomerPONo(String customerPONo) {
+        this.customerPONo = customerPONo;
+    }
+
+    public String getCustomerPODate() {
+        return customerPODate;
+    }
+
+    public void setCustomerPODate(String customerPODate) {
+        this.customerPODate = customerPODate;
     }
 
     @Override

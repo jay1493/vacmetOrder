@@ -40,6 +40,7 @@
     <string name="Order_Prod_Qty">"In Production: "</string>
     <string name="Item_Name">Item Name</string>
     <string name="despQty_OrderQty">Desp Qty/Order Qty[kg\'s]</string>
+    <string name="despQty_OrderQtyHeader">Desp Qty/Order Qty</string>
     <string name="username_cannot_be_left_blank">Username cannot be left blank</string>
     <string name="password_cannot_be_left_blank">Password cannot be left blank</string>
     <string name="fetching_orders">Fetching orders from server...Please Wait!!</string>
@@ -144,4 +145,8 @@
     <string name="date_modification_split_key">(Modified)</string>
     <string name="prev_modified_dates">Previously Modified Schedules:</string>
     <string name="we_are_sorry_for_the_delay_we_are_working_to_deliver_you_at_the_earliest">(We are sorry for the delay, we are working to deliver you at the earliest)</string>
+    <string name="logistics_awaited">Awaited</string>
+    <string name="p_i_no">P.I No:</string>
+    <string name="p_i_date">P.I Date:</string>
+    <string name="customer_p_i_details">Customer P.I Details</string>
 </resources>

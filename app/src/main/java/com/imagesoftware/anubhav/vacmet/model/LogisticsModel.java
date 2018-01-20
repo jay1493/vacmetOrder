@@ -13,6 +13,13 @@ public class LogisticsModel implements Serializable {
     private String vesselNo;
     private String eta;
 
+    public LogisticsModel() {
+        this.blNo = "Awaited";
+        this.containerNo = "Awaited";
+        this.vesselNo = "Awaited";
+        this.eta = "Awaited";
+    }
+
     public String getBlNo() {
         return blNo;
     }

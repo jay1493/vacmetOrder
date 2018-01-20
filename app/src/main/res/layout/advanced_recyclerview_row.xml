@@ -34,6 +34,75 @@
             </LinearLayout>
 
         </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/rl_customerPiDetails"
+            android:visibility="gone"
+            android:background="@color/grey"
+            android:elevation="@dimen/d5">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="@string/customer_p_i_details"
+                        android:textStyle="bold"
+                        android:padding="@dimen/d5"/>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="@color/charcoal"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="end"
+                    android:gravity="start">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/p_i_no"
+                        android:textStyle="bold"
+                        android:padding="@dimen/d5"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/d5"
+                        android:text=""
+                        android:id="@+id/customerPi_piNo"/>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="end"
+                    android:gravity="start">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/p_i_date"
+                        android:textStyle="bold"
+                        android:padding="@dimen/d5"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/d5"
+                        android:text=""
+                        android:id="@+id/customerPi_piDate"/>
+
+                </LinearLayout>
+            </LinearLayout>
+        </RelativeLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -276,31 +345,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:background="@color/charcoal"/>
-            <LinearLayout
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/logistics_details"
-                    android:id="@+id/tv_headerLogistics"
-                    android:padding="@dimen/d5"
-                    android:textStyle="bold"/>
-                <TextView
+                android:layout_height="match_parent"
+                android:scrollbars="horizontal">
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/tv_logistics"
-                    android:padding="@dimen/d5"
-                    android:ellipsize="marquee"
-                    android:textColor="@color/red_transperant"
-                    android:text=""
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:singleLine="true"
-                    android:scrollHorizontally="true"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"/>
-            </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/logistics_details"
+                        android:id="@+id/tv_headerLogistics"
+                        android:padding="@dimen/d5"
+                        android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/tv_logistics"
+                        android:padding="@dimen/d5"
+                        android:ellipsize="marquee"
+                        android:textColor="@color/red_transperant"
+                        android:text=""
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:singleLine="true"
+                        android:scrollHorizontally="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"/>
+                </LinearLayout>
+            </ScrollView>
+
 
         </LinearLayout>
     </LinearLayout>

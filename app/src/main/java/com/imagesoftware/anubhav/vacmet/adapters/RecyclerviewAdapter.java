@@ -106,6 +106,23 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         itemClickListener.onClick(v,position,holder.orderNo);
                     }
                 });
+                if(!TextUtils.isEmpty(list.get(position).getCustomerPODate()) || !TextUtils.isEmpty(list.get(position).getCustomerPONo())){
+                    holder.piLayout.setVisibility(View.VISIBLE);
+                    if(!TextUtils.isEmpty(list.get(position).getCustomerPODate())){
+                        holder.piDate.setVisibility(View.VISIBLE);
+                        holder.piDate.setText(list.get(position).getCustomerPODate());
+                    }else{
+                        holder.piDate.setVisibility(View.GONE);
+                    }
+                    if(!TextUtils.isEmpty(list.get(position).getCustomerPONo())){
+                        holder.piNo.setVisibility(View.VISIBLE);
+                        holder.piNo.setText(list.get(position).getCustomerPONo());
+                    }else{
+                        holder.piNo.setVisibility(View.GONE);
+                    }
+                }else{
+                    holder.piLayout.setVisibility(View.GONE);
+                }
                 if(isDispatched){
                     holder.showPreviousModDates.setVisibility(View.GONE);
                     holder.showPreviousModDates.setOnClickListener(null);
@@ -155,7 +172,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getContainerNo())){
                                     if(logisticsStringBuilder.length()>0){
-                                        logisticsStringBuilder.append(", Container No: "+logisticsModel.getContainerNo());
+                                        logisticsStringBuilder.append(" || Container No: "+logisticsModel.getContainerNo());
                                     }else{
                                         logisticsStringBuilder.append("Container No: "+logisticsModel.getContainerNo());
                                     }
@@ -163,14 +180,14 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getVesselNo())){
                                     if(logisticsStringBuilder.length()>0){
-                                        logisticsStringBuilder.append(", Vessel No: "+logisticsModel.getVesselNo());
+                                        logisticsStringBuilder.append(" || Vessel No: "+logisticsModel.getVesselNo());
                                     }else{
                                         logisticsStringBuilder.append("Vessel No: "+logisticsModel.getVesselNo());
                                     }
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getEta())){
                                     if(logisticsStringBuilder.length()>0){
-                                        logisticsStringBuilder.append(", E.T.A: "+logisticsModel.getEta());
+                                        logisticsStringBuilder.append(" || E.T.A: "+logisticsModel.getEta());
                                     }else{
                                         logisticsStringBuilder.append("E.T.A: "+logisticsModel.getEta());
                                     }
@@ -196,7 +213,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getContainerNo())){
                                     if(logisticsStringBuilder.length()>0){
-                                        logisticsStringBuilder.append(", Container No: "+logisticsModel.getContainerNo());
+                                        logisticsStringBuilder.append(" || Container No: "+logisticsModel.getContainerNo());
                                     }else{
                                         logisticsStringBuilder.append("Container No: "+logisticsModel.getContainerNo());
                                     }
@@ -204,14 +221,14 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getVesselNo())){
                                     if(logisticsStringBuilder.length()>0){
-                                        logisticsStringBuilder.append(", Vessel No: "+logisticsModel.getVesselNo());
+                                        logisticsStringBuilder.append(" || Vessel No: "+logisticsModel.getVesselNo());
                                     }else{
                                         logisticsStringBuilder.append("Vessel No: "+logisticsModel.getVesselNo());
                                     }
                                 }
                                 if(!TextUtils.isEmpty(logisticsModel.getEta())){
                                     if(logisticsStringBuilder.length()>0){
-                                        logisticsStringBuilder.append(", E.T.A: "+logisticsModel.getEta());
+                                        logisticsStringBuilder.append(" || E.T.A: "+logisticsModel.getEta());
                                     }else{
                                         logisticsStringBuilder.append("E.T.A: "+logisticsModel.getEta());
                                     }
@@ -327,6 +344,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         ImageView openPdf;
         ImageView showPreviousModDates;
         RelativeLayout uploadInvoice;
+        RelativeLayout piLayout;
+        TextView piDate;
+        TextView piNo;
 
         public Viewholder(View itemView, int viewType) {
             super(itemView);
@@ -336,7 +356,10 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llAdminNotes = (LinearLayout) itemView.findViewById(R.id.ll_adminNotes);
                     partyName = (TextView) itemView.findViewById(R.id.partyName);
                     uploadInvoice = (RelativeLayout) itemView.findViewById(R.id.rl_uploadInvoiceAdmin);
+                    piLayout = (RelativeLayout) itemView.findViewById(R.id.rl_customerPiDetails);
                     txtOrderDateHeading = (TextView) itemView.findViewById(R.id.tvOrderDateHeading);
+                    piDate = (TextView) itemView.findViewById(R.id.customerPi_piDate);
+                    piNo = (TextView) itemView.findViewById(R.id.customerPi_piNo);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
                     llOrderDate = (LinearLayout) itemView.findViewById(R.id.ll_OrderDate);
