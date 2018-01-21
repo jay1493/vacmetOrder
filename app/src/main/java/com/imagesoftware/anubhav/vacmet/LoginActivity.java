@@ -92,6 +92,9 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener, FingerprintHandler.FingerPrintCallback {
+    private static final String USER_ROLE = "USER_ROLE";
+    private static final String USER_SAP_LISTS = "USER_SAP_LISTS";
+
     static {
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
     }
@@ -252,7 +255,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if (behaviour.equalsIgnoreCase("SignUp")) {
 
 //                String primaryKey = mDatabase.push().getKey();
-                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer,false);
+                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer,false,"NA","NA");
 
                 mDatabase.child(userEmail.replace(".", getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -359,6 +362,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         edit.putString(LoggedInUserName, userName);
         edit.putString(LoggedInUserPassword, userPassword);
         edit.putBoolean(LOG_IN_MODE_IS_EXISTING_USER, false);
+        edit.putString(USER_ROLE, "NA");
+        edit.putString(USER_SAP_LISTS, "NA");
         edit.apply();
         SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();
         orderIdPrefsEdit.putString(SapId, userSapId);
@@ -400,6 +405,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void collectData(Map<String, Object> value) {
         boolean foundUser = false;
         String name = "";
+        String userRole = null;
+        String sapLists = null;
         boolean isAuthorized = false;
         for (Map.Entry<String, Object> entrySet : value.entrySet()) {
             Map<String, Object> user = (Map<String, Object>) entrySet.getValue();
@@ -417,6 +424,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 name = ((String) user.get("userName"));
                 userSapId = ((String) user.get("sapId"));
                 userClientOrServer = ((String) user.get("clientOrServer"));
+                if(user.get("userRole")!=null){
+                    userRole = (String) user.get("userRole");
+                }
+                if(user.get("sapIdList")!=null){
+                    sapLists = (String) user.get("sapIdList");
+                }
             }
         }
         if (foundUser && isAuthorized) {
@@ -432,6 +445,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             edit.putString(LoggedInUserPassword, etPassword_signIn.getText().toString().trim());
             edit.putBoolean(LOG_IN_MODE_IS_EXISTING_USER, isExistingUser);
             edit.putBoolean(ADMIN_ACCESS,adminAccess);
+            edit.putString(USER_ROLE,userRole);
+            edit.putString(USER_SAP_LISTS,sapLists);
             edit.apply();
 
             SharedPreferences.Editor orderIdPrefsEdit = orderIdPrefs.edit();

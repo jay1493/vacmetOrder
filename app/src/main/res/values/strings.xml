@@ -152,4 +152,5 @@
     <string name="p_i_no">P.I No:</string>
     <string name="p_i_date">P.I Date:</string>
     <string name="pi_eta">E.T.A:</string>
+    <string name="sap_view_not_allowed_in_update_service">User is not allowed to access this SAP ID, please contact Admin</string>
 </resources>
