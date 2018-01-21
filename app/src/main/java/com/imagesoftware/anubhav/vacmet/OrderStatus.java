@@ -1378,7 +1378,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
 
-
+        if(recyclerView!=null){
+            recyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    recyclerView.scrollToPosition(pos);
+                }
+            });
+        }
 
     }
 
