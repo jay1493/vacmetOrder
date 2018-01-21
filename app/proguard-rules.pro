@@ -18,6 +18,27 @@
 -keepclassmembers class com.imagesoftware.anubhav.vacmet.model.** {
   *;
 }
+
+-keepattributes *Annotation*
+
+-keepattributes SourceFile,LineNumberTable
+
+-keep public class * extends java.lang.Exception
+
+-keep class com.crashlytics.** { *; }
+-dontwarn com.crashlytics.**
+-keep class com.firebase.** { *; }
+-keepnames class com.shaded.fasterxml.jackson.** { *; }
+-keepclassmembers class com.imagesoftware.anubhav.vacmet.database.converters.** {
+  *;
+}
+-keepclassmembers class com.imagesoftware.anubhav.vacmet.database.entities.** {
+  *;
+}
+-keepclassmembers class com.imagesoftware.anubhav.vacmet.database.translators.** {
+  *;
+}
+
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:
