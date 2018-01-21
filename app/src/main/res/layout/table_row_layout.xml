@@ -109,5 +109,16 @@
         android:text=""
         android:gravity="left"
         android:visibility="gone"/>
+    <TextView
+        android:id="@+id/txt_containerNo"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_marginRight="@dimen/d20"
+        android:paddingLeft="@dimen/d20"
+        android:paddingRight="@dimen/d10"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:gravity="left"
+        android:visibility="gone"/>
 
 </TableRow>

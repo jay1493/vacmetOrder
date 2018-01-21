@@ -102,7 +102,7 @@
             android:id="@+id/table_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <TableRow android:weightSum="7">
+            <TableRow android:weightSum="10">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -193,6 +193,17 @@
                     android:paddingRight="@dimen/d10"
                     android:layout_height="wrap_content"
                     android:text="@string/sales_order_no"
+                    android:textColor="#003C71"
+                    android:visibility="gone"/>
+                <TextView
+                    android:id="@+id/label_containerNo"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginRight="@dimen/d20"
+                    android:paddingLeft="@dimen/d20"
+                    android:paddingRight="@dimen/d10"
+                    android:layout_height="wrap_content"
+                    android:text="@string/container_no"
                     android:textColor="#003C71"
                     android:visibility="gone"/>
 

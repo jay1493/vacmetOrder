@@ -64,6 +64,13 @@ public class OrderEntity implements Serializable {
         private String customerPONo;
         @Nullable
         private String customerPODate;
+        @Nullable
+        private String partyPONo;
+        @Nullable
+        private String partyPODate;
+        @Nullable
+        private String partyPOETA;
+
 
     public int getOrderId() {
         return orderId;
@@ -228,5 +235,32 @@ public class OrderEntity implements Serializable {
 
     public void setCustomerPODate(@Nullable String customerPODate) {
         this.customerPODate = customerPODate;
+    }
+
+    @Nullable
+    public String getPartyPONo() {
+        return partyPONo;
+    }
+
+    public void setPartyPONo(@Nullable String partyPONo) {
+        this.partyPONo = partyPONo;
+    }
+
+    @Nullable
+    public String getPartyPODate() {
+        return partyPODate;
+    }
+
+    public void setPartyPODate(@Nullable String partyPODate) {
+        this.partyPODate = partyPODate;
+    }
+
+    @Nullable
+    public String getPartyPOETA() {
+        return partyPOETA;
+    }
+
+    public void setPartyPOETA(@Nullable String partyPOETA) {
+        this.partyPOETA = partyPOETA;
     }
 }

@@ -13,7 +13,9 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Created by anubhav on 23/1/17.
@@ -43,6 +45,10 @@ public class OrderModel implements Serializable {
     private ArrayList<ItemModel> itemModelArrayList;
     private String customerPONo;
     private String customerPODate;
+    private String partyPONo;
+    private String partyPODate;
+    private String partyPOETA;
+
 
     public OrderModel() {
         itemModelArrayList = new ArrayList<>();
@@ -262,10 +268,28 @@ public class OrderModel implements Serializable {
         if(!TextUtils.isEmpty(this.logisticsModel.getContainerNo()) && !("Awaited").equalsIgnoreCase(this.logisticsModel.getContainerNo())){
             StringBuilder stringBuilder = new StringBuilder();
             String prevNos = this.logisticsModel.getContainerNo();
-            stringBuilder.append(prevNos);
-            stringBuilder.append(",");
-            stringBuilder.append(containerNo);
-            this.logisticsModel.setContainerNo(stringBuilder.toString());
+            if(prevNos.contains(",")){
+                String split[] = prevNos.split(Pattern.quote(","));
+                List<String> splitList = Arrays.asList(split);
+                if(splitList.contains(containerNo)){
+                    return;
+                }else{
+                    stringBuilder.append(prevNos);
+                    stringBuilder.append(",");
+                    stringBuilder.append(containerNo);
+                    this.logisticsModel.setContainerNo(stringBuilder.toString());
+                }
+            }else{
+                if(!prevNos.equalsIgnoreCase(containerNo)) {
+                    stringBuilder.append(prevNos);
+                    stringBuilder.append(",");
+                    stringBuilder.append(containerNo);
+                    this.logisticsModel.setContainerNo(stringBuilder.toString());
+                }else{
+                    return;
+                }
+            }
+
         }else{
             this.logisticsModel.setContainerNo(containerNo);
         }
@@ -285,6 +309,30 @@ public class OrderModel implements Serializable {
 
     public void setCustomerPODate(String customerPODate) {
         this.customerPODate = customerPODate;
+    }
+
+    public String getPartyPONo() {
+        return partyPONo;
+    }
+
+    public void setPartyPONo(String partyPONo) {
+        this.partyPONo = partyPONo;
+    }
+
+    public String getPartyPODate() {
+        return partyPODate;
+    }
+
+    public void setPartyPODate(String partyPODate) {
+        this.partyPODate = partyPODate;
+    }
+
+    public String getPartyPOETA() {
+        return partyPOETA;
+    }
+
+    public void setPartyPOETA(String partyPOETA) {
+        this.partyPOETA = partyPOETA;
     }
 
     @Override

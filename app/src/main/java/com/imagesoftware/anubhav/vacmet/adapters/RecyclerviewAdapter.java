@@ -106,20 +106,40 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         itemClickListener.onClick(v,position,holder.orderNo);
                     }
                 });
-                if(!TextUtils.isEmpty(list.get(position).getCustomerPODate()) || !TextUtils.isEmpty(list.get(position).getCustomerPONo())){
+                if(!TextUtils.isEmpty(list.get(position).getCustomerPODate()) || !TextUtils.isEmpty(list.get(position).getCustomerPONo()) || !TextUtils.isEmpty(list.get(position).getPartyPODate())
+                        || !TextUtils.isEmpty(list.get(position).getPartyPONo()) || !TextUtils.isEmpty(list.get(position).getPartyPOETA())){
                     holder.piLayout.setVisibility(View.VISIBLE);
                     if(!TextUtils.isEmpty(list.get(position).getCustomerPODate())){
-                        holder.piDate.setVisibility(View.VISIBLE);
+                        holder.llBuyerPiDate.setVisibility(View.VISIBLE);
                         holder.piDate.setText(list.get(position).getCustomerPODate());
                     }else{
-                        holder.piDate.setVisibility(View.GONE);
+                        holder.llBuyerPiDate.setVisibility(View.GONE);
                     }
                     if(!TextUtils.isEmpty(list.get(position).getCustomerPONo())){
-                        holder.piNo.setVisibility(View.VISIBLE);
+                        holder.llBuyerPiNo.setVisibility(View.VISIBLE);
                         holder.piNo.setText(list.get(position).getCustomerPONo());
                     }else{
-                        holder.piNo.setVisibility(View.GONE);
+                        holder.llBuyerPiNo.setVisibility(View.GONE);
                     }
+                    if(!TextUtils.isEmpty(list.get(position).getPartyPONo())){
+                        holder.llPartyPiNo.setVisibility(View.VISIBLE);
+                        holder.partyPiNo.setText(list.get(position).getPartyPONo());
+                    }else{
+                        holder.llPartyPiNo.setVisibility(View.GONE);
+                    }
+                    if(!TextUtils.isEmpty(list.get(position).getPartyPODate())){
+                        holder.llPartyPiDate.setVisibility(View.VISIBLE);
+                        holder.partyPiDate.setText(list.get(position).getPartyPODate());
+                    }else{
+                        holder.llPartyPiDate.setVisibility(View.GONE);
+                    }
+                    if(!TextUtils.isEmpty(list.get(position).getPartyPOETA())){
+                        holder.llPIETA.setVisibility(View.VISIBLE);
+                        holder.piETA.setText(list.get(position).getPartyPOETA());
+                    }else{
+                        holder.llPIETA.setVisibility(View.GONE);
+                    }
+
                 }else{
                     holder.piLayout.setVisibility(View.GONE);
                 }
@@ -253,6 +273,9 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 showPrevModifiedDates.showPreviousDates(view, position);
                             }
                         });
+                    }else{
+                        holder.showPreviousModDates.setVisibility(View.GONE);
+                        holder.showPreviousModDates.setOnClickListener(null);
                     }
                     holder.llLogistics.setVisibility(View.GONE);
                     holder.uploadInvoice.setVisibility(View.GONE);
@@ -337,6 +360,11 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         LinearLayout llInvoice;
         LinearLayout llOrderNo;
         LinearLayout llLogistics;
+        LinearLayout llPIETA;
+        LinearLayout llBuyerPiDate;
+        LinearLayout llPartyPiDate;
+        LinearLayout llBuyerPiNo;
+        LinearLayout llPartyPiNo;
         TextView txtInvoice;
         TextView txtAdminNotes;
         TextView txtLogistics;
@@ -347,6 +375,10 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         RelativeLayout piLayout;
         TextView piDate;
         TextView piNo;
+        TextView partyPiNo;
+        TextView partyPiDate;
+        TextView piETA;
+
 
         public Viewholder(View itemView, int viewType) {
             super(itemView);
@@ -360,10 +392,19 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     txtOrderDateHeading = (TextView) itemView.findViewById(R.id.tvOrderDateHeading);
                     piDate = (TextView) itemView.findViewById(R.id.customerPi_piDate);
                     piNo = (TextView) itemView.findViewById(R.id.customerPi_piNo);
+                    partyPiNo = (TextView) itemView.findViewById(R.id.partyPi_piNo);
+                    partyPiDate = (TextView) itemView.findViewById(R.id.partyPi_piDate);
+                    piETA = (TextView) itemView.findViewById(R.id.pi_eta);
                     orderNo = (TextView) itemView.findViewById(R.id.tvOrderNo);
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
                     llOrderDate = (LinearLayout) itemView.findViewById(R.id.ll_OrderDate);
                     llLogistics = (LinearLayout) itemView.findViewById(R.id.ll_logistics);
+                    llPIETA = (LinearLayout) itemView.findViewById(R.id.ll_piETA);
+                    llPartyPiDate = (LinearLayout) itemView.findViewById(R.id.ll_partyPIDate);
+                    llPartyPiNo = (LinearLayout) itemView.findViewById(R.id.ll_partyPINo);
+                    llBuyerPiDate = (LinearLayout) itemView.findViewById(R.id.ll_buyerPIDate);
+                    llBuyerPiNo = (LinearLayout) itemView.findViewById(R.id.ll_buyerPINo);
+
                     orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
                     despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
                     deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);

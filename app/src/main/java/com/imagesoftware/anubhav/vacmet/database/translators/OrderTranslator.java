@@ -41,6 +41,9 @@ public class OrderTranslator {
             orderEntity.setLogisticsModel(orderModel.getLogisticsModel());
             orderEntity.setCustomerPODate(orderModel.getCustomerPODate());
             orderEntity.setCustomerPONo(orderModel.getCustomerPONo());
+            orderEntity.setPartyPODate(orderModel.getPartyPODate());
+            orderEntity.setPartyPOETA(orderModel.getPartyPOETA());
+            orderEntity.setPartyPONo(orderModel.getPartyPONo());
             for(ItemModel itemModel : orderModel.getItemList()){
                 itemEntities.add(itemTranslator.translateEntityFromModel(itemModel));
             }
@@ -72,6 +75,9 @@ public class OrderTranslator {
             orderModel.setSapId(orderEntity.getSapId());
             orderModel.setStatus(orderEntity.getStatus());
             orderModel.setStockQty(orderEntity.getStockQty());
+            orderModel.setPartyPODate(orderEntity.getPartyPODate());
+            orderModel.setPartyPOETA(orderEntity.getPartyPOETA());
+            orderModel.setPartyPONo(orderEntity.getPartyPONo());
         }
         return orderModel;
     }

@@ -65,42 +65,129 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_gravity="end"
-                    android:gravity="start">
-                    <TextView
-                        android:layout_width="wrap_content"
+                    android:weightSum="10">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="5"
                         android:layout_height="wrap_content"
-                        android:text="@string/p_i_no"
-                        android:textStyle="bold"
-                        android:padding="@dimen/d5"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/d5"
-                        android:text=""
-                        android:id="@+id/customerPi_piNo"/>
+                        android:orientation="horizontal"
+                        android:layout_gravity="end"
+                        android:id="@+id/ll_buyerPINo"
+                        android:gravity="start">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/buyer_p_i_no"
+                            android:textStyle="bold"
+                            android:padding="@dimen/d5"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/d5"
+                            android:text=""
+                            android:maxLines="2"
+                            android:textSize="@dimen/d12sp"
+                            android:id="@+id/customerPi_piNo"/>
 
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="5"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="end"
+                        android:id="@+id/ll_partyPINo"
+                        android:gravity="start">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/p_i_no"
+                            android:textStyle="bold"
+                            android:padding="@dimen/d5"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/d5"
+                            android:text=""
+                            android:maxLines="2"
+                            android:textSize="@dimen/d12sp"
+                            android:id="@+id/partyPi_piNo"/>
+
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:weightSum="10">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="5"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="end"
+                        android:id="@+id/ll_buyerPIDate"
+                        android:gravity="start">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/buyer_p_i_date"
+                            android:textStyle="bold"
+                            android:padding="@dimen/d5"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/d5"
+                            android:text=""
+                            android:maxLines="2"
+                            android:textSize="@dimen/d12sp"
+                            android:id="@+id/customerPi_piDate"/>
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="5"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="end"
+                        android:id="@+id/ll_partyPIDate"
+                        android:gravity="start">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/p_i_date"
+                            android:textStyle="bold"
+                            android:padding="@dimen/d5"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/d5"
+                            android:text=""
+                            android:maxLines="2"
+                            android:textSize="@dimen/d12sp"
+                            android:id="@+id/partyPi_piDate"/>
+
+                    </LinearLayout>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_gravity="end"
-                    android:gravity="start">
+                    android:id="@+id/ll_piETA">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/p_i_date"
-                        android:textStyle="bold"
-                        android:padding="@dimen/d5"/>
+                        android:text="@string/pi_eta"
+                        android:padding="@dimen/d5"
+                        android:textStyle="bold"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:padding="@dimen/d5"
-                        android:text=""
-                        android:id="@+id/customerPi_piDate"/>
-
+                        android:textSize="@dimen/d12sp"
+                        android:id="@+id/pi_eta"
+                        android:textColor="@color/red_transperant"/>
                 </LinearLayout>
+
             </LinearLayout>
         </RelativeLayout>
         <LinearLayout
@@ -337,7 +424,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/ll_logistics"
             android:visibility="gone"
             android:padding="@dimen/d5"
             android:orientation="vertical">
@@ -345,14 +431,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:background="@color/charcoal"/>
-            <ScrollView
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="horizontal">
+                android:scrollbars="horizontal"
+                android:scrollbarAlwaysDrawHorizontalTrack="true"
+                android:scrollIndicators="bottom">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:id="@+id/ll_logistics"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/d10"
+                    android:clickable="true">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -374,7 +465,7 @@
                         android:focusable="true"
                         android:focusableInTouchMode="true"/>
                 </LinearLayout>
-            </ScrollView>
+            </HorizontalScrollView>
 
 
         </LinearLayout>

@@ -77,10 +77,13 @@ public class ListOrderInformation extends BaseAdapter {
             holder.itemTreatment2 = (TextView) view.findViewById(R.id.txt_detailsTreatment2);
             holder.itemContainerNo = (TextView) view.findViewById(R.id.txt_detailsContainerNo);
             holder.itemShades = (TextView) view.findViewById(R.id.txt_detailsShades);
+            holder.containerNo = (TextView) view.findViewById(R.id.label_containerNo);
             view.setTag(holder);
         if(!isDispatched){
+            holder.containerNo.setVisibility(View.GONE);
             holder.labelSalesOrder.setVisibility(View.GONE);
         }else{
+            holder.containerNo.setVisibility(View.VISIBLE);
             holder.labelSalesOrder.setVisibility(View.VISIBLE);
         }
         /*}else{
@@ -125,7 +128,7 @@ public class ListOrderInformation extends BaseAdapter {
                 TextView treatment2;
                 TextView salesOrder;
                 TextView shades;
-
+                TextView containerNo;
                 length = (TextView) itemView.findViewById(R.id.txt_length);
                 shades = (TextView) itemView.findViewById(R.id.txt_shades);
                 salesOrder = (TextView) itemView.findViewById(R.id.txt_sales_order);
@@ -135,6 +138,7 @@ public class ListOrderInformation extends BaseAdapter {
                 stockQty = (TextView) itemView.findViewById(R.id.txt_item_stock);
                 treatment1 = (TextView) itemView.findViewById(R.id.txt_treatment1);
                 treatment2 = (TextView) itemView.findViewById(R.id.txt_treatment2);
+                containerNo = (TextView) itemView.findViewById(R.id.txt_containerNo);
                 length.setText("0");
                 width.setText("0");
                 orderQty.setText("0/0");
@@ -143,7 +147,12 @@ public class ListOrderInformation extends BaseAdapter {
                     if(((ItemModel)getItem(i)).getContainedOrderNoList()!=null && ((ItemModel)getItem(i)).getContainedOrderNoList().size()>0 && p<=((ItemModel)getItem(i)).getContainedOrderNoList().size()-1){
                         salesOrder.setText(((ItemModel)getItem(i)).getContainedOrderNoList().get(p));
                     }
+                    containerNo.setVisibility(View.VISIBLE);
+                    if(((ItemModel)getItem(i)).getContainerNoList()!=null && ((ItemModel)getItem(i)).getContainerNoList().size()>0 && p<=((ItemModel)getItem(i)).getContainerNoList().size()-1){
+                        containerNo.setText(((ItemModel)getItem(i)).getContainerNoList().get(p));
+                    }
                 }else{
+                    containerNo.setVisibility(View.GONE);
                     salesOrder.setVisibility(View.GONE);
                 }
 
@@ -255,5 +264,6 @@ public class ListOrderInformation extends BaseAdapter {
        TextView itemTreatment2;
        TextView itemShades;
        TextView itemContainerNo;
+       TextView containerNo;
     }
 }

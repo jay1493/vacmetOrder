@@ -571,17 +571,22 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                             if (matchedData != null) {
                                                 AdminModel fetchedAdminModel = matchedData.getValue(AdminModel.class);
                                                 String dt = fetchedAdminModel.getDeliveryDate();
-                                                if(dt.contains(getResources().getString(R.string.date_modification_split_key))){
-                                                    List<String> modifiedDatesList = new ArrayList<>();
-                                                    String[] splitDts = dt.split(Pattern.quote(getResources().getString(R.string.date_modification_split_key)));
-                                                    for (int i=0;i<splitDts.length-1;i++) {
-                                                        modifiedDatesList.add(splitDts[i]);
+                                                if(!TextUtils.isEmpty(dt)) {
+                                                    if (dt.contains(getResources().getString(R.string.date_modification_split_key))) {
+                                                        List<String> modifiedDatesList = new ArrayList<>();
+                                                        String[] splitDts = dt.split(Pattern.quote(getResources().getString(R.string.date_modification_split_key)));
+                                                        for (int i = 0; i < splitDts.length - 1; i++) {
+                                                            modifiedDatesList.add(splitDts[i]);
+                                                        }
+                                                        matchedOrderModel.setOldModifiedDates(new ArrayList<String>(modifiedDatesList));
+                                                        String fetchNewDt = dt.substring(dt.lastIndexOf(getResources().getString(R.string.date_modification_split_key)) + (getResources().getString(R.string.date_modification_split_key).length()), dt.length());
+                                                        matchedOrderModel.setDeliveryDate(fetchNewDt);
+                                                    } else {
+                                                        matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
                                                     }
-                                                     matchedOrderModel.setOldModifiedDates(new ArrayList<String>(modifiedDatesList));
-                                                     String fetchNewDt = dt.substring(dt.lastIndexOf(getResources().getString(R.string.date_modification_split_key))+(getResources().getString(R.string.date_modification_split_key).length()),dt.length());
-                                                     matchedOrderModel.setDeliveryDate(fetchNewDt);
-                                                }else {
-                                                    matchedOrderModel.setDeliveryDate(fetchedAdminModel.getDeliveryDate());
+                                                }else{
+                                                    matchedOrderModel.setDeliveryDate(null);
+                                                    matchedOrderModel.setOldModifiedDates(null);
                                                 }
                                                 matchedOrderModel.setAdminNotes(fetchedAdminModel.getAdminNote());
                                                 OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForOrderNo(orderIdPrefs.getString(SapId, null), 1, matchedOrderModel.getOrderNo());
@@ -1260,6 +1265,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         logisticsStringBuilder.append("Bl No: "+logisticsBillNo.getText().toString().trim());
                     }else{
                         logisticsModel.setBlNo(getResources().getString(R.string.logistics_awaited));
+                        logisticsStringBuilder.append("Bl No: "+getResources().getString(R.string.logistics_awaited));
                     }
                     if(!TextUtils.isEmpty(logisticsContainerNo.getText().toString().trim())){
                         logisticsModel.setContainerNo(logisticsContainerNo.getText().toString().trim());
@@ -1271,6 +1277,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                     }else{
                         logisticsModel.setContainerNo(getResources().getString(R.string.logistics_awaited));
+                        logisticsStringBuilder.append("Container No: "+getResources().getString(R.string.logistics_awaited));
                     }
                     if(!TextUtils.isEmpty(logisticsVesselNo.getText().toString().trim())){
                         logisticsModel.setVesselNo(logisticsVesselNo.getText().toString().trim());
@@ -1281,6 +1288,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         }
                     }else{
                         logisticsModel.setVesselNo(getResources().getString(R.string.logistics_awaited));
+                        logisticsStringBuilder.append("Vessel No: "+getResources().getString(R.string.logistics_awaited));
                     }
                     if(!TextUtils.isEmpty(logisticsETA.getText().toString().trim())){
                         logisticsModel.setEta(logisticsETA.getText().toString().trim());
@@ -1291,6 +1299,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         }
                     }else{
                         logisticsModel.setEta(getResources().getString(R.string.logistics_awaited));
+                        logisticsStringBuilder.append("E.T.A: "+getResources().getString(R.string.logistics_awaited));
                     }
                     orderModelList.get(pos).setLogisticsModel(logisticsModel);
                     TextView logistics = (TextView) view.findViewById(R.id.tv_logistics);
@@ -2838,6 +2847,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(str.contains(colorArgs[i])) {
                 spannableString.setSpan(new ForegroundColorSpan(Color.DKGRAY), str.indexOf(colorArgs[i]),
                         str.indexOf(colorArgs[i])+colorArgs[i].length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if(str.indexOf("||",str.indexOf(colorArgs[i]))!=-1) {
+                    spannableString.setSpan(new ForegroundColorSpan(Color.RED), str.indexOf("||", str.indexOf(colorArgs[i])),
+                            str.indexOf("||", str.indexOf(colorArgs[i])) + "||".length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
             }
         }
 
