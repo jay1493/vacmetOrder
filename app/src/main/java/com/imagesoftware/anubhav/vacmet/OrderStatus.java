@@ -251,7 +251,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String LoggedInUser = "LoggedInUser";
     private final String LoggedInUserName = "LoggedInUserName";
     private final String LoggedInUserPassword = "LoggedInUserPassword";
-    private String urlForOrders1 = "http://122.160.221.107:8020/sap/bc/";
+    private String urlForOrders1 = "http://103.196.11.210:8020/sap/bc/";
     private String urlForOrders2 = "?sap-client=500&";
     private ProgressDialog progressDialog;
     private final String Main_Table_Xml_Tag = "ZBAPI_HDR_SOSTATUS";
