@@ -371,23 +371,31 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             nameBuilder.append(logingSharePrefs.getString(LoggedInUserName, null));
 
             if(logingSharePrefs.getString(USER_ROLE, null) != null){
-                nameBuilder.append("(");
-                nameBuilder.append(logingSharePrefs.getString(USER_ROLE, null));
-                nameBuilder.append(")");
+                if(!"NA".equalsIgnoreCase(logingSharePrefs.getString(USER_ROLE, null))) {
+                    nameBuilder.append("(");
+                    nameBuilder.append(logingSharePrefs.getString(USER_ROLE, null));
+                    nameBuilder.append(")");
+                }
             }
             employeeName.setText(nameBuilder.toString());
         }
         if(logingSharePrefs.getString(USER_SAP_LISTS, null) != null){
-            String list = logingSharePrefs.getString(USER_SAP_LISTS, null);
-            if(list.contains(",")){
-                String[] splitSap = list.split(Pattern.quote(","));
-                sapListsToAllow = Arrays.asList(splitSap);
-            }else{
-                sapListsToAllow = new ArrayList<>();
-                sapListsToAllow.add(list);
+            sapListsToAllow = new ArrayList<>();
+            if(!"NA".equalsIgnoreCase(logingSharePrefs.getString(USER_SAP_LISTS, null))) {
+                String list = logingSharePrefs.getString(USER_SAP_LISTS, null);
+                if (list.contains(",")) {
+                    String[] splitSap = list.split(Pattern.quote(","));
+                    sapListsToAllow = Arrays.asList(splitSap);
+                } else {
+
+                    sapListsToAllow.add(list);
+                }
+
             }
             sapListsToAllow.add(orderIdPrefs.getString(SapId, null));
-
+        }else{
+            sapListsToAllow = new ArrayList<>();
+            sapListsToAllow.add(orderIdPrefs.getString(SapId, null));
         }
 //        feedDummyData();
         if (orderIdPrefs.getString(ClientorServer, null) == null) {
@@ -469,7 +477,63 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         }else{
             adminConsole.setVisibility(View.VISIBLE);
         }
-
+        btnUpdateService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!sapListsToAllow.contains(etSapId.getText().toString().trim())) {
+                    if (drawerLayout.isDrawerOpen(Gravity.START)) {
+                        drawerLayout.closeDrawers();
+                    }
+                    dispalyGeneralizedSnackBar(getString(R.string.sap_view_not_allowed_in_update_service));
+                    if("s".equalsIgnoreCase(orderIdPrefs.getString(ClientorServer, null))){
+                        radioServer.setChecked(true);
+                    }else{
+                        radioClient.setChecked(true);
+                    }
+                    etSapId.setText(orderIdPrefs.getString(SapId, null));
+                    etSapId.setEnabled(false);
+                    etSapId.setFocusable(false);
+                    etSapId.setFocusableInTouchMode(true);
+                    radioGroup.setClickable(false);
+                    radioServer.setEnabled(false);
+                    radioServer.setClickable(false);
+                    radioClient.setEnabled(false);
+                    radioClient.setClickable(false);
+                    return;
+                } else {
+                    etSapId.setEnabled(false);
+                    etSapId.setFocusable(false);
+                    etSapId.setFocusableInTouchMode(true);
+                    radioGroup.setClickable(false);
+                    radioServer.setEnabled(false);
+                    radioServer.setClickable(false);
+                    radioClient.setEnabled(false);
+                    radioClient.setClickable(false);
+                    String isClientorServer = null;
+                    if (radioClient.isChecked()) {
+                        isClientorServer = "c";
+                        employeeDesig.setText(getResources().getString(R.string.client));
+                    } else if (radioServer.isChecked()) {
+                        isClientorServer = "s";
+                        employeeDesig.setText(getResources().getString(R.string.Sales_executive));
+                    }
+                    String orderType = "";
+                    if (openOrdersRadio.isChecked()) {
+                        orderType = "get_pendingord";
+                    } else if (closedOrdersRadio.isChecked()) {
+                        orderType = "get_dispatch";
+                    } else {
+                        orderType = "get_pendingord";
+                    }
+                    DefaultSapId = etSapId.getText().toString().trim();
+                    SharedPreferences.Editor editor = orderIdPrefs.edit();
+                    editor.putString(SapId, etSapId.getText().toString().trim());
+                    editor.putString(ClientorServer, isClientorServer);
+                    editor.apply();
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), etSapId.getText().toString().trim(), orderType);
+                }
+            }
+        });
 
     }
 
@@ -1116,59 +1180,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
         btnUpdateService = (Button) findViewById(R.id.btn_hitService);
-        btnUpdateService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!sapListsToAllow.contains(etSapId.getText().toString().trim())) {
-                    dispalyGeneralizedSnackBar(getString(R.string.sap_view_not_allowed_in_update_service));
-                    if("s".equalsIgnoreCase(orderIdPrefs.getString(ClientorServer, null))){
-                        radioServer.setChecked(true);
-                    }else{
-                        radioClient.setChecked(true);
-                    }
-                    etSapId.setEnabled(false);
-                    etSapId.setFocusable(false);
-                    etSapId.setFocusableInTouchMode(true);
-                    radioGroup.setClickable(false);
-                    radioServer.setEnabled(false);
-                    radioServer.setClickable(false);
-                    radioClient.setEnabled(false);
-                    radioClient.setClickable(false);
-                    return;
-                } else {
-                    etSapId.setEnabled(false);
-                    etSapId.setFocusable(false);
-                    etSapId.setFocusableInTouchMode(true);
-                    radioGroup.setClickable(false);
-                    radioServer.setEnabled(false);
-                    radioServer.setClickable(false);
-                    radioClient.setEnabled(false);
-                    radioClient.setClickable(false);
-                    String isClientorServer = null;
-                    if (radioClient.isChecked()) {
-                        isClientorServer = "c";
-                        employeeDesig.setText(getResources().getString(R.string.client));
-                    } else if (radioServer.isChecked()) {
-                        isClientorServer = "s";
-                        employeeDesig.setText(getResources().getString(R.string.Sales_executive));
-                    }
-                    String orderType = "";
-                    if (openOrdersRadio.isChecked()) {
-                        orderType = "get_pendingord";
-                    } else if (closedOrdersRadio.isChecked()) {
-                        orderType = "get_dispatch";
-                    } else {
-                        orderType = "get_pendingord";
-                    }
-                    DefaultSapId = etSapId.getText().toString().trim();
-                    SharedPreferences.Editor editor = orderIdPrefs.edit();
-                    editor.putString(SapId, etSapId.getText().toString().trim());
-                    editor.putString(ClientorServer, isClientorServer);
-                    editor.apply();
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), etSapId.getText().toString().trim(), orderType);
-                }
-            }
-        });
+
         employeeName = (TextView) findViewById(R.id.name);
         employeePic = (ImageView) findViewById(R.id.img_profile);
         employeeDesig = (TextView) findViewById(R.id.designation);

@@ -92,6 +92,7 @@
                             android:id="@+id/et_sap_id"
                             android:enabled="false"
                             android:inputType="number"
+                            android:textColor="@color/charcoal"
                             android:focusable="false"/>
                         <ImageView
                             android:id="@+id/edit_sap_id"
