@@ -76,7 +76,7 @@
     <string name="orderTransition">Order Transition</string>
     <string name="status_not_known">Status(Not known)</string>
     <string name="item_length_cumulative">Length(s)[mtrs]:</string>
-    <string name="item_width_cumulative">Width(s):</string>
+    <string name="item_width_cumulative">Width(s)[mm]:</string>
     <string name="open_qty">Open Qty:</string>
     <string name="stock_left">(Stock left)</string>
     <string name="stock_qty">Stock Qty(s):</string>
@@ -146,8 +146,8 @@
     <string name="prev_modified_dates">Previously Modified Schedules:</string>
     <string name="we_are_sorry_for_the_delay_we_are_working_to_deliver_you_at_the_earliest">(We are sorry for the delay, we are working to deliver you at the earliest)</string>
     <string name="logistics_awaited">Awaited</string>
-    <string name="buyer_p_i_no">Buyer P.I No:</string>
-    <string name="buyer_p_i_date">Buyer P.I Date:</string>
+    <string name="buyer_p_i_no">Buyer Order No:</string>
+    <string name="buyer_p_i_date">Buyer Order Date:</string>
     <string name="customer_p_i_details">Customer P.I Details</string>
     <string name="p_i_no">P.I No:</string>
     <string name="p_i_date">P.I Date:</string>

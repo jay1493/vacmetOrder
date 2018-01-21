@@ -19,15 +19,23 @@ android {
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        dexOptions {
+            incremental false
+        }
     }
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources false
+            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             minifyEnabled false
+            useProguard true
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -38,6 +46,7 @@ repositories {
     maven { url "http://repo.commonsware.com.s3.amazonaws.com" }
     maven { url "https://jitpack.io" }
     maven { url 'https://maven.fabric.io/public' }
+    google()
 }
 
 dependencies {
@@ -47,7 +56,7 @@ dependencies {
     })
 
     compile "com.cleveroad:adaptivetablelayout:1.1.1"
-    compile 'com.android.support:appcompat-v7:27.0.2'
+    compile 'com.android.support:appcompat-v7:27.0.0'
     compile 'com.android.support:animated-vector-drawable:27.0.2'
     compile 'com.android.support:design:27.0.2'
     compile 'com.google.android.gms:play-services-auth:9.2.1'
