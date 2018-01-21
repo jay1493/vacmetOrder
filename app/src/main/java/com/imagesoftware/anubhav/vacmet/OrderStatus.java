@@ -1196,7 +1196,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         orderModelList.get(pos).setAdminNotes(editForDialog.getText().toString().trim());
                         TextView delDt = (TextView)(view.findViewById(R.id.tv_adminNotes));
                         if(!TextUtils.isEmpty(editForDialog.getText().toString().trim())) {
-                            delDt.setText(editForDialog.getText().toString().trim());
+                            delDt.setText("Remarks: "+editForDialog.getText().toString().trim());
                         }else{
                             delDt.setText("Enter Remarks ");
                         }

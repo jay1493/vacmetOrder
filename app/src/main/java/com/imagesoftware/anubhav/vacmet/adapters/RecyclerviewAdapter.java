@@ -181,7 +181,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 logisticsDetails.onLogisticsDetailsInput(view,position);
                             }
                         });
-                        holder.llLogistics.setVisibility(View.VISIBLE);
+                        holder.llMainLogistics.setVisibility(View.VISIBLE);
                         if(list.get(position).getLogisticsModel()!=null){
                             LogisticsModel logisticsModel = list.get(position).getLogisticsModel();
                             if(!TextUtils.isEmpty(logisticsModel.getEta()) || !TextUtils.isEmpty(logisticsModel.getContainerNo())
@@ -255,12 +255,14 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                                 }
                                 holder.txtHeaderLogistics.setText(context.getResources().getString(R.string.logistics_details));
                                 holder.txtLogistics.setText(convertStringInSpanColors(logisticsStringBuilder.toString(),new String[]{"Bl No:","Container No:","Vessel No:","E.T.A:"}));
-                                holder.llLogistics.setVisibility(View.VISIBLE);
+                                holder.llMainLogistics.setVisibility(View.VISIBLE);
                             }else{
-                                holder.llLogistics.setVisibility(View.GONE);
+                                holder.llMainLogistics.setVisibility(View.GONE);
+                                holder.llLogistics.setOnClickListener(null);
                             }
                         }else{
-                            holder.llLogistics.setVisibility(View.GONE);
+                            holder.llMainLogistics.setVisibility(View.GONE);
+                            holder.llLogistics.setOnClickListener(null);
                         }
                     }
 
@@ -277,7 +279,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         holder.showPreviousModDates.setVisibility(View.GONE);
                         holder.showPreviousModDates.setOnClickListener(null);
                     }
-                    holder.llLogistics.setVisibility(View.GONE);
+                    holder.llMainLogistics.setVisibility(View.GONE);
+                    holder.llLogistics.setOnClickListener(null);
                     holder.uploadInvoice.setVisibility(View.GONE);
                     holder.llInvoice.setVisibility(View.GONE);
                     holder.llOrderNo.setVisibility(View.VISIBLE);
@@ -360,6 +363,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         LinearLayout llInvoice;
         LinearLayout llOrderNo;
         LinearLayout llLogistics;
+        LinearLayout llMainLogistics;
         LinearLayout llPIETA;
         LinearLayout llBuyerPiDate;
         LinearLayout llPartyPiDate;
@@ -399,6 +403,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     orderDate = (TextView) itemView.findViewById(R.id.tvOrderDate);
                     llOrderDate = (LinearLayout) itemView.findViewById(R.id.ll_OrderDate);
                     llLogistics = (LinearLayout) itemView.findViewById(R.id.ll_logistics);
+                    llMainLogistics = (LinearLayout) itemView.findViewById(R.id.mainLogistics);
                     llPIETA = (LinearLayout) itemView.findViewById(R.id.ll_piETA);
                     llPartyPiDate = (LinearLayout) itemView.findViewById(R.id.ll_partyPIDate);
                     llPartyPiNo = (LinearLayout) itemView.findViewById(R.id.ll_partyPINo);
