@@ -922,7 +922,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             networkExtras.putString(CLIENT_SERVER_CODE,orderIdPrefs.getString(ClientorServer, null));
             Job networkJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.network_refersh_job)).setService(RefereshNetworkService.class)
                     .setExtras(networkExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
-                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(10,60)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(10800,12600)).setConstraints(Constraint.ON_ANY_NETWORK).build();
             firebaseJobDispatcher.mustSchedule(makeJob);
             firebaseJobDispatcher.mustSchedule(networkJob);
 
