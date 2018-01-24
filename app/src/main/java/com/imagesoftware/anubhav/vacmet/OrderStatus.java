@@ -199,6 +199,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
     public static final String STATUS = "STATUS";
+    public static final String PARTY_PI_ETA = "PARTY_PI_ETA";
     public static final String CUSTOMER_PO_DATE = "CUSTOMER_PO_DATE";
     public static final String CUSTOMER_PO_NO = "CUSTOMER_PO_NO";
     public static final String OPEN_QTY = "OPEN_QTY";
@@ -1982,6 +1983,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                             orderModel.setStatus(xmlPullParser.nextText());
                                         } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                             itemModel.setStatus(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case PARTY_PI_ETA:
+                                        if(orderModel!=null && saveItemInOrder){
+                                            orderModel.setPartyPOETA(xmlPullParser.nextText().trim());
                                         }
                                         break;
                                     case CUSTOMER_PO_NO:
