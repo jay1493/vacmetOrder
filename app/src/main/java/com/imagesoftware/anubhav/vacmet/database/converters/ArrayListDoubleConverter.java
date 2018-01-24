@@ -36,15 +36,20 @@ public class ArrayListDoubleConverter {
     public ArrayList<Double> convertToArrayList(String result){
         ArrayList<Double> tokenList = null;
         if(!TextUtils.isEmpty(result)) {
-            String[] seperatedTokens = result.split(Pattern.quote("$"));
-            tokenList = new ArrayList<>();
-            Log.i("ArrayListConverter", "convertToArrayList: "+seperatedTokens[0]+" "+seperatedTokens[seperatedTokens.length-1]);
-            for(int i=0; i< seperatedTokens.length; i++){
-                if(seperatedTokens[i].equalsIgnoreCase("0.0")){
-                    tokenList.add(0.0);
-                }else {
-                    tokenList.add(Double.parseDouble(seperatedTokens[i].contains(",") ? seperatedTokens[i].replaceAll(",", "") : seperatedTokens[i]));
+            if(result.contains("$")) {
+                String[] seperatedTokens = result.split(Pattern.quote("$"));
+                tokenList = new ArrayList<>();
+                Log.i("ArrayListConverter", "convertToArrayList: " + seperatedTokens[0] + " " + seperatedTokens[seperatedTokens.length - 1]);
+                for (int i = 0; i < seperatedTokens.length; i++) {
+                    if (seperatedTokens[i].equalsIgnoreCase("0.0")) {
+                        tokenList.add(0.0);
+                    } else {
+                        tokenList.add(Double.parseDouble(seperatedTokens[i].contains(",") ? seperatedTokens[i].replaceAll(",", "") : seperatedTokens[i]));
+                    }
                 }
+            }else{
+                tokenList = new ArrayList<>();
+                tokenList.add(Double.parseDouble(result));
             }
 
         }
