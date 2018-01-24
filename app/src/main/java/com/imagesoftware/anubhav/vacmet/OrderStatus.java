@@ -681,10 +681,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                                 }
                                                 matchedOrderModel.setAdminNotes(fetchedAdminModel.getAdminNote());
                                                 OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForOrderNo(orderIdPrefs.getString(SapId, null), 1, matchedOrderModel.getOrderNo());
-                                                orderEntityFromSavedDb.setDeliveryDate(matchedOrderModel.getDeliveryDate());
-                                                orderEntityFromSavedDb.setAdminNotes(matchedOrderModel.getAdminNotes());
-                                                orderEntityFromSavedDb.setOldModifiedDates(matchedOrderModel.getOldModifiedDates());
-                                                databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                                if(orderEntityFromSavedDb!=null) {
+                                                    orderEntityFromSavedDb.setDeliveryDate(matchedOrderModel.getDeliveryDate());
+                                                    orderEntityFromSavedDb.setAdminNotes(matchedOrderModel.getAdminNotes());
+                                                    orderEntityFromSavedDb.setOldModifiedDates(matchedOrderModel.getOldModifiedDates());
+                                                    databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                                }
                                             }
                                         }
                                     }else if(closedOrdersRadio.isChecked()){
@@ -705,8 +707,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                                 logisticsModel.setEta(fetchedAdminModel.getEta());
                                                 matchedOrderModel.setLogisticsModel(logisticsModel);
                                                 OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForInvoiceNo(orderIdPrefs.getString(SapId, null), 0, matchedOrderModel.getInvoiceNo());
-                                                orderEntityFromSavedDb.setLogisticsModel(matchedOrderModel.getLogisticsModel());
-                                                databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                                if(orderEntityFromSavedDb!=null) {
+                                                    orderEntityFromSavedDb.setLogisticsModel(matchedOrderModel.getLogisticsModel());
+                                                    databaseRequestsDao.updateOrders(orderEntityFromSavedDb);
+                                                }
                                             }
                                         }
                                     }
@@ -918,7 +922,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             networkExtras.putString(CLIENT_SERVER_CODE,orderIdPrefs.getString(ClientorServer, null));
             Job networkJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.network_refersh_job)).setService(RefereshNetworkService.class)
                     .setExtras(networkExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
-                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(10800,12600)).setConstraints(Constraint.ON_ANY_NETWORK).build();
+                    .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(10,60)).setConstraints(Constraint.ON_ANY_NETWORK).build();
             firebaseJobDispatcher.mustSchedule(makeJob);
             firebaseJobDispatcher.mustSchedule(networkJob);
 
@@ -2212,6 +2216,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                 }*/
                   if(orderModelList!=null && orderModelList.size()>0){
+                      sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
+                      searchList.clear();
+                      for (OrderModel o : orderModelList) {
+                          searchList.add(o);
+                      }
                       saveInVacmetDatabase(orderModelList);
                   }
                 } catch (MalformedURLException e) {
@@ -2233,6 +2242,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     localOrderModelList.add(orderTranslator.translateEntityToModel(orderEntity));
                 }
                 orderModelList =new ArrayList<>(localOrderModelList);
+                if(orderModelList.size()>0){
+                    searchList.clear();
+                    for (OrderModel o : orderModelList) {
+                        searchList.add(o);
+                    }
+                }
             }
             return orderModelList;
         }
@@ -2249,11 +2264,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             recyclerView.hideShimmerAdapter();
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             if (s.size() > 0) {
-                sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
+               /* sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
                 searchList.clear();
                 for (OrderModel o : orderModelList) {
                     searchList.add(o);
-                }
+                }*/
 
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
@@ -2336,12 +2351,16 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         protected void onPostExecute(List<ItemModel> itemModels) {
             super.onPostExecute(itemModels);
             progressDialog.dismiss();
-            orderModelList.get(selectedPos).setItemList(new ArrayList<ItemModel>(itemModels));
-            Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
-            intent.putExtra("OrderInfo", orderModelList.get(selectedPos));
-            intent.putExtra("TransitionName", ViewCompat.getTransitionName(offlineClickedView));
-            intent.putExtra("isDispatched",offlineOrderType.equalsIgnoreCase("get_dispatch")?true:false);
-            startActivity(intent);
+            if(itemModels!=null && itemModels.size()>0) {
+                orderModelList.get(selectedPos).setItemList(new ArrayList<ItemModel>(itemModels));
+                Intent intent = new Intent(OrderStatus.this, OrderInformation.class);
+                intent.putExtra("OrderInfo", orderModelList.get(selectedPos));
+                intent.putExtra("TransitionName", ViewCompat.getTransitionName(offlineClickedView));
+                intent.putExtra("isDispatched", offlineOrderType.equalsIgnoreCase("get_dispatch") ? true : false);
+                startActivity(intent);
+            }else{
+                hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+            }
         }
     }
 

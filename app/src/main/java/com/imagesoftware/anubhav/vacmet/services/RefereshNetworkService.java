@@ -45,6 +45,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -133,13 +135,22 @@ public class RefereshNetworkService extends JobService {
             initialJob = job;
             sapKey = job.getExtras().getString(SAP_CODE);
             clientServerKey = job.getExtras().getString(CLIENT_SERVER_CODE);
+            new CustomDeleteOfflineTables().execute();
             customAsynTaskForJob = (CustomAsyncTaskForRestOrderService) new CustomAsyncTaskForRestOrderService().execute(clientServerKey,sapKey,GET_PENDING_CODE);
             return true;
         }else{
             return false;
         }
     }
+    class CustomDeleteOfflineTables extends AsyncTask<Void,Void,Void>{
 
+        @Override
+        protected Void doInBackground(Void... voids) {
+            databaseRequestsDao.deleteOrders();
+            databaseRequestsDao.deleteItems();
+            return null;
+        }
+    }
     @Override
     public boolean onStopJob(JobParameters job) {
         //Only called when job is finished midway, hence clear resources here, and return true, to indicate to reschedule job
@@ -183,8 +194,7 @@ public class RefereshNetworkService extends JobService {
                 while ((line=br.readLine()) != null) {
                     response+=line;
                 }*/
-                    Log.d("", "doInBackground: " + httpURLConnection.getResponseCode());
-                    Log.d("", "doInBackground: " + response);
+
                     XmlPullParser xmlPullParser = Xml.newPullParser();
                     xmlPullParser.setInput(inputStream, null);
                     int eventType = xmlPullParser.getEventType();
@@ -496,6 +506,7 @@ public class RefereshNetworkService extends JobService {
 
                 }*/
                     if(orderModelList!=null && orderModelList.size()>0){
+                        sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
                         saveInVacmetDatabase(orderModelList,orderType);
                     }
                 } catch (MalformedURLException e) {
@@ -549,6 +560,28 @@ public class RefereshNetworkService extends JobService {
             }
         }
 
+    }
+    private void sortList(ArrayList<OrderModel> orderModelList, final boolean isDispatched) {
+        Collections.sort(orderModelList, new Comparator<OrderModel>() {
+            @Override
+            public int compare(OrderModel o1, OrderModel o2) {
+                if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
+                    //Do Comparison on order no.
+                    if(!isDispatched) {
+                        Long order1 = Long.parseLong(o1.getOrderNo());
+                        Long order2 = Long.parseLong(o2.getOrderNo());
+                        return order2.compareTo(order1);
+                    }else{
+                        Long order1 = Long.parseLong(o1.getInvoiceNo());
+                        Long order2 = Long.parseLong(o2.getInvoiceNo());
+                        return order2.compareTo(order1);
+                    }
+                } else {
+                    //Do comparison on Party name
+                    return o1.getPartyName().compareTo(o2.getPartyName());
+                }
+            }
+        });
     }
 
 
