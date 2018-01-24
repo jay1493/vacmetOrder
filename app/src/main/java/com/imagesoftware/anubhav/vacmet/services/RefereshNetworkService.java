@@ -57,6 +57,8 @@ public class RefereshNetworkService extends JobService {
     private CustomAsyncTaskForRestOrderService customAsynTaskForJob;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
+    public static final String PARTY_PI_NO = "PARTY_PI_NO";
+    public static final String PARTY_PI_DATE = "PARTY_PI_DATE";
     public static final String STATUS = "STATUS";
     public static final String PARTY_PI_ETA = "PARTY_PI_ETA";
     public static final String CUSTOMER_PO_DATE = "CUSTOMER_PO_DATE";
@@ -270,6 +272,16 @@ public class RefereshNetworkService extends JobService {
                                             orderModel.setStatus(xmlPullParser.nextText());
                                         } else if (orderModel != null && saveItemInOrder && itemModel != null) {
                                             itemModel.setStatus(xmlPullParser.nextText());
+                                        }
+                                        break;
+                                    case PARTY_PI_NO:
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                        }
+                                        break;
+                                    case PARTY_PI_DATE:
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setPartyPODate(xmlPullParser.nextText().trim());
                                         }
                                         break;
                                     case PARTY_PI_ETA:
