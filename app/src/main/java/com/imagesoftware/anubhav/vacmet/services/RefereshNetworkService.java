@@ -59,10 +59,10 @@ public class RefereshNetworkService extends JobService {
     private CustomAsyncTaskForRestOrderService customAsynTaskForJob;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
-    public static final String PARTY_PI_NO = "PARTY_PI_NO";
-    public static final String PARTY_PI_DATE = "PARTY_PI_DATE";
+    public static final String PARTY_PI_NO = "PI_NO";
+    public static final String PARTY_PI_DATE = "PI_DT";
     public static final String STATUS = "STATUS";
-    public static final String PARTY_PI_ETA = "PARTY_PI_ETA";
+    public static final String PARTY_PI_ETA = "ETA_DT";
     public static final String CUSTOMER_PO_DATE = "CUSTOMER_PO_DATE";
     public static final String CUSTOMER_PO_NO = "CUSTOMER_PO_NO";
     public static final String OPEN_QTY = "OPEN_QTY";
