@@ -96,7 +96,7 @@ public class RefereshNetworkService extends JobService {
     private static final String ITEM_SHADES_ = "SHADES";
     private ArrayList<OrderModel> orderModelList;
     private ArrayList<OrderModel> orderContainerList;
-    private String urlForOrders1 = "http://122.160.221.107:8020/sap/bc/";
+    private String urlForOrders1 = "http://103.196.11.210:8020/sap/bc/";
     private String urlForOrders2 = "?sap-client=500&";
     private final String Main_Table_Xml_Tag = "ZBAPI_HDR_SOSTATUS";
     private final String Secondary_Table_Xml_Tag = "ZBAPI_SOSTATUS";
@@ -510,14 +510,19 @@ public class RefereshNetworkService extends JobService {
                         saveInVacmetDatabase(orderModelList,orderType);
                     }
                 } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    orderModelList.clear();
+                    if(orderModelList!=null) {
+                        orderModelList.clear();
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    orderModelList.clear();
+
+                    if(orderModelList!=null) {
+                        orderModelList.clear();
+                    }
                 } catch (XmlPullParserException e) {
-                    e.printStackTrace();
-                    orderModelList.clear();
+
+                    if(orderModelList!=null) {
+                        orderModelList.clear();
+                    }
                 }
 
             return orderModelList;
@@ -526,11 +531,20 @@ public class RefereshNetworkService extends JobService {
         @Override
         protected void onPostExecute(List<OrderModel> s) {
             super.onPostExecute(s);
-            counter = counter+1;
-            if(s!=null && s.size()>0 && counter < 2){
-                new CustomAsyncTaskForRestOrderService().execute(clientServerKey,sapKey,GET_DISPATCH_CODE);
-            }else if(s!=null && s.size()>0){
-                jobFinished(initialJob,false);
+            if(s!=null && s.size()>0) {
+                counter = counter + 1;
+                if (s != null && s.size() > 0 && counter < 2) {
+                    new CustomAsyncTaskForRestOrderService().execute(clientServerKey, sapKey, GET_DISPATCH_CODE);
+                } else if (s != null && s.size() > 0) {
+                    jobFinished(initialJob, false);
+                }
+            }else {
+
+                if(counter == 0){
+                    new CustomAsyncTaskForRestOrderService().execute(clientServerKey, sapKey, GET_PENDING_CODE);
+                }else{
+                    new CustomAsyncTaskForRestOrderService().execute(clientServerKey, sapKey, GET_DISPATCH_CODE);
+                }
             }
 
         }
