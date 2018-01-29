@@ -95,8 +95,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final String USER_ROLE = "USER_ROLE";
     private static final String USER_SAP_LISTS = "USER_SAP_LISTS";
 
+    /**
+     * NOTE: Disabling the persistance of firebase, as sudden changes in console are not affected
+     */
     static {
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(false);
     }
     private static final int GOOGLE_SIGN_IN = 9090;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_NETWORK_STATE = 9099;
