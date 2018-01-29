@@ -285,13 +285,25 @@ public class RefereshNetworkService extends JobService {
                                         }
                                         break;
                                     case PARTY_PI_NO:
-                                        if (orderModel != null && !saveItemInOrder) {
-                                            orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                        if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
+                                            if (orderModel != null && !saveItemInOrder) {
+                                                orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                            }
+                                        }else if(orderType.equalsIgnoreCase(GET_PENDING_CODE)){
+                                            if (orderModel != null && saveItemInOrder) {
+                                                orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                            }
                                         }
                                         break;
                                     case PARTY_PI_DATE:
-                                        if (orderModel != null && !saveItemInOrder) {
-                                            orderModel.setPartyPODate(xmlPullParser.nextText().trim());
+                                        if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
+                                            if (orderModel != null && !saveItemInOrder) {
+                                                orderModel.setPartyPODate(xmlPullParser.nextText().trim());
+                                            }
+                                        }else if(orderType.equalsIgnoreCase(GET_PENDING_CODE)){
+                                            if (orderModel != null && saveItemInOrder) {
+                                                orderModel.setPartyPODate(xmlPullParser.nextText().trim());
+                                            }
                                         }
                                         break;
                                     case PARTY_PI_ETA:

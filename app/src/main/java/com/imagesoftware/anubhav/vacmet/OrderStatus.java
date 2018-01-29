@@ -324,6 +324,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private EditText etSearchBar;
     private TextWatcher searchTextWatcher;
     private List<String> sapListsToAllow;
+    private InvoiceTo invoiceTo;
 
 
     @Override
@@ -1992,13 +1993,25 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                         }
                                         break;
                                     case PARTY_PI_NO:
-                                        if (orderModel != null && !saveItemInOrder) {
-                                            orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                        if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
+                                            if (orderModel != null && !saveItemInOrder) {
+                                                orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                            }
+                                        }else if(orderType.equalsIgnoreCase(GET_PENDING_CODE)){
+                                            if (orderModel != null && saveItemInOrder) {
+                                                orderModel.setPartyPONo(xmlPullParser.nextText().trim());
+                                            }
                                         }
                                         break;
                                     case PARTY_PI_DATE:
-                                        if (orderModel != null && !saveItemInOrder) {
-                                            orderModel.setPartyPODate(xmlPullParser.nextText().trim());
+                                        if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
+                                            if (orderModel != null && !saveItemInOrder) {
+                                                orderModel.setPartyPODate(xmlPullParser.nextText().trim());
+                                            }
+                                        }else if(orderType.equalsIgnoreCase(GET_PENDING_CODE)){
+                                            if (orderModel != null && saveItemInOrder) {
+                                                orderModel.setPartyPODate(xmlPullParser.nextText().trim());
+                                            }
                                         }
                                         break;
                                     case PARTY_PI_ETA:
@@ -2684,7 +2697,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     }
 
     private void prepareObjectAndHitService(String saveOrOpen, byte[] pdfBytes, String filenameToSaveInDb) {
-        InvoiceTo invoiceTo = new InvoiceTo();
+        invoiceTo = new InvoiceTo();
         invoiceTo.setInvoice(pdfBytes);
         invoiceTo.setInvoiceNo(filenameToSaveInDb);
         Gson gson = new Gson();
@@ -2710,6 +2723,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 .progress(true, 0).itemsColor(getResources().getColor(R.color.black));
         MaterialDialog dialog = builder.build();
         private String responseStr = null;
+        private String invoice;
 
         @Override
         protected void onPreExecute() {
@@ -2723,7 +2737,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             Handler handler = new Handler(activity.getMainLooper());
 
             responseStr = params[0];
-            String invoice = params[2];
+            invoice = params[2];
             if(params[0].equalsIgnoreCase("Save")) {
                 String response = null;
 
@@ -2731,10 +2745,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         return "-1";
                     } else {
                       try {
-                        URL url = new URL(SERVER_IP + URL_SAVE_INVOICE);
+//                        URL url = new URL(SERVER_IP + URL_SAVE_INVOICE);
+                        URL url = new URL("http://sapservices.vil.co/SaveInv.ashx?InvNo="+invoiceTo.getInvoiceNo()+"&Inv="+Base64.encodeToString(invoiceTo.getInvoice(), Base64.DEFAULT));
                         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                        httpURLConnection.setRequestMethod("POST");
-                        httpURLConnection.setRequestProperty("Content-Type", "application/json");
+//                        httpURLConnection.setRequestMethod("POST");
+                        httpURLConnection.setRequestMethod("GET");
+//                        httpURLConnection.setRequestProperty("Content-Type", "application/json");
                         httpURLConnection.setDoInput(true);
                         httpURLConnection.setDoOutput(true);
                           disableSSLCertificateChecking();
@@ -2801,7 +2817,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }else{
 
                     try {
-                        URL url = new URL(SERVER_IP + URL_GET_INVOICE + invoice );
+//                        URL url = new URL(SERVER_IP + URL_GET_INVOICE + invoice );
+                        URL url = new URL("http://sapservices.vil.co/DispalyData.ashx?InvNo=" + invoice );
                         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                         httpURLConnection.setRequestMethod("GET");
                         //httpURLConnection.setRequestProperty("Content-Type", "application/json");
@@ -2854,11 +2871,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     }
                 }else if(responseStr.equalsIgnoreCase("Open")){
                     if(!TextUtils.isEmpty(s)){
-//                        Gson gson = new Gson();
 
 
 
-                        InvoiceTo invoiceTo = customGson.fromJson(s,InvoiceTo.class);
+//                        InvoiceTo invoiceTo = customGson.fromJson(s,InvoiceTo.class);
+                          InvoiceTo invoiceTo = new InvoiceTo();
+                          invoiceTo.setInvoice(Base64.decode(s,Base64.DEFAULT));
+                          invoiceTo.setInvoiceNo(invoice);
                         try {
 
                             new CreatingPdf().execute("Open",Base64.encodeToString(invoiceTo.getInvoice(),Base64.DEFAULT),invoiceTo.getInvoiceNo());
