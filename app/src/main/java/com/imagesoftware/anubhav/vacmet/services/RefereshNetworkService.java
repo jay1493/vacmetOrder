@@ -285,7 +285,7 @@ public class RefereshNetworkService extends JobService {
                                         }
                                         break;
                                     case PARTY_PI_NO:
-                                        if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
+                                       /* if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
                                             if (orderModel != null && !saveItemInOrder) {
                                                 orderModel.setPartyPONo(xmlPullParser.nextText().trim());
                                             }
@@ -293,10 +293,13 @@ public class RefereshNetworkService extends JobService {
                                             if (orderModel != null && saveItemInOrder) {
                                                 orderModel.setPartyPONo(xmlPullParser.nextText().trim());
                                             }
+                                        }*/
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setPartyPONo(xmlPullParser.nextText().trim());
                                         }
                                         break;
                                     case PARTY_PI_DATE:
-                                        if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
+                                      /*  if(orderType.equalsIgnoreCase(GET_DISPATCH_CODE)) {
                                             if (orderModel != null && !saveItemInOrder) {
                                                 orderModel.setPartyPODate(xmlPullParser.nextText().trim());
                                             }
@@ -304,10 +307,13 @@ public class RefereshNetworkService extends JobService {
                                             if (orderModel != null && saveItemInOrder) {
                                                 orderModel.setPartyPODate(xmlPullParser.nextText().trim());
                                             }
+                                        }*/
+                                        if (orderModel != null && !saveItemInOrder) {
+                                            orderModel.setPartyPODate(xmlPullParser.nextText().trim());
                                         }
                                         break;
                                     case PARTY_PI_ETA:
-                                        if(orderModel!=null && saveItemInOrder){
+                                        if(orderModel!=null && !saveItemInOrder){
                                             orderModel.setPartyPOETA(xmlPullParser.nextText().trim());
                                         }
                                         break;
@@ -315,7 +321,7 @@ public class RefereshNetworkService extends JobService {
                                         /**
                                          * Here overriding for item would occur, as it was told that p.i details would remain same for all items.
                                          */
-                                        if(orderModel!=null && saveItemInOrder){
+                                        if(orderModel!=null && !saveItemInOrder){
                                             orderModel.setCustomerPONo(xmlPullParser.nextText().trim());
                                         }
                                         break;
@@ -323,7 +329,7 @@ public class RefereshNetworkService extends JobService {
                                         /**
                                          * Here overriding for item would occur, as it was told that p.i details would remain same for all items.
                                          */
-                                        if(orderModel!=null && saveItemInOrder){
+                                        if(orderModel!=null && !saveItemInOrder){
                                             orderModel.setCustomerPODate(xmlPullParser.nextText().trim());
                                         }
                                         break;
