@@ -389,7 +389,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 String list = logingSharePrefs.getString(USER_SAP_LISTS, null);
                 if (list.contains(",")) {
                     String[] splitSap = list.split(Pattern.quote(","));
-                    sapListsToAllow = Arrays.asList(splitSap);
+                    sapListsToAllow = new ArrayList<>(Arrays.asList(splitSap));
                 } else {
 
                     sapListsToAllow.add(list);
@@ -1887,7 +1887,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             } else if (params[0].equalsIgnoreCase("s")) {
                 appendedParamInUrl = "S=" + id;
             }
-            anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(orderIdPrefs.getString(SapId, null),orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
+            anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(id,orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
             if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0))) {
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
