@@ -73,6 +73,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -83,6 +84,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -262,7 +264,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private final String Secondary_Table_Invoice_Xml_Tag = "ZBAPI_SISTATUS";
     private DrawerLayout drawerLayout;
     private LinearLayout mainDrawerView;
-    private EditText etSapId;
+//    private EditText etSapId;
     private ImageView imgEditSapId;
     private TextView employeeName, employeeDesig;
     private ImageView employeePic;
@@ -325,7 +327,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private TextWatcher searchTextWatcher;
     private List<String> sapListsToAllow;
     private InvoiceTo invoiceTo;
-
+    private Spinner spinnerSapId;
 
     @Override
     protected void onStart() {
@@ -369,7 +371,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         } else {
             DefaultSapId = orderIdPrefs.getString(SapId, null);
         }
-        etSapId.setText(orderIdPrefs.getString(SapId, null));
+//        etSapId.setText(orderIdPrefs.getString(SapId, null));
         if (logingSharePrefs.getString(LoggedInUserName, null) != null) {
             StringBuilder nameBuilder = new StringBuilder();
             nameBuilder.append(logingSharePrefs.getString(LoggedInUserName, null));
@@ -401,7 +403,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             sapListsToAllow = new ArrayList<>();
             sapListsToAllow.add(orderIdPrefs.getString(SapId, null));
         }
-//        feedDummyData();
+
         if (orderIdPrefs.getString(ClientorServer, null) == null) {
             SharedPreferences.Editor editor = orderIdPrefs.edit();
             editor.putString(ClientorServer, "c");
@@ -484,7 +486,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         btnUpdateService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!sapListsToAllow.contains(etSapId.getText().toString().trim())) {
+               /* if (!sapListsToAllow.contains(etSapId.getText().toString().trim())) {
                     if (drawerLayout.isDrawerOpen(Gravity.START)) {
                         drawerLayout.closeDrawers();
                     }
@@ -504,10 +506,13 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     radioClient.setEnabled(false);
                     radioClient.setClickable(false);
                     return;
-                } else {
-                    etSapId.setEnabled(false);
+                } else {*/
+                   /* etSapId.setEnabled(false);
                     etSapId.setFocusable(false);
-                    etSapId.setFocusableInTouchMode(true);
+                    etSapId.setFocusableInTouchMode(true);*/
+                   spinnerSapId.setEnabled(false);
+                   spinnerSapId.setClickable(false);
+                   spinnerSapId.setFocusable(false);
                     radioGroup.setClickable(false);
                     radioServer.setEnabled(false);
                     radioServer.setClickable(false);
@@ -529,16 +534,43 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     } else {
                         orderType = "get_pendingord";
                     }
-                    DefaultSapId = etSapId.getText().toString().trim();
+//                    DefaultSapId = etSapId.getText().toString().trim();
+                    DefaultSapId = (String) spinnerSapId.getSelectedItem();
                     SharedPreferences.Editor editor = orderIdPrefs.edit();
-                    editor.putString(SapId, etSapId.getText().toString().trim());
+                    editor.putString(SapId, (String) spinnerSapId.getSelectedItem());
                     editor.putString(ClientorServer, isClientorServer);
                     editor.apply();
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), etSapId.getText().toString().trim(), orderType);
-                }
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), (String) spinnerSapId.getSelectedItem(), orderType);
+//                }
             }
         });
+        setUpSpinnerAdapter();
+    }
 
+    private void setUpSpinnerAdapter() {
+//        String[] items = (String[]) sapListsToAllow.toArray();
+        String[] items = new String[sapListsToAllow.size()];
+        for(int i=0;i<sapListsToAllow.size();i++){
+            items[i] = sapListsToAllow.get(i);
+        }
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(OrderStatus.this,android.R.layout.simple_spinner_dropdown_item,items);
+        spinnerSapId.setAdapter(spinnerAdapter);
+        spinnerSapId.setDropDownVerticalOffset((int) getResources().getDimension(R.dimen.d5));
+        spinnerSapId.setSelection(items.length-1);
+        spinnerSapId.setEnabled(false);
+        spinnerSapId.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(!sapListsToAllow.get(position).equalsIgnoreCase(orderIdPrefs.getString(SapId, null))){
+                    btnUpdateService.callOnClick();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     private void setUpAuthenticationForWritingData() {
@@ -1163,7 +1195,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
         mainDrawerView = (LinearLayout) findViewById(R.id.mainDrawerView);
-        etSapId = (EditText) findViewById(R.id.et_sap_id);
+        /*etSapId = (EditText) findViewById(R.id.et_sap_id);
         etSapId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1172,14 +1204,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                 }
             }
-        });
+        });*/
+        spinnerSapId = (Spinner) findViewById(R.id.spinner_sap_id);
         imgEditSapId = (ImageView) findViewById(R.id.edit_sap_id);
         imgEditSapId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                etSapId.setEnabled(true);
+                /*etSapId.setEnabled(true);
                 etSapId.setFocusable(true);
-                etSapId.setFocusableInTouchMode(true);
+                etSapId.setFocusableInTouchMode(true);*/
+                spinnerSapId.setEnabled(true);
+                spinnerSapId.setClickable(true);
+                spinnerSapId.setFocusable(true);
                 radioGroup.setClickable(true);
                 radioClient.setEnabled(true);
                 radioClient.setClickable(true);

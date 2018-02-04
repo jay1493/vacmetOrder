@@ -1145,11 +1145,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
-        }else{
+        }else if(checkSelfPermission(android.Manifest.permission.SEND_SMS)
+                == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED){
             SmsManager smsManager = SmsManager.getDefault();
             PendingIntent pendingIntent = PendingIntent.getBroadcast(LoginActivity.this, 1, new Intent(RECEIVE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
             smsManager.sendTextMessage(etContact_signUp.getText().toString().trim(), null , otpGeneratedValue, null, pendingIntent);
 
+        }else{
+            requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
+                    MY_PERMISSIONS_REQUEST_SEND_SMS);
         }
     }
 
@@ -1163,10 +1168,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
                         MY_PERMISSIONS_REQUEST_SEND_SMS);
             }
-        }else{
+        }else if(checkSelfPermission(android.Manifest.permission.SEND_SMS)
+                == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED){
             SmsManager smsManager = SmsManager.getDefault();
             smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), null, null);
 
+        }else{
+            requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
+                    MY_PERMISSIONS_REQUEST_SEND_SMS);
         }
     }
 

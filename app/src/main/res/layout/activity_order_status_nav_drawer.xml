@@ -71,7 +71,7 @@
                     android:orientation="vertical"
                     android:id="@+id/admin_drawer"
                     android:padding="@dimen/d5"
-                    android:visibility="gone">
+                    android:visibility="visible">
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -84,7 +84,17 @@
                         android:layout_gravity="start"
                         android:weightSum="10"
                         android:layout_marginTop="@dimen/d10">
-                        <EditText
+                        <Spinner
+                            android:layout_width="0dp"
+                            android:layout_weight="9"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/spinner_sap_id"
+                            android:background="@drawable/et_sign_in"
+                            android:spinnerMode="dropdown"
+                            android:padding="@dimen/d5"
+                            android:focusable="false"
+                            android:clickable="false" />
+                     <!--   <EditText
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="9"
@@ -93,7 +103,7 @@
                             android:enabled="false"
                             android:inputType="number"
                             android:textColor="@color/charcoal"
-                            android:focusable="false"/>
+                            android:focusable="false"/>-->
                         <ImageView
                             android:id="@+id/edit_sap_id"
                             android:layout_width="0dp"
