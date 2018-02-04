@@ -111,6 +111,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -384,6 +385,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 }
             }
             employeeName.setText(nameBuilder.toString());
+            FirebaseMessaging.getInstance().subscribeToTopic(logingSharePrefs.getString(USER_ROLE, null));
         }
         if(logingSharePrefs.getString(USER_SAP_LISTS, null) != null){
             sapListsToAllow = new ArrayList<>();
