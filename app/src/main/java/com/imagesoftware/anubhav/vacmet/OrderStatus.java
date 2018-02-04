@@ -383,9 +383,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     nameBuilder.append(logingSharePrefs.getString(USER_ROLE, null));
                     nameBuilder.append(")");
                 }
+                FirebaseMessaging.getInstance().subscribeToTopic(logingSharePrefs.getString(USER_ROLE, null));
             }
             employeeName.setText(nameBuilder.toString());
-            FirebaseMessaging.getInstance().subscribeToTopic(logingSharePrefs.getString(USER_ROLE, null));
+
         }
         if(logingSharePrefs.getString(USER_SAP_LISTS, null) != null){
             sapListsToAllow = new ArrayList<>();
