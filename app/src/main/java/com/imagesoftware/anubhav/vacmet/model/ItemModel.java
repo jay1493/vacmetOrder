@@ -253,6 +253,9 @@ public class ItemModel implements Serializable {
             width.replace(",","");
         }
         int w = (int) Double.parseDouble(width);*/
+        if(!TextUtils.isEmpty(width) && width.length() > 4){
+            width = width.substring(0,width.length()-4);
+        }
         if(widthList!=null){
             widthList.add(width);
         }

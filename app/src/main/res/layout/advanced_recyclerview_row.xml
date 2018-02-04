@@ -314,12 +314,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/ll_qtyStatus"
-                        android:orientation="horizontal"
-                        android:id="@+id/ll_dateStatus"
-                        android:weightSum="10">
+                        android:orientation="vertical"
+                        android:id="@+id/ll_dateStatus">
                         <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_weight="6"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="@dimen/d5"
                             android:id="@+id/ll_OrderDate"
@@ -334,41 +332,56 @@
                                 />
                             <TextView
                                 android:id="@+id/tvOrderDate"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:textStyle="bold"
                                 android:textColor="#003C71"/>
                         </LinearLayout>
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_weight="4"
-                            android:gravity="end"
                             android:padding="@dimen/d5"
                             android:id="@+id/ll_destDate"
                             android:visibility="visible">
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:src="@drawable/show_prev_dates"
-                                android:adjustViewBounds="true"
-                                android:scaleType="centerInside"
-                                android:padding="@dimen/d5"
-                                android:layout_gravity="center"
-                                android:id="@+id/prevModifiedDates"
-                                android:visibility="gone"/>
                             <TextView
+                                android:id="@+id/tvETDHeading"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:id="@+id/deliveryDate"
                                 android:padding="@dimen/d5"
-                                android:gravity="right"
-                                android:text="Delivery Date:"
-                                android:textSize="@dimen/d12sp"
+                                android:text="@string/ETD"
                                 android:textStyle="bold"
-                                android:maxLines="2"
-                                android:textColor="#FF0000"/>
+                                android:layout_gravity="center_vertical"/>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:weightSum="10">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_weight="8"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/deliveryDate"
+                                    android:padding="@dimen/d5"
+                                    android:text="Delivery Date:"
+                                    android:textSize="@dimen/d12sp"
+                                    android:textStyle="bold"
+                                    android:maxLines="2"
+                                    android:layout_gravity="center_vertical"
+                                    android:textColor="#FF0000"/>
+                                <ImageView
+                                    android:layout_width="0dp"
+                                    android:layout_weight="2"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/show_prev_dates"
+                                    android:adjustViewBounds="true"
+                                    android:scaleType="centerInside"
+                                    android:padding="@dimen/d5"
+                                    android:id="@+id/prevModifiedDates"
+                                    android:visibility="gone"/>
+                            </LinearLayout>
+
+
                         </LinearLayout>
                     </LinearLayout>
 
