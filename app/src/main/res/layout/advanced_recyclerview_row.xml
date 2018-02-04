@@ -363,7 +363,6 @@
                                     android:layout_height="wrap_content"
                                     android:id="@+id/deliveryDate"
                                     android:padding="@dimen/d5"
-                                    android:text="Delivery Date:"
                                     android:textSize="@dimen/d12sp"
                                     android:textStyle="bold"
                                     android:maxLines="2"
