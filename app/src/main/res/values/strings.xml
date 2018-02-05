@@ -154,4 +154,5 @@
     <string name="pi_eta">E.T.A:</string>
     <string name="sap_view_not_allowed_in_update_service">User is not allowed to access this SAP ID, please contact Admin</string>
     <string name="ETD">E.T.D :</string>
+    <string name="specify_estimate">Specify Estimate Date</string>
 </resources>

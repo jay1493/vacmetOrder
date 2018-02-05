@@ -327,7 +327,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                         if(!TextUtils.isEmpty(list.get(position).getDeliveryDate())) {
                             holder.deliveryDate.setText(list.get(position).getDeliveryDate());
                         }else{
-//                            holder.deliveryDate.setText(context.getResources().getString(R.string.estimate_delivery_date));
+                            holder.deliveryDate.setText(context.getResources().getString(R.string.specify_estimate));
                         }
                     }else{
                         holder.deliveryDate.setOnClickListener(null);

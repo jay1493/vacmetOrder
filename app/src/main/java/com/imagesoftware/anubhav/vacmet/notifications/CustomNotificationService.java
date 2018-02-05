@@ -1,5 +1,7 @@
 package com.imagesoftware.anubhav.vacmet.notifications;
 
+import android.util.Log;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -15,6 +17,10 @@ public class CustomNotificationService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+        if (remoteMessage.getNotification() != null) {
+            Log.e("", "Title: " + remoteMessage.getNotification().getTitle());
+            Log.e("", "Body: " + remoteMessage.getNotification().getBody());
+        }
         super.onMessageReceived(remoteMessage);
     }
 }

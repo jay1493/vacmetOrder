@@ -377,13 +377,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             StringBuilder nameBuilder = new StringBuilder();
             nameBuilder.append(logingSharePrefs.getString(LoggedInUserName, null));
 
-            if(logingSharePrefs.getString(USER_ROLE, null) != null){
-                if(!"NA".equalsIgnoreCase(logingSharePrefs.getString(USER_ROLE, null))) {
+            String userRole = logingSharePrefs.getString(USER_ROLE, null);
+            if(userRole != null){
+                if(!"NA".equalsIgnoreCase(userRole)) {
                     nameBuilder.append("(");
-                    nameBuilder.append(logingSharePrefs.getString(USER_ROLE, null));
+                    nameBuilder.append(userRole);
                     nameBuilder.append(")");
                 }
-                FirebaseMessaging.getInstance().subscribeToTopic(logingSharePrefs.getString(USER_ROLE, null));
+                FirebaseMessaging.getInstance().subscribeToTopic(userRole.toLowerCase());
             }
             employeeName.setText(nameBuilder.toString());
 
@@ -855,27 +856,34 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                     StringBuilder dateBuilder = new StringBuilder();
                                     if(dt.contains(getResources().getString(R.string.date_modification_split_key))) {
                                         String[] splitDts = fetchOldModel.getDeliveryDate().split(Pattern.quote(getResources().getString(R.string.date_modification_split_key)));
+                                        boolean isDateExists = false;
                                         for (int i=0;i<splitDts.length-1;i++) {
                                             modifiedDatesList.add(splitDts[i]);
+                                            if(splitDts[i].equalsIgnoreCase(dummyOrder.getDeliveryDate())){
+                                                isDateExists = true;
+                                            }
                                         }
-                                        dateBuilder.append(dt);
-                                        dateBuilder.append(getResources().getString(R.string.date_modification_split_key));
-                                        dateBuilder.append(dummyOrder.getDeliveryDate());
-                                        AdminModel adminModel = new AdminModel();
-                                        adminModel.setDeliveryDate(dateBuilder.toString());
-                                        adminModel.setAdminNote(dummyOrder.getAdminNotes());
-                                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
-
+                                        if(!isDateExists) {
+                                            dateBuilder.append(dt);
+                                            dateBuilder.append(getResources().getString(R.string.date_modification_split_key));
+                                            dateBuilder.append(dummyOrder.getDeliveryDate());
+                                            AdminModel adminModel = new AdminModel();
+                                            adminModel.setDeliveryDate(dateBuilder.toString());
+                                            adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                                            mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                                        }
                                     }else{
                                         //Consists of one date only
                                         modifiedDatesList.add(dt);
-                                        dateBuilder.append(dt);
-                                        dateBuilder.append(getResources().getString(R.string.date_modification_split_key));
-                                        dateBuilder.append(dummyOrder.getDeliveryDate());
-                                        AdminModel adminModel = new AdminModel();
-                                        adminModel.setDeliveryDate(dateBuilder.toString());
-                                        adminModel.setAdminNote(dummyOrder.getAdminNotes());
-                                        mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                                        if(!dt.equalsIgnoreCase(dummyOrder.getDeliveryDate())) {
+                                            dateBuilder.append(dt);
+                                            dateBuilder.append(getResources().getString(R.string.date_modification_split_key));
+                                            dateBuilder.append(dummyOrder.getDeliveryDate());
+                                            AdminModel adminModel = new AdminModel();
+                                            adminModel.setDeliveryDate(dateBuilder.toString());
+                                            adminModel.setAdminNote(dummyOrder.getAdminNotes());
+                                            mWriteDatabase.child(dummyOrder.getOrderNo()).setValue(adminModel);
+                                        }
                                     }
                                    if(modifiedDatesList!=null && modifiedDatesList.size()>0){
                                         orderModelList.get(pos).setOldModifiedDates(new ArrayList<String>(modifiedDatesList));
