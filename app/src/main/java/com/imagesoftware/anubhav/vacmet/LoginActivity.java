@@ -83,6 +83,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 
@@ -258,7 +259,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if (behaviour.equalsIgnoreCase("SignUp")) {
 
 //                String primaryKey = mDatabase.push().getKey();
-                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer,false,"NA","NA");
+                Date date = new Date();
+                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer,false,"NA","NA",date.toString());
 
                 mDatabase.child(userEmail.replace(".", getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -416,8 +418,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             if (((String) user.get("userEmail")).equalsIgnoreCase(etUserName_signIn.getText().toString().trim()) && ((String) user.get("userPass")).equalsIgnoreCase(etPassword_signIn.getText().toString().trim())) {
                 //Successfully Matched Records....
                 foundUser = true;
-                if (((boolean) user.get("approved"))) {
-                    isAuthorized = true;
+                if ((user.get("approved")!=null)) {
+                    String valueFromServer = (String) user.get("approved");
+                    if(valueFromServer.equalsIgnoreCase("true")) {
+                        isAuthorized = true;
+                    }
                 }
                 if(user.get("isAdmin")!=null) {
                     adminAccess = ((boolean) user.get("isAdmin"));

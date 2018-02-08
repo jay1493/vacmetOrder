@@ -113,8 +113,13 @@ public class UserAccessJobService extends JobService {
                 if (((String) user.get("userEmail")).equalsIgnoreCase(user_email.trim())) {
                     //Successfully Matched Records....
 
-                    if (((boolean) user.get("approved"))) {
-                        return true;
+                    if ((user.get("approved")!=null)) {
+                        String valueFromServer = (String) user.get("approved");
+                        if(valueFromServer.equalsIgnoreCase("true")) {
+                            return true;
+                        }else{
+                            return false;
+                        }
                     }else{
                         return false;
                     }

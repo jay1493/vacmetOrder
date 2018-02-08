@@ -17,9 +17,10 @@ public class UserModel {
     private boolean isAdmin;
     private String userRole;
     private String sapIdList;
+    private String accountCreatedTimeStamp;
     private List<String> approvedPartyNames;
     public UserModel(String userName, String userEmail, String userPass, String userContact, boolean approved,
-                     List<String> partyNames, String id, String cOrS, boolean adminRights, String role, String sapIdList) {
+                     List<String> partyNames, String id, String cOrS, boolean adminRights, String role, String sapIdList,String timeStamp) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPass = userPass;
@@ -31,6 +32,7 @@ public class UserModel {
         this.isAdmin = adminRights;
         this.userRole = role;
         this.sapIdList = sapIdList;
+        this.accountCreatedTimeStamp = timeStamp;
     }
 
     public String getUserName() {
@@ -123,5 +125,14 @@ public class UserModel {
 
     public void setSapIdList(String sapIdList) {
         this.sapIdList = sapIdList;
+    }
+
+    public String getAccountCreatedTimeStamp() {
+        return accountCreatedTimeStamp;
+    }
+
+    public UserModel setAccountCreatedTimeStamp(String accountCreatedTimeStamp) {
+        this.accountCreatedTimeStamp = accountCreatedTimeStamp;
+        return this;
     }
 }
