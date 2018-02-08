@@ -107,7 +107,7 @@ public class GmailSender extends Authenticator {
                     ((LoginActivity)context).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(context, "Mail Sent...", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Mail Sent...Please check your Inbox or Spam", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();
                         }
                     });
