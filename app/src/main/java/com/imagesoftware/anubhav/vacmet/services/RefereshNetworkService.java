@@ -112,7 +112,9 @@ public class RefereshNetworkService extends JobService {
     private VacmetDatabase vacmetDatabase;
     private DatabaseRequestsDao databaseRequestsDao;
     private OrderTranslator orderTranslator;
-
+    private static final String AUTH_URL_FOR_ORDERS = "AUTH_URL_FOR_ORDERS";
+    private static final String URL_OF_ORDERS = "URL_OF_ORDERS";
+    private String authOfUrl;
 
     @Override
     public void onCreate() {
@@ -131,8 +133,11 @@ public class RefereshNetworkService extends JobService {
         vacmetDatabase =  Room.databaseBuilder(this,VacmetDatabase.class,"vacmet_db").build();
         databaseRequestsDao = vacmetDatabase.getDatabaseRequestDao();
         orderTranslator = new OrderTranslator();
-        if(job!=null && job.getExtras()!=null && job.getExtras().getString(SAP_CODE)!=null && job.getExtras().getString(CLIENT_SERVER_CODE)!=null) {
+        if(job!=null && job.getExtras()!=null && job.getExtras().getString(SAP_CODE)!=null && job.getExtras().getString(CLIENT_SERVER_CODE)!=null
+                && job.getExtras().getString(AUTH_URL_FOR_ORDERS)!=null && job.getExtras().getString(URL_OF_ORDERS)!=null) {
             initialJob = job;
+            urlForOrders1 = job.getExtras().getString(URL_OF_ORDERS);
+            authOfUrl = job.getExtras().getString(AUTH_URL_FOR_ORDERS);
             sapKey = job.getExtras().getString(SAP_CODE);
             clientServerKey = job.getExtras().getString(CLIENT_SERVER_CODE);
             new CustomDeleteOfflineTables().execute();
@@ -185,7 +190,7 @@ public class RefereshNetworkService extends JobService {
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
                     httpURLConnection.setRequestMethod("GET");
-                    httpURLConnection.setRequestProperty("Authorization", "Basic QkFQSToxMjM0NTY=");
+                    httpURLConnection.setRequestProperty("Authorization", authOfUrl);
                     httpURLConnection.setRequestProperty("Content-Type", "application/xml");
                     InputStream inputStream = httpURLConnection.getInputStream();
                     String line = "";

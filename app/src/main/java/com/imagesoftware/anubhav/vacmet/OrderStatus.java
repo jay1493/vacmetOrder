@@ -200,6 +200,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final String SERVER_IP = "http://18.217.26.130";
     private static final String URL_SAVE_INVOICE = "/Springs_Chat/chatServlet/saveInvoice";
     private static final String URL_GET_INVOICE = "/Springs_Chat/chatServlet/getInvoice/";
+    private static final String AUTH_URL_FOR_ORDERS = "AUTH_URL_FOR_ORDERS";
+    private static final String URL_OF_ORDERS = "URL_OF_ORDERS";
     private static int mImageCounter = 0;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
@@ -968,6 +970,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             Bundle networkExtras = new Bundle();
             networkExtras.putString(SAP_CODE,orderIdPrefs.getString(SapId, null));
             networkExtras.putString(CLIENT_SERVER_CODE,orderIdPrefs.getString(ClientorServer, null));
+            networkExtras.putString(AUTH_URL_FOR_ORDERS,mFirebaseRemoteConfig.getString("order_service_url_auth"));
+            networkExtras.putString(URL_OF_ORDERS,mFirebaseRemoteConfig.getString("order_service_url"));
             Job networkJob = firebaseJobDispatcher.newJobBuilder().setTag(getString(R.string.network_refersh_job)).setService(RefereshNetworkService.class)
                     .setExtras(networkExtras).setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL).setRecurring(true).setLifetime(Lifetime.FOREVER)
                     .setReplaceCurrent(replaceJobSchedulers).setTrigger(Trigger.executionWindow(10800,12600)).setConstraints(Constraint.ON_ANY_NETWORK).build();
