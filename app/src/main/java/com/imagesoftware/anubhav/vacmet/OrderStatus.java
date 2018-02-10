@@ -112,6 +112,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -329,6 +331,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private List<String> sapListsToAllow;
     private InvoiceTo invoiceTo;
     private Spinner spinnerSapId;
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+    private long cacheExpiration = 6400;
 
     @Override
     protected void onStart() {
@@ -1288,7 +1292,20 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         },false, this,this,isUserAdmin,this,this,this,this);
         noSearchResultFound = (NestedScrollView) findViewById(R.id.noSearchFound);
         searchList = new ArrayList<>();
-
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(BuildConfig.DEBUG)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+        mFirebaseRemoteConfig.setDefaults(R.xml.order_service_params);
+        mFirebaseRemoteConfig.fetch().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    mFirebaseRemoteConfig.activateFetched();
+                }
+            }
+        });
     }
 
     private void initializeRemarkDialog(final View view,final int pos) {
@@ -1937,9 +1954,10 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(id,orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
             if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0))) {
                 try {
+                    urlForOrders1 = mFirebaseRemoteConfig.getString("order_service_url");
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
                     httpURLConnection.setRequestMethod("GET");
-                    httpURLConnection.setRequestProperty("Authorization", "Basic QkFQSToxMjM0NTY=");
+                    httpURLConnection.setRequestProperty("Authorization", mFirebaseRemoteConfig.getString("order_service_url_auth"));
                     httpURLConnection.setRequestProperty("Content-Type", "application/xml");
                     InputStream inputStream = httpURLConnection.getInputStream();
                     String line = "";

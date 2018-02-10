@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>order_service_url</key>
+        <value>http://103.196.11.210:8001/sap/bc/</value>
+    </entry>
+    <entry>
+        <key>order_service_url_auth</key>
+        <value>Basic QkFQSToxMjM0NTY=</value>
+    </entry>
+
+</defaultsMap>
