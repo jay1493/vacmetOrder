@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -555,11 +556,12 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
         setUpSpinnerAdapter();
-        mFirebaseRemoteConfig.fetch().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+        mFirebaseRemoteConfig.fetch(3600).addOnCompleteListener(this, new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
                     mFirebaseRemoteConfig.activateFetched();
+
                     if(orderModelList==null || (orderModelList!=null && orderModelList.size()>0)){
                         hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
 
