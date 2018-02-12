@@ -555,6 +555,18 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             }
         });
         setUpSpinnerAdapter();
+        mFirebaseRemoteConfig.fetch().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    mFirebaseRemoteConfig.activateFetched();
+                    if(orderModelList==null || (orderModelList!=null && orderModelList.size()>0)){
+                        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+
+                    }
+                }
+            }
+        });
     }
 
     private void setUpSpinnerAdapter() {
@@ -1302,14 +1314,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 .build();
         mFirebaseRemoteConfig.setConfigSettings(configSettings);
         mFirebaseRemoteConfig.setDefaults(R.xml.order_service_params);
-        mFirebaseRemoteConfig.fetch().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    mFirebaseRemoteConfig.activateFetched();
-                }
-            }
-        });
+
     }
 
     private void initializeRemarkDialog(final View view,final int pos) {
@@ -1892,6 +1897,11 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 SharedPreferences.Editor editor = logingSharePrefs.edit();
                 editor.putString(LoggedInUser, null);
                 editor.putString(LoggedInUserPassword, null);
+                String userRole = logingSharePrefs.getString(USER_ROLE, null);
+                if(userRole != null){
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic(userRole);
+                }
+
                 editor.apply();
                 Intent intent = new Intent(OrderStatus.this, LoginActivity.class);
                 startActivity(intent);
@@ -1962,6 +1972,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
                     httpURLConnection.setRequestMethod("GET");
                     httpURLConnection.setRequestProperty("Authorization", mFirebaseRemoteConfig.getString("order_service_url_auth"));
+//                    httpURLConnection.setRequestProperty("Authorization", "Basic QkFQSTpwZXJmZWN0czE=");
                     httpURLConnection.setRequestProperty("Content-Type", "application/xml");
                     InputStream inputStream = httpURLConnection.getInputStream();
                     String line = "";
