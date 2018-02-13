@@ -1860,27 +1860,29 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         /**
          * start service here
          */
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName()));
-            startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
-        } else {
-            Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
+        if(openOrdersRadio.isChecked()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
+            } else {
+                Intent intent = new Intent(OrderStatus.this, VacmetOverlayService.class);
 //            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra("OrderList", orderModelList);
-            intent.putExtra("User", logingSharePrefs.getString(LoggedInUserName, null));
-            if (LoginActivity.url != null) {
-                if (sharedPreferences.getString("PhotoUrl", null) == null) {
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("PhotoUrl", LoginActivity.url);
-                    editor.apply();
+                intent.putExtra("OrderList", orderModelList);
+                intent.putExtra("User", logingSharePrefs.getString(LoggedInUserName, null));
+                if (LoginActivity.url != null) {
+                    if (sharedPreferences.getString("PhotoUrl", null) == null) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("PhotoUrl", LoginActivity.url);
+                        editor.apply();
+                    }
+                    intent.putExtra("PhotoUrl", LoginActivity.url);
+                } else if (sharedPreferences.getString("PhotoUrl", null) != null) {
+                    intent.putExtra("PhotoUrl", sharedPreferences.getString("PhotoUrl", null));
                 }
-                intent.putExtra("PhotoUrl", LoginActivity.url);
-            } else if (sharedPreferences.getString("PhotoUrl", null) != null) {
-                intent.putExtra("PhotoUrl", sharedPreferences.getString("PhotoUrl", null));
+                this.finish();
+                startService(intent);
             }
-            this.finish();
-            startService(intent);
         }
     }
 

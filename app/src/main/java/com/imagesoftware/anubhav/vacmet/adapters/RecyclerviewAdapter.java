@@ -144,6 +144,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.piLayout.setVisibility(View.GONE);
                 }
                 if(isDispatched){
+                    holder.llETD.setVisibility(View.GONE);
                     holder.showPreviousModDates.setVisibility(View.GONE);
                     holder.showPreviousModDates.setOnClickListener(null);
                     holder.llInvoice.setVisibility(View.VISIBLE);
@@ -267,6 +268,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     }
 
                 }else{
+                    holder.llETD.setVisibility(View.VISIBLE);
                     if(list.get(position).getOldModifiedDates()!=null && list.get(position).getOldModifiedDates().size()>0) {
                         holder.showPreviousModDates.setVisibility(View.VISIBLE);
                         holder.showPreviousModDates.setOnClickListener(new View.OnClickListener() {
@@ -382,6 +384,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
         TextView partyPiNo;
         TextView partyPiDate;
         TextView piETA;
+        LinearLayout llETD;
 
 
         public Viewholder(View itemView, int viewType) {
@@ -409,7 +412,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llPartyPiNo = (LinearLayout) itemView.findViewById(R.id.ll_partyPINo);
                     llBuyerPiDate = (LinearLayout) itemView.findViewById(R.id.ll_buyerPIDate);
                     llBuyerPiNo = (LinearLayout) itemView.findViewById(R.id.ll_buyerPINo);
-
+                    llETD = (LinearLayout) itemView.findViewById(R.id.ll_destDate);
                     orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
                     despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
                     deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);

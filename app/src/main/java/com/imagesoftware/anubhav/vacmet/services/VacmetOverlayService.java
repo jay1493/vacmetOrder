@@ -193,7 +193,7 @@ public class VacmetOverlayService extends Service {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE,1);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        //Todo: Exception here java.lang.IllegalArgumentException
+
         Date d1 = null;
         try {
             d1 = simpleDateFormat.parse(simpleDateFormat.format(cal.getTime()));
@@ -217,11 +217,18 @@ public class VacmetOverlayService extends Service {
         /**
          * Doubt about tree map sorting
          */
-        TreeMap<Long,Integer> treeMap = new TreeMap<>(deliveryDiff);
-        partyName.setText(String.valueOf(orderModelList.get((int)treeMap.firstEntry().getValue()).getPartyName()));
-        deliveryDate.setText(String.valueOf(orderModelList.get((int)treeMap.firstEntry().getValue()).getDeliveryDate()));
-        marqueeInfo.setText(stringBuilder.toString());
-        marqueeInfo.setSelected(true);
+        if(deliveryDiff.size()>0) {
+            TreeMap<Long, Integer> treeMap = new TreeMap<>(deliveryDiff);
+            partyName.setText(String.valueOf(orderModelList.get((int) treeMap.firstEntry().getValue()).getPartyName()));
+            deliveryDate.setText(String.valueOf(orderModelList.get((int) treeMap.firstEntry().getValue()).getDeliveryDate()));
+            marqueeInfo.setText(stringBuilder.toString());
+            marqueeInfo.setSelected(true);
+        }else{
+            partyName.setText(String.valueOf(orderModelList.get(0).getPartyName()));
+            deliveryDate.setText(String.valueOf(orderModelList.get(0).getDeliveryDate()));
+            marqueeInfo.setText("Waiting for approval for orders");
+            marqueeInfo.setSelected(true);
+        }
     }
 
     @Override
