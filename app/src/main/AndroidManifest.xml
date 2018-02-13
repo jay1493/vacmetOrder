@@ -62,7 +62,10 @@
             android:screenOrientation="portrait"/>
         <activity android:name="com.imagesoftware.anubhav.vacmet.LoginActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan">
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            android:alwaysRetainTaskState="true"
+            android:clearTaskOnLaunch="true"
+            android:supportsPictureInPicture="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

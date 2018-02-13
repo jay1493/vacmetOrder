@@ -1,6 +1,7 @@
 package com.imagesoftware.anubhav.vacmet;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -219,6 +220,8 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home:
+                Intent intent = new Intent();
+                setResult(RESULT_OK,intent);
                 finish();
 //                supportFinishAfterTransition();
                 break;
@@ -226,7 +229,13 @@ public class OrderInformation extends AppCompatActivity implements OrderDetailsC
         return super.onOptionsItemSelected(item);
     }
 
-
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        setResult(RESULT_OK,intent);
+        super.onBackPressed();
+        finish();
+    }
 
     @Override
     public void onClick(View view, int position) {

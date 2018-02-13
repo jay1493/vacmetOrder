@@ -6,6 +6,17 @@
     android:background="#000000"
     android:padding="25dp"
     android:alpha="1">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_editUser"
+        android:text="@string/log_me_out"
+        android:textColor="@color/white_alpha"
+        android:layout_gravity="end"
+        android:gravity="end"
+        android:textStyle="italic|bold"
+        android:padding="@dimen/d5"
+        android:visibility="visible"/>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

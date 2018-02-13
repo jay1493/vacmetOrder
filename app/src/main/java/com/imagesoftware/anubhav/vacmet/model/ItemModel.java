@@ -5,11 +5,14 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.text.TextUtils;
 
+import org.w3c.dom.Text;
+
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by anubhav on 27/1/17.
@@ -226,6 +229,9 @@ public class ItemModel implements Serializable {
             length.replace(",","");
         }
         int w = (int) Double.parseDouble(length);*/
+        if(!TextUtils.isEmpty(length) && length.contains(".")){
+            length = length.replaceAll(Pattern.quote("."),"");
+        }
         if(lengthList!=null){
             lengthList.add(length);
         }
@@ -253,6 +259,9 @@ public class ItemModel implements Serializable {
             width.replace(",","");
         }
         int w = (int) Double.parseDouble(width);*/
+        if(!TextUtils.isEmpty(width) && width.contains(".")){
+            width = width.replaceAll(Pattern.quote("."),"");
+        }
         if(!TextUtils.isEmpty(width) && width.length() > 4){
             width = width.substring(0,width.length()-4);
         }

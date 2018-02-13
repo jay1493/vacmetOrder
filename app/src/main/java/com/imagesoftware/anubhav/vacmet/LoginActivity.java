@@ -53,6 +53,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.crashlytics.android.Crashlytics;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.imagesoftware.anubhav.vacmet.emailSending.GmailSender;
 import com.imagesoftware.anubhav.vacmet.model.UserModel;
 import com.imagesoftware.anubhav.vacmet.utils.FingerprintHandler;
@@ -586,6 +587,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     bottomSheetBehavior.setBottomSheetCallback(null);
                     bottomSheetBehavior.setSkipCollapsed(false);
 
+                }else {
+                    inflatePasswordAutomaticSignIn(false);
                 }
               }
             } else {
@@ -596,7 +599,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void inflatePasswordAutomaticSignIn(boolean isFullSignInRequired) {
         frameLayout.removeAllViewsInLayout();
         View signIn_View = inflater.inflate(R.layout.activity_sign_in, null, false);
-
+        final TextView tvChangeUser = (TextView) signIn_View.findViewById(R.id.tv_editUser);
+        tvChangeUser.setVisibility(View.VISIBLE);
         etUserName_signIn = (EditText) signIn_View.findViewById(R.id.et_username);
         etPassword_signIn = (EditText) signIn_View.findViewById(R.id.et_password);
         btnLogin = (FrameLayout) signIn_View.findViewById(R.id.frameSignIn);
@@ -606,6 +610,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         etUserName_signIn.setEnabled(false);
         etUserName_signIn.setFocusable(false);
         btnLogin.setOnClickListener(this);
+        tvChangeUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                etUserName_signIn.setEnabled(true);
+                etUserName_signIn.setFocusable(true);
+                etUserName_signIn.setText("");
+                etUserName_signIn.setFocusable(true);
+                etUserName_signIn.setFocusableInTouchMode(true);
+                SharedPreferences.Editor editor = sharedprefs.edit();
+                editor.putString(LoggedInUser, null);
+                editor.putString(LoggedInUserPassword, null);
+                editor.apply();
+                tvChangeUser.setVisibility(View.GONE);
+            }
+        });
         if(isFullSignInRequired) {
 
                 etPassword_signIn.setText(sharedprefs.getString(LoggedInUserPassword,null));

@@ -203,6 +203,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
     private static final String URL_GET_INVOICE = "/Springs_Chat/chatServlet/getInvoice/";
     private static final String AUTH_URL_FOR_ORDERS = "AUTH_URL_FOR_ORDERS";
     private static final String URL_OF_ORDERS = "URL_OF_ORDERS";
+    private static final int ORDER_INFO_ACTIVITY_REQ_CODE = 197;
     private static int mImageCounter = 0;
     public static final String VBELN = "VBELN";
     public static final String SALES_ORDER_NO = "SALES_ORDER_NO";
@@ -787,7 +788,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                                 intent.putExtra("OrderInfo", orderModelList.get(position));
                                                 intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
                                                 intent.putExtra("isDispatched",closedOrdersRadio.isChecked()?true:false);
-                                                startActivity(intent);
+                                                startActivityForResult(intent,ORDER_INFO_ACTIVITY_REQ_CODE);
                                             }
 
                                         }
@@ -1303,7 +1304,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
                 ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(OrderStatus.this,clickedView, ViewCompat.getTransitionName(clickedView));
                 startActivity(intent,activityOptionsCompat.toBundle());*/
-                startActivity(intent);
+                startActivityForResult(intent,ORDER_INFO_ACTIVITY_REQ_CODE);
             }
 
 
@@ -1845,6 +1846,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             if(mImageCounter == cameraSelectedImagesUris.size()){
                 createPdf();
             }
+        } else if( requestCode == ORDER_INFO_ACTIVITY_REQ_CODE && resultCode == RESULT_OK){
+            /**Handle if needed */
         }
         else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -2385,7 +2388,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                             intent.putExtra("OrderInfo", orderModelList.get(position));
                             intent.putExtra("TransitionName", ViewCompat.getTransitionName(clickedView));
                             intent.putExtra("isDispatched",orderType.equalsIgnoreCase("get_dispatch")?true:false);
-                            startActivity(intent);
+                            startActivityForResult(intent,ORDER_INFO_ACTIVITY_REQ_CODE);
                         }
 
                     /*LinearLayout mainLayout = (LinearLayout) view.findViewById(R.id.ll_orderStatus);
@@ -2458,7 +2461,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 intent.putExtra("OrderInfo", orderModelList.get(selectedPos));
                 intent.putExtra("TransitionName", ViewCompat.getTransitionName(offlineClickedView));
                 intent.putExtra("isDispatched", offlineOrderType.equalsIgnoreCase("get_dispatch") ? true : false);
-                startActivity(intent);
+                startActivityForResult(intent,ORDER_INFO_ACTIVITY_REQ_CODE);
             }else{
                 hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
             }

@@ -155,4 +155,5 @@
     <string name="sap_view_not_allowed_in_update_service">User is not allowed to access this SAP ID, please contact Admin</string>
     <string name="ETD">E.T.D :</string>
     <string name="specify_estimate">Specify Estimate Date</string>
+    <string name="log_me_out">Log Me Out</string>
 </resources>
