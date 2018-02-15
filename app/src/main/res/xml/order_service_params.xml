@@ -8,5 +8,20 @@
         <key>order_service_url_auth</key>
         <value>Basic QkFQSTpwZXJmZWN0czE=</value>
     </entry>
-
+    <entry>
+        <key>master_email</key>
+        <value>anubhavtest1493@gmail.com</value>
+    </entry>
+    <entry>
+        <key>master_pass</key>
+        <value>Anujuit_1268</value>
+    </entry>
+    <entry>
+        <key>master_receiver_emails</key>
+        <value>dp@perfectsoftware.in,vijay.bhat@vpiplmail.co.in,m.agrawal@vpiplmail.co.in</value>
+    </entry>
+    <entry>
+        <key>master_admin_cell_no</key>
+        <value>+919837038752</value>
+    </entry>
 </defaultsMap>

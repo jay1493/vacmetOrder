@@ -54,6 +54,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.crashlytics.android.Crashlytics;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.imagesoftware.anubhav.vacmet.emailSending.GmailSender;
 import com.imagesoftware.anubhav.vacmet.model.UserModel;
 import com.imagesoftware.anubhav.vacmet.utils.FingerprintHandler;
@@ -175,6 +177,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private AlertDialog alertDialogBuilderForAuthFail;
     private TextView textViewForAlertBuilder;
     private AlertDialog.Builder alertBuilder;
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,6 +185,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_login);
         activity = this;
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(BuildConfig.DEBUG)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+        mFirebaseRemoteConfig.setDefaults(R.xml.order_service_params);
+        mFirebaseRemoteConfig.fetch(3600).addOnCompleteListener(this, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    mFirebaseRemoteConfig.activateFetched();
+                }
+            }
+        });
         initializeAlerts();
         initializeFirebaseAuth();
         init();
@@ -880,9 +897,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                           NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
                           if(wifi.isConnected() || mobileNet.isConnected()) {
-                              GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
+                              GmailSender gmailSender = new GmailSender(mFirebaseRemoteConfig.getString("master_email"), mFirebaseRemoteConfig.getString("master_pass"),LoginActivity.this);
                               try {
-                                  gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
+                                  gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, mFirebaseRemoteConfig.getString("master_email"), etEmail_signUp.getText().toString().trim());
                                   /**
                                    * HANDLE FROM HERE NOW>>>>>>>>>>>>>>>>>Getting Exception
                                    */
@@ -960,9 +977,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                           NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                           NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
                           if(wifi.isConnected() || mobileNet.isConnected()) {
-                              GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
+                              GmailSender gmailSender = new GmailSender(mFirebaseRemoteConfig.getString("master_email"), mFirebaseRemoteConfig.getString("master_pass"),LoginActivity.this);
                               try {
-                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
+                                  gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), mFirebaseRemoteConfig.getString("master_email"), getString(R.string.adminEmails));
 
                               } catch (Exception e) {
                                   e.printStackTrace();
@@ -1109,9 +1126,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if(wifi.isConnected() || mobileNet.isConnected()) {
-                GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
+                GmailSender gmailSender = new GmailSender(mFirebaseRemoteConfig.getString("master_email"), mFirebaseRemoteConfig.getString("master_pass"),LoginActivity.this);
                 try {
-                    gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
+                    gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, mFirebaseRemoteConfig.getString("master_email"), etEmail_signUp.getText().toString().trim());
                     /**
                      * HANDLE FROM HERE NOW>>>>>>>>>>>>>>>>>Getting Exception
                      */
@@ -1147,9 +1164,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if(wifi.isConnected() || mobileNet.isConnected()) {
-                GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE),LoginActivity.this);
+                GmailSender gmailSender = new GmailSender(mFirebaseRemoteConfig.getString("master_email"), mFirebaseRemoteConfig.getString("master_pass"),LoginActivity.this);
                 try {
-                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), getResources().getString(R.string.EMAIL_SECURE), getString(R.string.adminEmails));
+                    gmailSender.sendMail("Requesting Authorization For Vacmet Application", userName+" ( "+userEmail+" )"+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth)+"\n\n\n\n\n"+getResources().getString(R.string.visit_app_in_mail), mFirebaseRemoteConfig.getString("master_email"), mFirebaseRemoteConfig.getString("master_receiver_emails"));
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1202,7 +1219,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED){
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(getString(R.string.AdminPhoneNo), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), null, null);
+            smsManager.sendTextMessage(mFirebaseRemoteConfig.getString("master_admin_cell_no"), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), null, null);
 
         }else{
             requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},
@@ -1243,9 +1260,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     NetworkInfo wifi =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                     NetworkInfo mobileNet =  connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
                     if(wifi.isConnected() || mobileNet.isConnected()) {
-                        GmailSender gmailSender = new GmailSender(getResources().getString(R.string.EMAIL_SECURE), getResources().getString(R.string.PASS_SECURE), LoginActivity.this);
+                        GmailSender gmailSender = new GmailSender(mFirebaseRemoteConfig.getString("master_email"), mFirebaseRemoteConfig.getString("master_pass"), LoginActivity.this);
                         try {
-                            gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, getResources().getString(R.string.EMAIL_SECURE), etEmail_signUp.getText().toString().trim());
+                            gmailSender.sendMail("VACMET-Otp", otpGeneratedValue, mFirebaseRemoteConfig.getString("master_email"), etEmail_signUp.getText().toString().trim());
                             /**
                              * HANDLE FROM HERE NOW>>>>>>>>>>>>>>>>>Getting Exception
                              */
