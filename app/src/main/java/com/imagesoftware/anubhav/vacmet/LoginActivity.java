@@ -1219,7 +1219,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED){
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(mFirebaseRemoteConfig.getString("master_admin_cell_no"), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth), null, null);
+            smsManager.sendTextMessage(mFirebaseRemoteConfig.getString("master_admin_cell_no"), null , userName+"\n"+userClientOrServer+" "+"with Sap #:"+userSapId+"\n"+getString(R.string.requestingAuth)+"\n\n\n\n\n"+getResources().getString(R.string.visit_app_in_mail), null, null);
 
         }else{
             requestPermissions(new String[]{android.Manifest.permission.SEND_SMS, Manifest.permission.READ_PHONE_STATE},

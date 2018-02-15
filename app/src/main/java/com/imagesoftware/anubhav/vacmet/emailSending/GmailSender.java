@@ -13,6 +13,7 @@ import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -23,7 +24,8 @@ import javax.mail.internet.MimeMessage;
  */
 
 public class GmailSender extends Authenticator {
-    private String mailhost = "smtp.gmail.com";
+    private String mailhost = "smtp3.netcore.co.in";
+//    private String mailhost = "smtp.gmail.com";
     private String user;
     private String password;
     private Context context;
@@ -43,14 +45,17 @@ public class GmailSender extends Authenticator {
         this.context = context;
         this.password = password;
         Properties properties = new Properties();
-        properties.setProperty("mail.transport.protocol","smtp");
         properties.setProperty("mail.host",mailhost);
         properties.setProperty("mail.smtp.auth", "true");
+
+
+       /**  Below Props are for Gmail ....
         //below is also useful property
+        properties.setProperty("mail.transport.protocol","smtp");
         properties.setProperty("mail.smtp.user", user);
-        properties.setProperty("mail.smtp.port", "465");
+        properties.setProperty("mail.smtp.port", "425");
         //Port to allow smtp socket
-        properties.setProperty("mail.smtp.socketFactory.port", "465");
+        properties.setProperty("mail.smtp.socketFactory.port", "425");
         //Give Exceptions on Transport Send Message(Success/Failed)
         properties.setProperty("mail.smtp.reportsuccess","true");
         //Default class is net.ssl.SSLSocketFactory(used to create smtp ssl sockets), or we can use any class extending this class.
@@ -58,20 +63,23 @@ public class GmailSender extends Authenticator {
         //If it is true, then if Socket creation fails, then a new socket is created using java.net.socket class
         properties.setProperty("mail.smtp.socketFactory.fallback", "true");
         //Transport Layer Security(higher ver. then ssl) if enabled, depends on mail host server who is using it
+//
         properties.setProperty("mail.smtp.starttls.enable", "true");
         //If set to false then quit command is sent immediately and connection is closed immediately,
         //if true then transport will wait for the response of quit command
         properties.setProperty("mail.smtp.quitwait", "false");
         //Get Instance makes a newInstance of Session irrespective a session object already exists.
         //Get Default Instance helps in making duplicate instances, here a defaultInstance is returned if it exists,otherwise new Session Object is returned.
+        session = Session.getDefaultInstance(properties);
+        */
 
-     /*   session = Session.getInstance(properties, new Authenticator() {
+        session = Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(user,password);
             }
-        });*/
-        session = Session.getDefaultInstance(properties);
+        });
+
 
 
     }
@@ -99,11 +107,13 @@ public class GmailSender extends Authenticator {
             @Override
             public void run() {
                 try {
-                    Transport tr = session.getTransport("smtps");
-                    tr.connect(mailhost, 465,user, password);
+                    /** Below is for Gmail...
+                     Transport tr = session.getTransport("smtps");
+                    tr.connect(mailhost, 25,user, password);
                     message.saveChanges();
                     tr.sendMessage(message, message.getAllRecipients());
-                    tr.close();
+                    tr.close();*/
+                    Transport.send(message, message.getAllRecipients());
                     ((LoginActivity)context).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
