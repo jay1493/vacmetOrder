@@ -261,7 +261,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 //                String primaryKey = mDatabase.push().getKey();
                 Date date = new Date();
-                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, false, new ArrayList<String>(), userSapId, userClientOrServer,false,"NA","NA",date.toString());
+                final UserModel userModel = new UserModel(userName, userEmail, userPassword, userContact, "false", new ArrayList<String>(), userSapId, userClientOrServer,"false","NA","NA",date.toString());
 
                 mDatabase.child(userEmail.replace(".", getString(R.string.replacing_dot_in_firebase_db))).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -426,9 +426,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                 }
                 if(user.get("isAdmin")!=null) {
-                    adminAccess = ((boolean) user.get("isAdmin"));
+                    String isAdmin = ((String) user.get("isAdmin"));
+                    if("true".equalsIgnoreCase(isAdmin)){
+                        adminAccess = true;
+                    }
                 }else if(user.get("admin")!=null){
-                    adminAccess = ((boolean) user.get("admin"));
+                    String isAdmin = ((String) user.get("admin"));
+                    if("true".equalsIgnoreCase(isAdmin)){
+                        adminAccess = true;
+                    }
                 }
                 name = ((String) user.get("userName"));
                 userSapId = ((String) user.get("sapId"));

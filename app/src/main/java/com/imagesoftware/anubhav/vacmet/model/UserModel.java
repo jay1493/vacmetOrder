@@ -13,23 +13,23 @@ public class UserModel {
     private String userContact;
     private String sapId;
     private String clientOrServer;
-    private boolean isApproved;
-    private boolean isAdmin;
+    private String approved;
+    private String admin;
     private String userRole;
     private String sapIdList;
     private String accountCreatedTimeStamp;
     private List<String> approvedPartyNames;
-    public UserModel(String userName, String userEmail, String userPass, String userContact, boolean approved,
-                     List<String> partyNames, String id, String cOrS, boolean adminRights, String role, String sapIdList,String timeStamp) {
+    public UserModel(String userName, String userEmail, String userPass, String userContact, String approved,
+                     List<String> partyNames, String id, String cOrS, String adminRights, String role, String sapIdList,String timeStamp) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPass = userPass;
         this.userContact = userContact;
-        this.isApproved = approved;
+        this.approved = approved;
         this.approvedPartyNames = partyNames;
         this.sapId = id;
         this.clientOrServer = cOrS;
-        this.isAdmin = adminRights;
+        this.admin = adminRights;
         this.userRole = role;
         this.sapIdList = sapIdList;
         this.accountCreatedTimeStamp = timeStamp;
@@ -67,14 +67,6 @@ public class UserModel {
         this.userContact = userContact;
     }
 
-    public boolean isApproved() {
-        return isApproved;
-    }
-
-    public UserModel setApproved(boolean approved) {
-        isApproved = approved;
-        return this;
-    }
 
     public List<String> getApprovedPartyNames() {
         return approvedPartyNames;
@@ -103,13 +95,19 @@ public class UserModel {
         return this;
     }
 
-    public boolean isAdmin() {
-        return isAdmin;
+    public String getApproved() {
+        return approved;
     }
 
-    public void setAdmin(boolean isAdmin) {
-       this.isAdmin = isAdmin;
+    public UserModel setApproved(String approved) {
+        this.approved = approved;
+        return this;
     }
+
+    public String getAdmin() {
+        return admin;
+    }
+
 
     public String getUserRole() {
         return userRole;
