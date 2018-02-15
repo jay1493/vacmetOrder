@@ -172,11 +172,14 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -2500,6 +2503,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             Collections.sort(orderModelList, new Comparator<OrderModel>() {
                 @Override
                 public int compare(OrderModel o1, OrderModel o2) {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     /*if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
                         //Do Comparison on order no.
                         if(!isDispatched) {
@@ -2516,13 +2520,33 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         return o1.getPartyName().compareTo(o2.getPartyName());
                     }*/
                     if(!isDispatched) {
-                        Long order1 = Long.parseLong(o1.getOrderNo());
+                        /*Long order1 = Long.parseLong(o1.getOrderNo());
                         Long order2 = Long.parseLong(o2.getOrderNo());
-                        return order2.compareTo(order1);
+                        return order2.compareTo(order1);*/
+                        try {
+                            Long order1 = simpleDateFormat.parse(o1.getOrderDate()).getTime();
+                            Long order2 = simpleDateFormat.parse(o2.getOrderDate()).getTime();
+                            return order2.compareTo(order1);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
+                        return 0;
+
                     }else{
-                        Long order1 = Long.parseLong(o1.getInvoiceNo());
+                       /* Long order1 = Long.parseLong(o1.getInvoiceNo());
                         Long order2 = Long.parseLong(o2.getInvoiceNo());
-                        return order2.compareTo(order1);
+                        return order2.compareTo(order1);*/
+
+                        try {
+                            Long order1 = simpleDateFormat.parse(o1.getInvoiceDate()).getTime();
+                            Long order2 = simpleDateFormat.parse(o2.getInvoiceDate()).getTime();
+                            return order2.compareTo(order1);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
+                        return 0;
                     }
                 }
             });
