@@ -2500,7 +2500,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             Collections.sort(orderModelList, new Comparator<OrderModel>() {
                 @Override
                 public int compare(OrderModel o1, OrderModel o2) {
-                    if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
+                    /*if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
                         //Do Comparison on order no.
                         if(!isDispatched) {
                             Long order1 = Long.parseLong(o1.getOrderNo());
@@ -2514,6 +2514,15 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     } else {
                         //Do comparison on Party name
                         return o1.getPartyName().compareTo(o2.getPartyName());
+                    }*/
+                    if(!isDispatched) {
+                        Long order1 = Long.parseLong(o1.getOrderNo());
+                        Long order2 = Long.parseLong(o2.getOrderNo());
+                        return order2.compareTo(order1);
+                    }else{
+                        Long order1 = Long.parseLong(o1.getInvoiceNo());
+                        Long order2 = Long.parseLong(o2.getInvoiceNo());
+                        return order2.compareTo(order1);
                     }
                 }
             });
