@@ -44,6 +44,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -602,20 +604,35 @@ public class RefereshNetworkService extends JobService {
         Collections.sort(orderModelList, new Comparator<OrderModel>() {
             @Override
             public int compare(OrderModel o1, OrderModel o2) {
-                if (o1.getPartyName().compareTo(o2.getPartyName()) == 0) {
-                    //Do Comparison on order no.
-                    if(!isDispatched) {
-                        Long order1 = Long.parseLong(o1.getOrderNo());
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                if(!isDispatched) {
+                        /*Long order1 = Long.parseLong(o1.getOrderNo());
                         Long order2 = Long.parseLong(o2.getOrderNo());
+                        return order2.compareTo(order1);*/
+                    try {
+                        Long order1 = simpleDateFormat.parse(o1.getOrderDate()).getTime();
+                        Long order2 = simpleDateFormat.parse(o2.getOrderDate()).getTime();
                         return order2.compareTo(order1);
-                    }else{
-                        Long order1 = Long.parseLong(o1.getInvoiceNo());
-                        Long order2 = Long.parseLong(o2.getInvoiceNo());
-                        return order2.compareTo(order1);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
                     }
-                } else {
-                    //Do comparison on Party name
-                    return o1.getPartyName().compareTo(o2.getPartyName());
+
+                    return 0;
+
+                }else{
+                       /* Long order1 = Long.parseLong(o1.getInvoiceNo());
+                        Long order2 = Long.parseLong(o2.getInvoiceNo());
+                        return order2.compareTo(order1);*/
+
+                    try {
+                        Long order1 = simpleDateFormat.parse(o1.getInvoiceDate()).getTime();
+                        Long order2 = simpleDateFormat.parse(o2.getInvoiceDate()).getTime();
+                        return order2.compareTo(order1);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    return 0;
                 }
             }
         });
