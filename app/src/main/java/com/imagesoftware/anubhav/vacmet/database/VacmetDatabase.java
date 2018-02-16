@@ -16,7 +16,7 @@ import com.imagesoftware.anubhav.vacmet.model.OrderModel;
  * Created by Anubhav-Singh on 09-01-2018.
  */
 
-@Database(entities = {OrderEntity.class, ItemEntity.class}, version = 1)
+@Database(entities = {OrderEntity.class, ItemEntity.class}, version = 1, exportSchema = false)
 @TypeConverters({ArrayListConverter.class, ArrayListDoubleConverter.class})
 public abstract class VacmetDatabase extends RoomDatabase {
 
