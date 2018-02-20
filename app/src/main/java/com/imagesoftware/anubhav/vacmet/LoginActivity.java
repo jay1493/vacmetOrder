@@ -516,8 +516,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         btnSignUp = (Button) findViewById(R.id.btn_signUp);
         mainLayout = (RelativeLayout) findViewById(R.id.activity_login);
         login_btns = (LinearLayout) findViewById(R.id.login_btn_layout);
-        keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-        fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
+        }
     }
 
 
