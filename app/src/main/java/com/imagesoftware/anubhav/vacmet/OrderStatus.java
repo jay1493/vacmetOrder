@@ -1886,6 +1886,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 this.finish();
                 startService(intent);
             }
+        }else{
+            moveTaskToBack(true);
         }
     }
 
