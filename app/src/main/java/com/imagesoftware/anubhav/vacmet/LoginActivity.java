@@ -28,6 +28,7 @@ import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -53,6 +54,9 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.crashlytics.android.Crashlytics;
+import com.github.ajalt.reprint.core.AuthenticationFailureReason;
+import com.github.ajalt.reprint.core.AuthenticationListener;
+import com.github.ajalt.reprint.core.Reprint;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
@@ -166,8 +170,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private SharedPreferences orderIdPrefs;
     private String userSapId, userClientOrServer;
     private ProgressDialog progressDialog;
-    private KeyguardManager keyguardManager;
-    private FingerprintManager fingerprintManager;
+  /*  private KeyguardManager keyguardManager;
+    private FingerprintManager fingerprintManager;*/
     private TextView et_fingerPrintError;
     private KeyStore keyStore;
     private Cipher cipher;
@@ -518,8 +522,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         login_btns = (LinearLayout) findViewById(R.id.login_btn_layout);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-            fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
+           /* keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);*/
         }
     }
 
@@ -567,14 +571,54 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
+                if(Reprint.isHardwarePresent()){
+                    frameLayout.removeAllViewsInLayout();
+                    View signIn_View = inflater.inflate(R.layout.activity_fingerprint, null, false);
+                    tv_switch_password_mode = (TextView) signIn_View.findViewById(R.id.switchViewFingerPrint);
+                    tv_switch_password_mode.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            inflatePasswordAutomaticSignIn(false);
+                        }
+                    });
+                    et_fingerPrintError = (TextView) signIn_View.findViewById(R.id.errorText);
+                    if (!Reprint.hasFingerprintRegistered()) {
+                        et_fingerPrintError.setText("Register at least one fingerprint in Settings");
+                    }else{
+                        Reprint.authenticate(new AuthenticationListener() {
+                            @Override
+                            public void onSuccess(int moduleTag) {
+                                updateFingerprintDialog("Fingerprint Authentication succeeded.", true);
+                                onFingerPrintSuccess();
+                            }
+
+                            @Override
+                            public void onFailure(AuthenticationFailureReason failureReason, boolean fatal, CharSequence errorMessage, int moduleTag, int errorCode) {
+                                updateFingerprintDialog("Fingerprint Authentication failed.", false);
+                            }
+                        });
+
+                    }
+                    int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
+                    signIn_View.measure(width, View.MeasureSpec.UNSPECIFIED);
+                    int height = signIn_View.getMeasuredHeight();
+                    frameLayout.addView(signIn_View);
+                    bottomSheetBehavior = BottomSheetBehavior.from(frameLayout);
+                    bottomSheetBehavior.setPeekHeight(height);
+                    bottomSheetBehavior.setHideable(false);
+                    bottomSheetBehavior.setBottomSheetCallback(null);
+                    bottomSheetBehavior.setSkipCollapsed(false);
+                }else{
+                    inflatePasswordAutomaticSignIn(false);
+                }
+                /** : Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
-                if (fingerprintManager.isHardwareDetected()) {
+           /*     if (fingerprintManager.isHardwareDetected()) {
                     //FingerPrintCode
                     frameLayout.removeAllViewsInLayout();
                     View signIn_View = inflater.inflate(R.layout.activity_fingerprint, null, false);
@@ -615,7 +659,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                 }else {
                     inflatePasswordAutomaticSignIn(false);
-                }
+                }*/
               }
             } else {
             inflatePasswordAutomaticSignIn(false);
@@ -708,7 +752,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+ /*   @TargetApi(Build.VERSION_CODES.M)
     protected void generateKey() {
         try {
             keyStore = KeyStore.getInstance("AndroidKeyStore");
@@ -765,7 +809,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         } catch (KeyStoreException | CertificateException | UnrecoverableKeyException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException("Failed to init Cipher", e);
         }
-    }
+    }*/
 
     @Override
     public void onClick(View view) {
@@ -1417,6 +1461,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onFingerPrintSuccess() {
         inflatePasswordAutomaticSignIn(true);
+    }
+
+    public void updateFingerprintDialog(String e, Boolean success){
+        TextView textView = (TextView) ((Activity)this).findViewById(R.id.errorText);
+        if(textView!=null) {
+            textView.setText(e);
+            if (success) {
+                textView.setTextColor(ContextCompat.getColor(this, R.color.white_alpha));
+            }
+        }
     }
 
     private boolean connectionIsOnline() {

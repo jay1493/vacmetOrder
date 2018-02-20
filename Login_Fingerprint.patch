@@ -1,0 +1,89 @@
+Index: app/src/main/java/com/imagesoftware/anubhav/vacmet/LoginActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/imagesoftware/anubhav/vacmet/LoginActivity.java	(revision 46399593c7c402c4e71c4b38a1da1c3a6cea18eb)
++++ app/src/main/java/com/imagesoftware/anubhav/vacmet/LoginActivity.java	(revision )
+@@ -17,7 +17,6 @@
+ import android.graphics.Color;
+ import android.graphics.drawable.AnimationDrawable;
+ import android.graphics.drawable.ColorDrawable;
+-import android.hardware.fingerprint.FingerprintManager;
+ import android.net.ConnectivityManager;
+ import android.net.NetworkInfo;
+ import android.os.Build;
+@@ -28,6 +27,7 @@
+ import android.support.annotation.NonNull;
+ import android.support.design.widget.BottomSheetBehavior;
+ import android.support.v4.app.ActivityCompat;
++import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
+ import android.support.v7.app.AlertDialog;
+ import android.support.v7.app.AppCompatActivity;
+ import android.os.Bundle;
+@@ -166,8 +166,8 @@
+     private SharedPreferences orderIdPrefs;
+     private String userSapId, userClientOrServer;
+     private ProgressDialog progressDialog;
+-    private KeyguardManager keyguardManager;
+-    private FingerprintManager fingerprintManager;
++//    private KeyguardManager keyguardManager;
++    private FingerprintManagerCompat fingerprintManager;
+     private TextView et_fingerPrintError;
+     private KeyStore keyStore;
+     private Cipher cipher;
+@@ -518,8 +518,8 @@
+         login_btns = (LinearLayout) findViewById(R.id.login_btn_layout);
+ 
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+-            keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+-            fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
++//            keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
++            fingerprintManager = FingerprintManagerCompat.from(this);
+         }
+     }
+ 
+@@ -590,18 +590,37 @@
+                         et_fingerPrintError.setText("Register at least one fingerprint in Settings");
+                     }else{
+                         // Checks whether lock screen security is enabled or not
+-                        if (!keyguardManager.isKeyguardSecure()) {
++                      /*  if (!keyguardManager.isKeyguardSecure()) {
+                             et_fingerPrintError.setText("Lock screen security not enabled in Settings");
+-                        }else{
++                        }else{*/
+                             generateKey();
+ 
+ 
+                             if (cipherInit()) {
+-                                FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
++
++                                FingerprintManagerCompat.CryptoObject cryptoObject = new FingerprintManagerCompat.CryptoObject(cipher);
++                               /* FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
+                                 FingerprintHandler helper = new FingerprintHandler(this,this);
+-                                helper.startAuth(fingerprintManager, cryptoObject);
+-                            }
+-                        }
++                                helper.startAuth(fingerprintManager, cryptoObject);*/
++
++                                fingerprintManager.authenticate(cryptoObject, 0, null, new FingerprintManagerCompat.AuthenticationCallback() {
++                                    @Override
++                                    public void onAuthenticationError(int errMsgId, CharSequence errString) {
++                                        super.onAuthenticationError(errMsgId, errString);
++                                    }
++
++                                    @Override
++                                    public void onAuthenticationSucceeded(FingerprintManagerCompat.AuthenticationResult result) {
++                                        super.onAuthenticationSucceeded(result);
++                                    }
++
++                                    @Override
++                                    public void onAuthenticationFailed() {
++                                        super.onAuthenticationFailed();
++                                    }
++                                }, null);
++                            }
++//                        }
+                     }
+                     int width = View.MeasureSpec.makeMeasureSpec(signIn_View.getWidth(), View.MeasureSpec.UNSPECIFIED);
+                     signIn_View.measure(width, View.MeasureSpec.UNSPECIFIED);

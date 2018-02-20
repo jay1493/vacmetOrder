@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-
+    <uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY"/>
 
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature
@@ -26,7 +26,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup"
-        android:name="android.support.multidex.MultiDexApplication">
+        android:name=".CustomApplication">
         <receiver android:name=".globalReceivers.UserAccessReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="com.imagesoftware.vacmet.user_revoked"/>
