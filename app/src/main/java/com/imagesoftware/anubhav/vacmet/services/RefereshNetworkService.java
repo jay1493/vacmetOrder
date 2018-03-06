@@ -477,7 +477,7 @@ public class RefereshNetworkService extends JobService {
                                             }else{
                                                 itemModel.setSelectedOrderNo(orderModel.getOrderNo());
                                             }
-                                            orderModel.addItemInOrder(itemModel, orderType.equalsIgnoreCase("get_dispatch") ? true : false);
+                                            orderModel.addItemInOrder(itemModel, orderType.equalsIgnoreCase(GET_DISPATCH_CODE) ? true : false);
                                         }
                                         saveItemInOrder = false;
                                         break;
@@ -531,7 +531,7 @@ public class RefereshNetworkService extends JobService {
 
                 }*/
                     if(orderModelList!=null && orderModelList.size()>0){
-                        sortList(orderModelList,orderType.equalsIgnoreCase("get_dispatch")?true:false);
+                        sortList(orderModelList,orderType.equalsIgnoreCase(GET_DISPATCH_CODE)?true:false);
                         saveInVacmetDatabase(orderModelList,orderType);
                     }
                 } catch (MalformedURLException e) {
@@ -583,7 +583,7 @@ public class RefereshNetworkService extends JobService {
         for(OrderModel orderModel : orderModelList){
             orderEntityList.add(orderTranslator.translateModelToEntity(orderModel));
         }
-        if(orderType.equalsIgnoreCase(GET_PENDING_CODE)) {
+      /*  if(orderType.equalsIgnoreCase(GET_PENDING_CODE)) {
             for (OrderEntity orderEntity : databaseRequestsDao.getOrdersForSapIdAndOrderType(sapKey, 1)){
                 for(OrderEntity newOrderEntity : orderEntityList){
                     if(newOrderEntity.getOrderNo().equalsIgnoreCase(orderEntity.getOrderNo())){
@@ -591,7 +591,7 @@ public class RefereshNetworkService extends JobService {
                     }
                 }
             }
-        }
+        }*/
         databaseRequestsDao.insertOrders(orderEntityList);
         for(OrderEntity orderEntity : orderEntityList){
             if(orderEntity.getItemModelArrayList()!=null && orderEntity.getItemModelArrayList().size()>0) {

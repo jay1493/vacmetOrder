@@ -4,10 +4,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.arch.persistence.room.Room;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,7 +13,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -47,12 +44,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.InputType;
-import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -70,7 +65,6 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -179,7 +173,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -436,7 +429,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         setUpAuthenticationForWritingData();
         setUpAuthenticationForWritingDataForLogistics();
 
-        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
+        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord", false);
 
         setSupportActionBar(toolbar);
 //        toolbar.setNavigationIcon(R.drawable.back_24dp);
@@ -555,7 +548,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     editor.putString(SapId, (String) spinnerSapId.getSelectedItem());
                     editor.putString(ClientorServer, isClientorServer);
                     editor.apply();
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), (String) spinnerSapId.getSelectedItem(), orderType);
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), (String) spinnerSapId.getSelectedItem(), orderType,false);
 //                }
             }
         });
@@ -567,7 +560,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                     mFirebaseRemoteConfig.activateFetched();
 
                     if(orderModelList==null || (orderModelList!=null && orderModelList.size()>0)){
-                        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+                        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch", false);
 
                     }
                 }
@@ -1085,7 +1078,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 if(connectionIsOnline()){
                     setUpAuthenticationForWritingData();
                     setUpAuthenticationForWritingDataForLogistics();
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch", false);
                 }
             }
         }
@@ -1097,9 +1090,9 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    private void hitOrdersService(String client, String id, String orderType) {
+    private void hitOrdersService(String client, String id, String orderType, boolean isForced) {
 
-        new CustomAsyncTaskForRestOrderService().execute(client, id, orderType);
+        new CustomAsyncTaskForRestOrderService().execute(client, id, orderType, isForced ? "true":"false");
     }
 
     private void init() {
@@ -1163,7 +1156,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
                     setCollapsingToolbarTitle(getResources().getString(R.string.order_status));
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord");
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_pendingord", false);
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
@@ -1211,7 +1204,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                         recyclerView.setVisibility(View.GONE);
                     }*/
                     setCollapsingToolbarTitle(getResources().getString(R.string.delivery_status));
-                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_dispatch");
+                    hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, "get_dispatch", false);
                 }
                 if (drawerLayout.isDrawerOpen(Gravity.START)) {
                     drawerLayout.closeDrawers();
@@ -1972,13 +1965,14 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
             String appendedParamInUrl = "";
             String id = params[1];
             orderType = params[2];
+            boolean isForced = "true".equalsIgnoreCase(params[3]);
             if (params[0].equalsIgnoreCase("c")) {
                 appendedParamInUrl = "C=" + id;
             } else if (params[0].equalsIgnoreCase("s")) {
                 appendedParamInUrl = "S=" + id;
             }
             anySavedOrders = databaseRequestsDao.getOrdersForSapIdAndOrderType(id,orderType.equalsIgnoreCase(GET_PENDING_CODE)?1:0);
-            if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0))) {
+            if(connectionIsOnline() && (anySavedOrders == null || (anySavedOrders!=null && anySavedOrders.size() == 0) || isForced)) {
                 try {
                     urlForOrders1 = mFirebaseRemoteConfig.getString("order_service_url");
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(urlForOrders1 + orderType + urlForOrders2 + appendedParamInUrl).openConnection();
@@ -2418,7 +2412,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 swipeRefereshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                     @Override
                     public void onRefresh() {
-                        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+                        hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch", true);
 
                     }
                 });
@@ -2470,7 +2464,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                 intent.putExtra("isDispatched", offlineOrderType.equalsIgnoreCase("get_dispatch") ? true : false);
                 startActivityForResult(intent,ORDER_INFO_ACTIVITY_REQ_CODE);
             }else{
-                hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch");
+                hitOrdersService(orderIdPrefs.getString(ClientorServer, null), DefaultSapId, openOrdersRadio.isChecked() ? "get_pendingord" : "get_dispatch", false);
             }
         }
     }
