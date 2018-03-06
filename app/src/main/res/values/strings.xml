@@ -157,4 +157,7 @@
     <string name="specify_estimate">Specify Estimate Date</string>
     <string name="log_me_out">Log Me Out</string>
     <string name="visit_app_in_mail">Visit: www.vpipl.co.in/apps/</string>
+    <string name="update_application">Update Application</string>
+    <string name="update_application_to_access_new_features_of_app">Please update the application to access its new features.</string>
+    <string name="update">Update!</string>
 </resources>

@@ -20,6 +20,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.hardware.fingerprint.FingerprintManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.security.keystore.KeyGenParameterSpec;
@@ -78,6 +79,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 
 import io.fabric.sdk.android.Fabric;
 import java.io.IOException;
@@ -531,6 +533,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
+        if(BuildConfig.VERSION_CODE < Integer.parseInt(mFirebaseRemoteConfig.getString("app_version"))){
+            //Show Dialog
+            new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
+                    .setTopColorRes(R.color.medium_jungle_green)
+                    .setButtonsColorRes(R.color.red_transperant)
+                    .setIcon(R.drawable.vac_small)
+                    .setTitle(R.string.update_application)
+                    .setMessage(R.string.update_application_to_access_new_features_of_app)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.update, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+                            try {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                            } catch (android.content.ActivityNotFoundException anfe) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                            }
+                        }
+                    }).show();
+        }
         if (sharedprefs.getString(LoggedInUser, null) != null && sharedprefs.getString(LoggedInUserPassword, null) != null) {
             /**
              * Some user is logged in...and we have sharedPrefs Data
