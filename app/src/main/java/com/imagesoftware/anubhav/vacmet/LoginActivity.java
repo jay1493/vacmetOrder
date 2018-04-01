@@ -553,8 +553,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             }
                         }
                     }).show();
-        }
-        if (sharedprefs.getString(LoggedInUser, null) != null && sharedprefs.getString(LoggedInUserPassword, null) != null) {
+        }else if (sharedprefs.getString(LoggedInUser, null) != null && sharedprefs.getString(LoggedInUserPassword, null) != null) {
             /**
              * Some user is logged in...and we have sharedPrefs Data
              * 1.)If have fingerprint, then on successful scan, follow the same code as below, i.e
