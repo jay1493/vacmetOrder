@@ -12,6 +12,11 @@ public class LogisticsModel implements Serializable {
     private String containerNo;
     private String vesselNo;
     private String eta;
+    private String ActInvNo;
+    private String Country;
+    private String Date;
+    private String PartyName;
+    private String PurchaseNo;
 
     public LogisticsModel() {
         this.blNo = "Awaited";
@@ -50,5 +55,50 @@ public class LogisticsModel implements Serializable {
 
     public void setEta(String eta) {
         this.eta = eta;
+    }
+
+    public String getActInvNo() {
+        return ActInvNo;
+    }
+
+    public LogisticsModel setActInvNo(String actInvNo) {
+        ActInvNo = actInvNo;
+        return this;
+    }
+
+    public String getCountry() {
+        return Country;
+    }
+
+    public LogisticsModel setCountry(String country) {
+        Country = country;
+        return this;
+    }
+
+    public String getDate() {
+        return Date;
+    }
+
+    public LogisticsModel setDate(String date) {
+        Date = date;
+        return this;
+    }
+
+    public String getPartyName() {
+        return PartyName;
+    }
+
+    public LogisticsModel setPartyName(String partyName) {
+        PartyName = partyName;
+        return this;
+    }
+
+    public String getPurchaseNo() {
+        return PurchaseNo;
+    }
+
+    public LogisticsModel setPurchaseNo(String purchaseNo) {
+        PurchaseNo = purchaseNo;
+        return this;
     }
 }

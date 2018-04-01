@@ -662,7 +662,7 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        dispalyGeneralizedSnackBar(getResources().getString(R.string.data_cant_be_saved_in_firebase));
+                        dispalyGeneralizedSnackBar(getResources().getString(R.string.data_cant_be_read_from_database));
                     }
                 };
             }
@@ -759,6 +759,21 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                                 logisticsModel.setContainerNo(fetchedAdminModel.getContainerNo());
                                                 logisticsModel.setVesselNo(fetchedAdminModel.getVesselNo());
                                                 logisticsModel.setEta(fetchedAdminModel.getEta());
+                                                if(!TextUtils.isEmpty(fetchedAdminModel.getActInvNo())){
+                                                  logisticsModel.setActInvNo(fetchedAdminModel.getActInvNo());
+                                                }
+                                                if(!TextUtils.isEmpty(fetchedAdminModel.getCountry())){
+                                                    logisticsModel.setCountry(fetchedAdminModel.getCountry());
+                                                }
+                                                if(!TextUtils.isEmpty(fetchedAdminModel.getDate())){
+                                                    logisticsModel.setDate(fetchedAdminModel.getDate());
+                                                }
+                                                if(!TextUtils.isEmpty(fetchedAdminModel.getPartyName())){
+                                                    logisticsModel.setPartyName(fetchedAdminModel.getPartyName());
+                                                }
+                                                if(!TextUtils.isEmpty(fetchedAdminModel.getPurchaseNo())){
+                                                    logisticsModel.setPurchaseNo(fetchedAdminModel.getPurchaseNo());
+                                                }
                                                 matchedOrderModel.setLogisticsModel(logisticsModel);
                                                 OrderEntity orderEntityFromSavedDb = databaseRequestsDao.getOrderForInvoiceNo(orderIdPrefs.getString(SapId, null), 0, matchedOrderModel.getInvoiceNo());
                                                 if(orderEntityFromSavedDb!=null) {

@@ -205,6 +205,7 @@
                         android:orientation="horizontal"
                         android:visibility="gone">
                         <TextView
+                            android:id="@+id/invoice_header"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="@dimen/d5"

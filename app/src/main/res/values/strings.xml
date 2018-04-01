@@ -160,4 +160,7 @@
     <string name="update_application">Update Application</string>
     <string name="update_application_to_access_new_features_of_app">Please update the application to access its new features.</string>
     <string name="update">Update!</string>
+    <string name="data_cant_be_read_from_database">Data can\'t be read from database! Try Again!</string>
+    <string name="actual_invoice_no">Actual Invoice No:</string>
+    <string name="purchase_no">Purchase No:</string>
 </resources>

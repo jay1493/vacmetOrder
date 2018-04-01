@@ -144,13 +144,40 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.piLayout.setVisibility(View.GONE);
                 }
                 if(isDispatched){
+                    holder.llInvoice.setVisibility(View.VISIBLE);
+
+                    if((list.get(position).getLogisticsModel()!=null &&
+                            !TextUtils.isEmpty(list.get(position).getLogisticsModel().getPartyName()))) {
+                        holder.partyName.setText(list.get(position).getLogisticsModel().getPartyName());
+                    }
                     holder.llETD.setVisibility(View.GONE);
                     holder.showPreviousModDates.setVisibility(View.GONE);
                     holder.showPreviousModDates.setOnClickListener(null);
-                    holder.llInvoice.setVisibility(View.VISIBLE);
-                    holder.txtInvoice.setText(list.get(position).getInvoiceNo());
-                    holder.llOrderNo.setVisibility(View.GONE);
-                    holder.orderDate.setText(list.get(position).getInvoiceDate());
+                    if(list.get(position).getLogisticsModel()!=null &&
+                            !TextUtils.isEmpty(list.get(position).getLogisticsModel().getActInvNo())) {
+                        holder.tvInvoiceHeader.setText(context.getResources().getString(R.string.actual_invoice_no));
+                        holder.txtInvoice.setText(list.get(position).getLogisticsModel().getActInvNo());
+                    }else{
+                        holder.tvInvoiceHeader.setText(context.getResources().getString(R.string.invoice_no));
+                        holder.txtInvoice.setText(list.get(position).getInvoiceNo());
+                    }
+
+                    if((list.get(position).getLogisticsModel()!=null &&
+                            !TextUtils.isEmpty(list.get(position).getLogisticsModel().getPurchaseNo()))) {
+                        holder.llOrderNo.setVisibility(View.VISIBLE);
+                        holder.txtOrderNoHeading.setText(context.getResources().getString(R.string.purchase_no));
+                        holder.orderNo.setText(list.get(position).getLogisticsModel().getPurchaseNo());
+                    }else {
+                        holder.llOrderNo.setVisibility(View.GONE);
+                        holder.txtOrderNoHeading.setText(context.getResources().getString(R.string.Order_No));
+
+                    }
+                    if((list.get(position).getLogisticsModel()!=null &&
+                            !TextUtils.isEmpty(list.get(position).getLogisticsModel().getDate()))) {
+                        holder.orderDate.setText(list.get(position).getLogisticsModel().getDate());
+                    }else {
+                        holder.orderDate.setText(list.get(position).getInvoiceDate());
+                    }
                     holder.txtOrderDateHeading.setText(context.getResources().getString(R.string.invoice_date));
                     holder.deliveryDate.setVisibility(View.GONE);
                     holder.deliveryDate.setOnClickListener(null);
@@ -351,6 +378,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
 
 
     public class Viewholder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView txtOrderNoHeading;
+        TextView tvInvoiceHeader;
         LinearLayout llOrderDate;
         LinearLayout llMain;
         LinearLayout llAdminNotes;
@@ -397,6 +426,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     uploadInvoice = (RelativeLayout) itemView.findViewById(R.id.rl_uploadInvoiceAdmin);
                     piLayout = (RelativeLayout) itemView.findViewById(R.id.rl_customerPiDetails);
                     txtOrderDateHeading = (TextView) itemView.findViewById(R.id.tvOrderDateHeading);
+                    txtOrderNoHeading = (TextView) itemView.findViewById(R.id.tvOrderNoHeading);
                     piDate = (TextView) itemView.findViewById(R.id.customerPi_piDate);
                     piNo = (TextView) itemView.findViewById(R.id.customerPi_piNo);
                     partyPiNo = (TextView) itemView.findViewById(R.id.partyPi_piNo);
@@ -414,6 +444,7 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     llBuyerPiNo = (LinearLayout) itemView.findViewById(R.id.ll_buyerPINo);
                     llETD = (LinearLayout) itemView.findViewById(R.id.ll_destDate);
                     orderQty = (TextView) itemView.findViewById(R.id.tvOrderQty);
+                    tvInvoiceHeader = (TextView) itemView.findViewById(R.id.invoice_header);
                     despQty = (TextView) itemView.findViewById(R.id.tvOrderDespQty);
                     deliveryDate = (TextView) itemView.findViewById(R.id.deliveryDate);
                     llInvoice = (LinearLayout) itemView.findViewById(R.id.ll_invoiceNo);
