@@ -147,8 +147,8 @@ public class RecyclerviewAdapter extends RecyclerView.Adapter<RecyclerviewAdapte
                     holder.llInvoice.setVisibility(View.VISIBLE);
 
                     if((list.get(position).getLogisticsModel()!=null &&
-                            !TextUtils.isEmpty(list.get(position).getLogisticsModel().getPartyName()))) {
-                        holder.partyName.setText(list.get(position).getLogisticsModel().getPartyName());
+                            !TextUtils.isEmpty(list.get(position).getLogisticsModel().getPartyNameForward()))) {
+                        holder.partyName.setText(list.get(position).getLogisticsModel().getPartyNameForward());
                     }
                     holder.llETD.setVisibility(View.GONE);
                     holder.showPreviousModDates.setVisibility(View.GONE);

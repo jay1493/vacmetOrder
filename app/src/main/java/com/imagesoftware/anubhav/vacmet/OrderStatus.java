@@ -768,8 +768,8 @@ public class OrderStatus extends AppCompatActivity implements View.OnClickListen
                                                 if(!TextUtils.isEmpty(fetchedAdminModel.getDate())){
                                                     logisticsModel.setDate(fetchedAdminModel.getDate());
                                                 }
-                                                if(!TextUtils.isEmpty(fetchedAdminModel.getPartyName())){
-                                                    logisticsModel.setPartyName(fetchedAdminModel.getPartyName());
+                                                if(!TextUtils.isEmpty(fetchedAdminModel.getPartyNameForward())){
+                                                    logisticsModel.setPartyNameForward(fetchedAdminModel.getPartyNameForward());
                                                 }
                                                 if(!TextUtils.isEmpty(fetchedAdminModel.getPurchaseNo())){
                                                     logisticsModel.setPurchaseNo(fetchedAdminModel.getPurchaseNo());

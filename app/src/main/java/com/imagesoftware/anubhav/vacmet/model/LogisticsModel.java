@@ -15,7 +15,7 @@ public class LogisticsModel implements Serializable {
     private String ActInvNo;
     private String Country;
     private String Date;
-    private String PartyName;
+    private String PartyNameForward;
     private String PurchaseNo;
 
     public LogisticsModel() {
@@ -61,44 +61,39 @@ public class LogisticsModel implements Serializable {
         return ActInvNo;
     }
 
-    public LogisticsModel setActInvNo(String actInvNo) {
+    public void setActInvNo(String actInvNo) {
         ActInvNo = actInvNo;
-        return this;
     }
 
     public String getCountry() {
         return Country;
     }
 
-    public LogisticsModel setCountry(String country) {
+    public void setCountry(String country) {
         Country = country;
-        return this;
     }
 
     public String getDate() {
         return Date;
     }
 
-    public LogisticsModel setDate(String date) {
+    public void setDate(String date) {
         Date = date;
-        return this;
     }
 
-    public String getPartyName() {
-        return PartyName;
+    public String getPartyNameForward() {
+        return PartyNameForward;
     }
 
-    public LogisticsModel setPartyName(String partyName) {
-        PartyName = partyName;
-        return this;
+    public void setPartyNameForward(String partyNameForward) {
+        PartyNameForward = partyNameForward;
     }
 
     public String getPurchaseNo() {
         return PurchaseNo;
     }
 
-    public LogisticsModel setPurchaseNo(String purchaseNo) {
+    public void setPurchaseNo(String purchaseNo) {
         PurchaseNo = purchaseNo;
-        return this;
     }
 }
